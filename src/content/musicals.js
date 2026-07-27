@@ -1,0 +1,62 @@
+export const musicals = [
+  {
+    slug: 'pigs',
+    title: 'Pigs',
+    year: '20XX',
+    status: 'Published by Warner Chappell',
+    teaser: 'One-line description of Pigs goes here.',
+    heroLabel: 'Pigs — hero image',
+    heroDims: '1600×900px',
+    resumeLabel: 'Resume',
+    resume: [
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Praesent euismod, nisi eu consectetur consectetur, nisl nunc consectetur nisi, euismod consectetur nisi nunc euismod.',
+      'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+    ],
+    demos: [
+      { id: 'pigs-demo-1', title: 'Demo track one', duration: '2:14', src: '/audio/demos/pigs-demo-1.mp3' },
+      { id: 'pigs-demo-2', title: 'Demo track two', duration: '3:02', src: '/audio/demos/pigs-demo-2.mp3' },
+    ],
+    downloads: [{ label: 'Script (PDF)' }],
+    needsScriptwriter: false,
+  },
+  {
+    slug: 'copperfield-co',
+    title: 'Copperfield & Co.',
+    year: '20XX',
+    status: 'Published by Warner Chappell',
+    teaser: 'One-line description of Copperfield & Co. goes here.',
+    heroLabel: 'Copperfield & Co. — hero image',
+    heroDims: '1600×900px',
+    resumeLabel: 'Resume',
+    resume: [
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Praesent euismod, nisi eu consectetur consectetur, nisl nunc consectetur nisi, euismod consectetur nisi nunc euismod.',
+      'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+    ],
+    demos: [
+      { id: 'copperfield-demo-1', title: 'Demo track one', duration: '2:47', src: '/audio/demos/copperfield-demo-1.mp3' },
+      { id: 'copperfield-demo-2', title: 'Demo track two', duration: '3:19', src: '/audio/demos/copperfield-demo-2.mp3' },
+    ],
+    downloads: [{ label: 'Script (PDF)' }, { label: 'Sibelius score' }],
+    needsScriptwriter: false,
+  },
+  {
+    slug: 'guyana-skies',
+    title: 'Guyana Skies',
+    year: '20XX',
+    status: 'Windrush-inspired — in development',
+    teaser: 'One-line description of Guyana Skies goes here.',
+    heroLabel: 'Guyana Skies — hero image',
+    heroDims: '1600×900px',
+    resumeLabel: 'Prospective synopsis',
+    resume: [
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit — a brief prospective synopsis of Guyana Skies goes here, shorter than a full resume.',
+    ],
+    demos: [
+      { id: 'guyana-demo-1', title: 'Demo track one', duration: '2:33', src: '/audio/demos/guyana-demo-1.mp3' },
+      { id: 'guyana-demo-2', title: 'Demo track two', duration: '2:58', src: '/audio/demos/guyana-demo-2.mp3' },
+    ],
+    downloads: [],
+    needsScriptwriter: true,
+    contactHref: 'mailto:frank@example.com',
+  },
+]
