@@ -13,8 +13,12 @@ export const musicals = [
       'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
     ],
     demos: [
-      { id: 'pigs-demo-1', title: 'Demo track one', duration: '2:14', src: '/audio/demos/pigs-demo-1.mp3' },
-      { id: 'pigs-demo-2', title: 'Demo track two', duration: '3:02', src: '/audio/demos/pigs-demo-2.mp3' },
+      {
+        id: 'pigs-snapshot',
+        title: 'Musical snapshot',
+        duration: '2:11',
+        src: '/audio/demos/pigs-snapshot.mp3',
+      },
     ],
     downloads: [{ label: 'Script (PDF)' }],
     needsScriptwriter: false,
@@ -33,8 +37,12 @@ export const musicals = [
       'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
     ],
     demos: [
-      { id: 'copperfield-demo-1', title: 'Demo track one', duration: '2:47', src: '/audio/demos/copperfield-demo-1.mp3' },
-      { id: 'copperfield-demo-2', title: 'Demo track two', duration: '3:19', src: '/audio/demos/copperfield-demo-2.mp3' },
+      {
+        id: 'copperfield-snapshot',
+        title: 'Musical snapshot',
+        duration: '4:46',
+        src: '/audio/demos/copperfield-and-co-snapshot.mp3',
+      },
     ],
     // A download with no `href` still renders as a placeholder — the script
     // hasn't been supplied yet. `download: true` forces a save rather than

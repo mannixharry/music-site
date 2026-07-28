@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import Placeholder from '../components/Placeholder'
 import MusicSection from '../components/MusicSection'
 import { profile } from '../content/profile'
 import { musicals } from '../content/musicals'
@@ -9,10 +8,11 @@ function Home() {
   return (
     <div className="py-8">
       <section className="flex flex-col gap-4 md:flex-row md:items-center">
-        <Placeholder
-          label="Artist photo"
-          dims="1000×1250px"
-          aspect="aspect-[4/5]"
+        <img
+          src="/images/frank-kirwan.jpg"
+          alt="Frank Kirwan with his guitar"
+          width={1000}
+          height={1250}
           className="w-full md:w-1/2"
         />
         <div>
