@@ -7,7 +7,8 @@ function Songs() {
     <div className="py-8">
       <h1 className="text-4xl font-bold">Songs</h1>
       <p className="mt-2 text-sm leading-relaxed">
-        The wider catalogue — recordings, demos, and one-offs beyond the singles on the front page.
+        The whole catalogue in one place — the singles, the snapshots from the musicals, and
+        everything else.
       </p>
 
       {songs.length > 0 ? (

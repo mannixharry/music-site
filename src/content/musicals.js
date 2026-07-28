@@ -2,7 +2,6 @@ export const musicals = [
   {
     slug: 'pigs',
     title: 'Pigs',
-    year: '20XX',
     status: 'Published by Warner Chappell',
     teaser: 'One-line description of Pigs goes here.',
     heroLabel: 'Pigs — hero image',
@@ -16,6 +15,7 @@ export const musicals = [
       {
         id: 'pigs-snapshot',
         title: 'Musical snapshot',
+        description: '',
         duration: '2:11',
         src: '/audio/demos/pigs-snapshot.mp3',
       },
@@ -26,7 +26,6 @@ export const musicals = [
   {
     slug: 'copperfield-co',
     title: 'Copperfield & Co.',
-    year: '20XX',
     status: 'Published by Warner Chappell',
     teaser: 'One-line description of Copperfield & Co. goes here.',
     heroLabel: 'Copperfield & Co. — hero image',
@@ -40,6 +39,7 @@ export const musicals = [
       {
         id: 'copperfield-snapshot',
         title: 'Musical snapshot',
+        description: '',
         duration: '4:46',
         src: '/audio/demos/copperfield-and-co-snapshot.mp3',
       },
@@ -61,7 +61,6 @@ export const musicals = [
   {
     slug: 'guyana-skies',
     title: 'Guyana Skies',
-    year: '20XX',
     status: 'Windrush-inspired — in development',
     teaser: 'One-line description of Guyana Skies goes here.',
     heroLabel: 'Guyana Skies — hero image',
@@ -71,8 +70,20 @@ export const musicals = [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit — a brief prospective synopsis of Guyana Skies goes here, shorter than a full resume.',
     ],
     demos: [
-      { id: 'guyana-demo-1', title: 'Demo track one', duration: '2:33', src: '/audio/demos/guyana-demo-1.mp3' },
-      { id: 'guyana-demo-2', title: 'Demo track two', duration: '2:58', src: '/audio/demos/guyana-demo-2.mp3' },
+      {
+        id: 'guyana-demo-1',
+        title: 'Demo track one',
+        description: '',
+        duration: '2:33',
+        src: '/audio/demos/guyana-demo-1.mp3',
+      },
+      {
+        id: 'guyana-demo-2',
+        title: 'Demo track two',
+        description: '',
+        duration: '2:58',
+        src: '/audio/demos/guyana-demo-2.mp3',
+      },
     ],
     downloads: [],
     needsScriptwriter: true,

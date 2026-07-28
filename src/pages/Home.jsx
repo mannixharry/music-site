@@ -39,8 +39,7 @@ function Home() {
         <ul className="mt-4 space-y-1 text-sm">
           {musicals.map((musical) => (
             <li key={musical.slug}>
-              <span className="font-bold">{musical.title}</span> ({musical.year}) &mdash;{' '}
-              {musical.teaser}
+              <span className="font-bold">{musical.title}</span> &mdash; {musical.teaser}
             </li>
           ))}
         </ul>

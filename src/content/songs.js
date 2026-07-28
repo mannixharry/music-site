@@ -1,30 +1,47 @@
-// The wider catalogue: everything that doesn't make the home page. Add as many
-// entries as you like — /songs just maps over this list.
+// Every song on the site, in one list — this is what /songs renders.
 //
-// Every field except `id` and `title` is optional:
+// The singles and the musical snapshots are pulled in from releases.js and
+// musicals.js rather than repeated here, so each audio file is named in exactly
+// one place. To write about a song, fill in its `description` where the song is
+// defined:
+//
+//   singles          → `description` in releases.js
+//   snapshots        → `description` on the demo in musicals.js
+//   everything else  → `description` in the `standalone` list below
+//
+// An empty description simply doesn't render.
+
+import { releases } from './releases'
+import { musicals } from './musicals'
+
+// Songs that are neither a single nor a musical snapshot. Add as many as you
+// like; every field except `id` and `title` is optional:
 //
 //   id           unique string, also used as the playback slot key
 //   title        song title
-//   description  a paragraph about the song; omit to hide
-//   audioSrc     path to a snippet in public/audio/. Omit for a links-only
-//                entry — the player is skipped entirely
+//   description  a paragraph about the song
+//   audioSrc     path to a file in public/audio/. Omit for a links-only entry
+//                — the player is skipped entirely
 //   links        streaming links; omit or leave empty to hide the row
-//
-// TODO: the two entries below are examples showing the shape. Replace them
-// with real songs (and delete this note).
+const standalone = []
 
 export const songs = [
-  {
-    id: 'example-with-snippet',
-    title: 'Example song with a snippet',
-    description:
-      'An optional paragraph about the song — where it came from, who played on it, what it is about. Delete this field entirely if a song does not need one.',
-    audioSrc: null,
-    links: [{ label: 'Spotify', href: '#' }],
-  },
-  {
-    id: 'example-links-only',
-    title: 'Example song, streaming links only',
-    links: [{ label: 'Spotify', href: '#' }],
-  },
+  ...releases.map((release) => ({
+    id: release.id,
+    title: release.title,
+    description: release.description,
+    audioSrc: release.audioSrc,
+    links: release.streamingLinks,
+  })),
+
+  ...musicals.flatMap((musical) =>
+    musical.demos.map((demo) => ({
+      id: demo.id,
+      title: `${musical.title} — ${demo.title}`,
+      description: demo.description,
+      audioSrc: demo.src,
+    })),
+  ),
+
+  ...standalone,
 ]

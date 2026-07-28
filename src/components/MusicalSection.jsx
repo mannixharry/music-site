@@ -6,9 +6,7 @@ function MusicalSection({ musical }) {
   return (
     <section id={musical.slug} className="py-8">
       <h2 className="text-2xl font-bold">{musical.title}</h2>
-      <p className="text-sm">
-        {musical.year} &middot; {musical.status}
-      </p>
+      <p className="text-sm">{musical.status}</p>
 
       <Placeholder
         label={musical.heroLabel}
