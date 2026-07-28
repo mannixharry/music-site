@@ -44,9 +44,20 @@ function MusicalSection({ musical }) {
         <>
           <h3 className="mt-6 font-bold">Downloads</h3>
           <div className="mt-2 flex flex-wrap gap-2">
-            {musical.downloads.map((download) => (
-              <Placeholder key={download.label} label={download.label} className="w-40" />
-            ))}
+            {musical.downloads.map((download) =>
+              download.href ? (
+                <a
+                  key={download.label}
+                  href={download.href}
+                  download={download.download ? '' : undefined}
+                  className="flex w-40 items-center justify-center border border-gray-400 bg-white p-2 text-center text-sm underline"
+                >
+                  {download.label}
+                </a>
+              ) : (
+                <Placeholder key={download.label} label={download.label} className="w-40" />
+              ),
+            )}
           </div>
         </>
       )}

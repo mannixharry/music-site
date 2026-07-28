@@ -36,7 +36,18 @@ export const musicals = [
       { id: 'copperfield-demo-1', title: 'Demo track one', duration: '2:47', src: '/audio/demos/copperfield-demo-1.mp3' },
       { id: 'copperfield-demo-2', title: 'Demo track two', duration: '3:19', src: '/audio/demos/copperfield-demo-2.mp3' },
     ],
-    downloads: [{ label: 'Script (PDF)' }, { label: 'Sibelius score' }],
+    // A download with no `href` still renders as a placeholder — the script
+    // hasn't been supplied yet. `download: true` forces a save rather than
+    // letting the browser try to render the file.
+    downloads: [
+      { label: 'Script (PDF)' },
+      { label: 'Score (PDF)', href: '/scores/frank-kirwan-copperfield-and-co.pdf' },
+      {
+        label: 'Sibelius score',
+        href: '/scores/frank-kirwan-copperfield-and-co.sib',
+        download: true,
+      },
+    ],
     needsScriptwriter: false,
   },
   {
