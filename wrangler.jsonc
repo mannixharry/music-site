@@ -1,15 +1,59 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "artist-site",
+  "main": "worker/index.js",
   "compatibility_date": "2026-07-27",
   "observability": {
     "enabled": true
   },
+
+  // frankkirwan.com is attached to this Worker through the dashboard, not here.
+  //
+  // Both of these are security settings, not tidiness. Cloudflare Access is
+  // configured against frankkirwan.com/admin — it is NOT in front of
+  // artist-site.<subdomain>.workers.dev or a preview URL. Leaving either
+  // enabled publishes the admin API on a hostname nothing is guarding.
+  "workers_dev": false,
+  "preview_urls": false,
+
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    // Assets are matched first and served without invoking the Worker, which is
+    // why the site costs nothing to serve. This carves out the one prefix that
+    // must reach the Worker instead — otherwise the SPA fallback would answer
+    // /api/content with index.html.
+    "run_worker_first": ["/api/*"]
   },
-  "compatibility_flags": [
-    "nodejs_compat"
-  ]
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "artist-site",
+      // TODO: replace with the id printed by `wrangler d1 create artist-site`.
+      // Only needed for --remote; local development ignores it.
+      "database_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+
+  "r2_buckets": [
+    // Two buckets, because an R2 custom domain exposes a WHOLE bucket — there
+    // is no per-prefix access control. Masters kept under a prefix in the
+    // public bucket would be downloadable by anyone who guessed a song's slug.
+    { "binding": "MEDIA", "bucket_name": "frank-kirwan-media" },
+    { "binding": "MASTERS", "bucket_name": "frank-kirwan-masters" }
+  ],
+
+  "vars": {
+    "MEDIA_BASE": "https://media.frankkirwan.com",
+    "ADMIN_EMAILS": "mannixharry@gmail.com",
+    // TODO: fill in from the Zero Trust dashboard once the Access applications
+    // exist. Until both are set, every /api/admin/* route refuses everything
+    // except the localhost development bypass — it fails closed on purpose.
+    "ACCESS_TEAM": "",
+    "ACCESS_AUD": ""
+  }
+
+  // Secrets, set with `wrangler secret put` and never written in this file:
+  //   R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID
 }

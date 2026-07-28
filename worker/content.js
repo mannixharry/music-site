@@ -1,0 +1,39 @@
+import { listPublishedSongs, getVersion } from './db'
+import { json } from './json'
+
+// Worker responses are not cached by Cloudflare unless the Worker puts them
+// there itself, so this does it explicitly. That is not an optimisation to get
+// to later: uncached, every visitor costs one D1 read per song in the
+// catalogue, and the free tier's 5M rows/day is only about 33k page views once
+// there are 150 songs. Cached, it is a handful of reads a minute.
+const CACHE_CONTROL = 'public, max-age=60, stale-while-revalidate=86400'
+
+// A fixed key, so the cache is not fragmented by query strings someone appends.
+function cacheKey(request) {
+  const url = new URL(request.url)
+  return new Request(`${url.origin}/api/content`, { method: 'GET' })
+}
+
+export async function getContent(request, env, ctx) {
+  const cache = caches.default
+  const key = cacheKey(request)
+
+  const hit = await cache.match(key)
+  if (hit) return hit
+
+  const [songs, version] = await Promise.all([listPublishedSongs(env), getVersion(env)])
+
+  const response = json(
+    { version, songs },
+    { headers: { 'cache-control': CACHE_CONTROL, 'x-content-source': 'd1' } },
+  )
+
+  ctx.waitUntil(cache.put(key, response.clone()))
+  return response
+}
+
+// Called after every admin write, so publishing is visible at the edge at once
+// and only the browser's 60s max-age stands between Frank and seeing his change.
+export function purgeContent(request, ctx) {
+  ctx.waitUntil(caches.default.delete(cacheKey(request)))
+}

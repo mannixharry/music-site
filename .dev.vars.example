@@ -1,0 +1,13 @@
+# Copy to .dev.vars (which is gitignored) to develop the admin page locally:
+#
+#   cp .dev.vars.example .dev.vars
+#
+# Cloudflare Access sits in front of frankkirwan.com/admin, but nothing sits in
+# front of localhost, so without this the local admin page cannot authenticate
+# against anything. Setting it makes worker/access.js accept any request — but
+# only when the hostname is also loopback, and only from this file, which
+# `wrangler dev` reads and `wrangler deploy` never uploads.
+#
+# If you ever see this value take effect on a real hostname, something is very
+# wrong: check `workers_dev` and `preview_urls` are still false.
+DEV_BYPASS_AUTH=true

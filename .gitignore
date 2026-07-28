@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# Wrangler's local state: the emulated D1 database and R2 bucket contents.
+.wrangler
+
+# Local-only variables, read by `wrangler dev` and never uploaded. Holds
+# DEV_BYPASS_AUTH, which switches off the admin's authentication check — so
+# this must never be committed.
+.dev.vars
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

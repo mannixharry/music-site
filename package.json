@@ -5,12 +5,21 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:worker": "wrangler dev",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && wrangler deploy",
+    "db:migrate:local": "wrangler d1 migrations apply artist-site --local",
+    "db:migrate": "wrangler d1 migrations apply artist-site --remote",
+    "db:seed:local": "node scripts/seed-d1.mjs",
+    "db:seed": "node scripts/seed-d1.mjs --remote",
+    "db:dump": "wrangler d1 export artist-site --remote --output backup/d1-dump.sql"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
+    "aws4fetch": "^1.0.20",
+    "jose": "^6.2.4",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.11.0",
