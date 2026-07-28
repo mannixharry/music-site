@@ -13,7 +13,12 @@ function SongItem({ song }) {
 
       {song.audioSrc && (
         <div className="mt-3">
-          <AudioPlayer id={song.id} src={song.audioSrc} title={song.title} />
+          <AudioPlayer
+            id={song.id}
+            src={song.audioSrc}
+            title={song.title}
+            duration={song.duration}
+          />
         </div>
       )}
 

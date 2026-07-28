@@ -1,8 +1,10 @@
 import Placeholder from '../components/Placeholder'
 import SongItem from '../components/SongItem'
-import { songs } from '../content/songs'
+import { useContent } from '../context/contentContext'
 
 function Songs() {
+  const { songs } = useContent()
+
   return (
     <div className="py-8">
       <h1 className="text-4xl font-bold">Songs</h1>
@@ -18,7 +20,7 @@ function Songs() {
           ))}
         </div>
       ) : (
-        <Placeholder label="No songs added yet — see src/content/songs.js" className="mt-8 h-32" />
+        <Placeholder label="No songs added yet — add one from /admin" className="mt-8 h-32" />
       )}
     </div>
   )

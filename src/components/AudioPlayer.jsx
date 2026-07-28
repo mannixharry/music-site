@@ -31,11 +31,20 @@ function formatTime(seconds) {
 // Transport only — the visible track title is rendered by the parent, so this
 // stays the same width on a phone as on a desktop. `title` is here for the
 // screen-reader labels.
-function AudioPlayer({ id, src, title }) {
+//
+// `duration` is the length recorded when the track was uploaded. It is what
+// lets the element be `preload="none"`: the readout can be right from the first
+// paint without fetching anything, which on a page of a hundred songs is the
+// difference between one request and a hundred.
+function AudioPlayer({ id, src, title, duration: knownDuration = null }) {
   const audioRef = useRef(null)
   const { playingId, play, stop } = usePlayback()
-  const [duration, setDuration] = useState(NaN)
+  const [duration, setDuration] = useState(knownDuration ?? NaN)
   const [currentTime, setCurrentTime] = useState(0)
+  // Tracked separately from `duration`, which is now known before the media is:
+  // seeking a track the browser hasn't loaded throws InvalidStateError, so the
+  // scrubber has to wait for the element even though the length is on screen.
+  const [hasMetadata, setHasMetadata] = useState(false)
 
   const isActive = playingId === id
 
@@ -53,15 +62,20 @@ function AudioPlayer({ id, src, title }) {
     }
   }, [isActive, id, stop])
 
-  const seekable = Number.isFinite(duration) && duration > 0
+  const seekable = hasMetadata && Number.isFinite(duration) && duration > 0
 
   return (
     <div className="flex h-14 items-center gap-3 border border-gray-300 bg-gray-100 px-3">
       <audio
         ref={audioRef}
         src={src}
-        preload="metadata"
-        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
+        preload="none"
+        onLoadedMetadata={(event) => {
+          // Overwrite the recorded length with the file's own, so a stale
+          // duration in the database can never outlive the first play.
+          setDuration(event.currentTarget.duration)
+          setHasMetadata(true)
+        }}
         onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
         onEnded={() => stop(id)}
       />

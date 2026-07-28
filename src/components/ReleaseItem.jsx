@@ -15,7 +15,12 @@ function ReleaseItem({ release }) {
         <h3 className="truncate text-sm font-bold">{release.title}</h3>
 
         <div className="mt-2">
-          <AudioPlayer id={release.id} src={release.audioSrc} title={release.title} />
+          <AudioPlayer
+            id={release.id}
+            src={release.audioSrc}
+            title={release.title}
+            duration={release.duration}
+          />
         </div>
 
         {/* Fixed height either way so released and coming-soon rows stay level. */}
@@ -23,7 +28,7 @@ function ReleaseItem({ release }) {
           {release.status === 'coming-soon' ? (
             <Placeholder label="Coming soon" className="h-full w-40 p-0" />
           ) : (
-            release.streamingLinks.map((link) => (
+            release.links.map((link) => (
               <a key={link.label} href={link.href} className="underline">
                 {link.label}
               </a>

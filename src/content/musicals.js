@@ -1,3 +1,10 @@
+// The three musicals themselves — long-lived editorial copy that changes about
+// once a year, so it stays in the repo and is edited here.
+//
+// Their demo tracks are NOT here: those are songs, they live in the catalogue
+// alongside everything else, and MusicalSection pulls them by `slug`. Adding a
+// demo is done from /admin, not by editing this file.
+
 export const musicals = [
   {
     slug: 'pigs',
@@ -10,15 +17,6 @@ export const musicals = [
     resume: [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Praesent euismod, nisi eu consectetur consectetur, nisl nunc consectetur nisi, euismod consectetur nisi nunc euismod.',
       'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-    ],
-    demos: [
-      {
-        id: 'pigs-snapshot',
-        title: 'Musical snapshot',
-        description: '',
-        duration: '2:11',
-        src: '/audio/demos/pigs-snapshot.mp3',
-      },
     ],
     downloads: [{ label: 'Script (PDF)' }],
     needsScriptwriter: false,
@@ -34,15 +32,6 @@ export const musicals = [
     resume: [
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Praesent euismod, nisi eu consectetur consectetur, nisl nunc consectetur nisi, euismod consectetur nisi nunc euismod.',
       'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-    ],
-    demos: [
-      {
-        id: 'copperfield-snapshot',
-        title: 'Musical snapshot',
-        description: '',
-        duration: '4:46',
-        src: '/audio/demos/copperfield-and-co-snapshot.mp3',
-      },
     ],
     // A download with no `href` still renders as a placeholder — the script
     // hasn't been supplied yet. `download: true` forces a save rather than
@@ -68,22 +57,6 @@ export const musicals = [
     resumeLabel: 'Prospective synopsis',
     resume: [
       'An on-going project in the musical field, a Windrush-inspired show charting the development of the principal character from his early days in Guyana, through his departure after independence, to his early struggles — eventually overcome — on arrival in the U.K.',
-    ],
-    demos: [
-      {
-        id: 'guyana-demo-1',
-        title: 'Demo track one',
-        description: '',
-        duration: '3:13',
-        src: '/audio/demos/guyana-demo-1.mp3',
-      },
-      {
-        id: 'guyana-demo-2',
-        title: 'Coconut Water',
-        description: '',
-        duration: '3:38',
-        src: '/audio/demos/guyana-demo-2.mp3',
-      },
     ],
     downloads: [],
     needsScriptwriter: true,
