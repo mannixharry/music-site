@@ -34,7 +34,7 @@ function Home() {
       <section className="mt-16">
         <h2 className="text-xl font-bold">Musicals</h2>
         <p className="mt-2 text-sm">
-          Two of Frank&apos;s musicals have been published by Warner Chappell.
+          Two of Frank&apos;s musicals were previously published by Warner Chappell.
         </p>
         <ul className="mt-4 space-y-1 text-sm">
           {musicals.map((musical) => (
