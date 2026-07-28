@@ -1,18 +1,103 @@
-import Placeholder from './Placeholder'
+import { useEffect, useRef, useState } from 'react'
+import { usePlayback } from '../context/playbackContext'
 
-// "Only one plays at a time" state will live in a shared context/hook
-// (e.g. a currently-playing-id provider) added in the real-playback step.
-// This component stays presentational until then.
-function AudioPlayer({ title, meta, duration }) {
+// Drawn rather than typed: the ▶ and ❚❚ characters have emoji presentations,
+// so the system font decides their colour (blue on Windows) and their weight.
+// An inline SVG inherits currentColor and stays put.
+function PlayIcon() {
   return (
-    <div className="flex h-16 items-center gap-3 border border-gray-300 bg-gray-100 px-3">
-      <Placeholder label="play" className="h-10 w-10 shrink-0 p-0" />
-      <span className="w-32 shrink-0 truncate text-sm">
-        {title}
-        {meta && <span className="ml-2 text-xs">{meta}</span>}
-      </span>
-      <Placeholder label="scrub bar" className="h-6 flex-1 p-0" />
-      <span className="shrink-0 font-mono text-xs">{duration}</span>
+    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" className="h-3.5 w-3.5">
+      <path d="M5 3v10l8.5-5z" />
+    </svg>
+  )
+}
+
+function PauseIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" className="h-3.5 w-3.5">
+      <rect x="4" y="3" width="3" height="10" />
+      <rect x="9" y="3" width="3" height="10" />
+    </svg>
+  )
+}
+
+function formatTime(seconds) {
+  if (!Number.isFinite(seconds)) return '--:--'
+  const minutes = Math.floor(seconds / 60)
+  const rest = Math.floor(seconds % 60)
+  return `${minutes}:${String(rest).padStart(2, '0')}`
+}
+
+// Transport only — the visible track title is rendered by the parent, so this
+// stays the same width on a phone as on a desktop. `title` is here for the
+// screen-reader labels.
+function AudioPlayer({ id, src, title }) {
+  const audioRef = useRef(null)
+  const { playingId, play, stop } = usePlayback()
+  const [duration, setDuration] = useState(NaN)
+  const [currentTime, setCurrentTime] = useState(0)
+
+  const isActive = playingId === id
+
+  // The provider decides who plays; this syncs the element to that decision.
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    if (isActive) {
+      // Autoplay policies and rapid play/pause both reject here; giving up the
+      // slot keeps the button in sync with what the element actually did.
+      audio.play().catch(() => stop(id))
+    } else {
+      audio.pause()
+    }
+  }, [isActive, id, stop])
+
+  const seekable = Number.isFinite(duration) && duration > 0
+
+  return (
+    <div className="flex h-14 items-center gap-3 border border-gray-300 bg-gray-100 px-3">
+      <audio
+        ref={audioRef}
+        src={src}
+        preload="metadata"
+        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
+        onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
+        onEnded={() => stop(id)}
+      />
+
+      <button
+        type="button"
+        onClick={() => (isActive ? stop(id) : play(id))}
+        aria-label={`${isActive ? 'Pause' : 'Play'} ${title}`}
+        className={`grid h-9 w-9 shrink-0 place-items-center border transition-colors ${
+          isActive
+            ? 'border-gray-500 bg-gray-300 text-gray-900'
+            : 'border-gray-400 bg-white text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+        }`}
+      >
+        {isActive ? <PauseIcon /> : <PlayIcon />}
+      </button>
+
+      <input
+        type="range"
+        min="0"
+        max={seekable ? duration : 0}
+        step="0.01"
+        value={currentTime}
+        disabled={!seekable}
+        aria-label={`Seek within ${title}`}
+        onChange={(event) => {
+          const time = Number(event.currentTarget.value)
+          setCurrentTime(time)
+          if (audioRef.current) audioRef.current.currentTime = time
+        }}
+        className="h-6 min-w-0 flex-1 accent-gray-700"
+      />
+
+      {/* Total length, not elapsed — the scrub bar already shows position, and
+          swapping to a counter on play reads like the track reset itself. */}
+      <span className="shrink-0 font-mono text-xs tabular-nums">{formatTime(duration)}</span>
     </div>
   )
 }

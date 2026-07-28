@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import ReleaseItem from './ReleaseItem'
 import { releases } from '../content/releases'
 
@@ -10,6 +11,9 @@ function MusicSection() {
           <ReleaseItem key={release.id} release={release} />
         ))}
       </div>
+      <Link to="/songs" className="mt-6 inline-block text-sm underline">
+        Hear more songs
+      </Link>
     </section>
   )
 }

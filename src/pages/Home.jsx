@@ -3,6 +3,7 @@ import Placeholder from '../components/Placeholder'
 import MusicSection from '../components/MusicSection'
 import { profile } from '../content/profile'
 import { musicals } from '../content/musicals'
+import { instagramUrl } from '../content/contact'
 
 function Home() {
   return (
@@ -51,12 +52,12 @@ function Home() {
       <section className="mt-16">
         <h2 className="text-xl font-bold">Elsewhere</h2>
         <div className="mt-3 flex gap-4 text-sm">
-          {profile.socialLinks.map((link) => (
-            <a key={link.label} href={link.href} className="underline">
-              {link.label}
-            </a>
-          ))}
-          <span>More links soon</span>
+          <a href={instagramUrl} className="underline" target="_blank" rel="noreferrer">
+            Instagram
+          </a>
+          <Link to="/contact" className="underline">
+            Contact
+          </Link>
         </div>
       </section>
     </div>

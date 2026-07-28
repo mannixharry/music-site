@@ -12,7 +12,11 @@ function ReleaseItem({ release }) {
       />
 
       <div className="min-w-0 flex-1">
-        <AudioPlayer title={release.title} meta={release.year} duration={release.duration} />
+        <h3 className="truncate text-sm font-bold">{release.title}</h3>
+
+        <div className="mt-2">
+          <AudioPlayer id={release.id} src={release.audioSrc} title={release.title} />
+        </div>
 
         {/* Fixed height either way so released and coming-soon rows stay level. */}
         <div className="mt-2 flex h-8 items-center gap-3 text-sm">

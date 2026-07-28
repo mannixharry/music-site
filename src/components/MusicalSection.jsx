@@ -25,9 +25,14 @@ function MusicalSection({ musical }) {
       </div>
 
       <h3 className="mt-6 font-bold">Demos</h3>
-      <div className="mt-2 space-y-2">
+      <div className="mt-2 space-y-3">
         {musical.demos.map((demo) => (
-          <AudioPlayer key={demo.id} title={demo.title} duration={demo.duration} src={demo.src} />
+          <div key={demo.id}>
+            <p className="text-sm">{demo.title}</p>
+            <div className="mt-1">
+              <AudioPlayer id={demo.id} src={demo.src} title={demo.title} />
+            </div>
+          </div>
         ))}
       </div>
 
