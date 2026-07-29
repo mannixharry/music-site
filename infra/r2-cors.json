@@ -1,0 +1,9 @@
+[
+  {
+    "AllowedOrigins": ["https://frankkirwan.com"],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["content-type"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]

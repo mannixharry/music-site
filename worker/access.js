@@ -51,6 +51,18 @@ export async function verifyAccess(request, env) {
 
   if (!env.ACCESS_TEAM || !env.ACCESS_AUD) return null
 
+  // Each Access application mints tokens with its own audience tag, and the
+  // admin needs two — one guarding the page, one guarding this API, because
+  // they want different treatment for an unauthenticated request (a login
+  // redirect versus a refusal). So this is a list, comma-separated. Naming only
+  // one of the two produces a confusing failure where signing in appears to
+  // work and every request is then rejected.
+  const audience = env.ACCESS_AUD.split(',')
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+
+  if (audience.length === 0) return null
+
   // Access sends the header; the cookie is the fallback for a browser hitting
   // the API directly, as the admin page's own fetches do.
   const token =
@@ -62,8 +74,9 @@ export async function verifyAccess(request, env) {
       issuer: `https://${env.ACCESS_TEAM}.cloudflareaccess.com`,
       // The audience check is the one that is easy to leave out and expensive
       // to leave out: without it, a token minted for ANY other application in
-      // the same Zero Trust organisation verifies perfectly well here.
-      audience: env.ACCESS_AUD,
+      // the same Zero Trust organisation verifies perfectly well here. A list
+      // still means "one of these", not "anything".
+      audience,
     })
 
     const email = typeof payload.email === 'string' ? payload.email.toLowerCase() : null
