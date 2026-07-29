@@ -348,13 +348,14 @@ immediate.
 
 ## Afterwards
 
-- Migrate the nine files still in `public/audio/` into R2 and repoint their
-  `web_key`s, then delete them from the repo. `scripts/add-song.mjs` does one in
-  a line — `node scripts/add-song.mjs public/audio/releases/reasons.m4a --id
-  reasons --remote` — since an existing id keeps its row and replaces only the
-  audio.
-- Add `pull-snapshot.mjs` as a `prebuild` step so `snapshot.json` refreshes
-  from D1 on every deploy.
+- ~~Migrate the nine files in `public/audio/` into R2~~ — done 30 July 2026.
+  All ten songs now hold R2 keys, `public/audio/` is gone, and every object was
+  checked against `web_bytes` over `media.frankkirwan.com` before the files were
+  deleted. Git history still holds them if a byte-for-byte original is ever
+  wanted: `git show be4b3f6:public/audio/demos/guyana-demo-1.mp3 > out.mp3`.
+- Wire `scripts/pull-snapshot.mjs` into a `prebuild` step so the snapshot cannot
+  be forgotten. It is currently run by hand, and a forgotten run is invisible:
+  the site still works, it just shows the catalogue as it was.
 - Ask Frank for **FLAC** masters rather than WAV. At 150 songs that is roughly
   4.5GB against R2's 10GB free tier, where WAV would be about 8.5GB.
 - Before going public: remove the `noindex` meta from `index.html`, and replace

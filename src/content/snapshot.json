@@ -1,25 +1,7 @@
 {
-  "version": "029c395cbf43",
-  "mediaBase": "",
+  "version": "ms6qemgi-7607fddd",
+  "mediaBase": "https://media.frankkirwan.com",
   "songs": [
-    {
-      "id": "caught-in-the-wire",
-      "title": "Caught in the Wire",
-      "description": "",
-      "kind": "single",
-      "musicalSlug": null,
-      "status": "released",
-      "webKey": "/audio/releases/caught-in-the-wire.m4a",
-      "duration": 40.38,
-      "links": [
-        {
-          "label": "Spotify",
-          "href": "#"
-        }
-      ],
-      "sortOrder": 10,
-      "published": true
-    },
     {
       "id": "cherie-je-taime-trop",
       "title": "Chérie je t’aime trop",
@@ -27,15 +9,33 @@
       "kind": "single",
       "musicalSlug": null,
       "status": "released",
-      "webKey": "/audio/releases/cherie-je-taime-trop.m4a",
-      "duration": 27.75,
+      "webKey": "web/cherie-je-taime-trop/8491755c.m4a",
+      "duration": 27.74784580498866,
       "links": [
         {
           "label": "Spotify",
           "href": "#"
         }
       ],
-      "sortOrder": 20,
+      "sortOrder": 27,
+      "published": true
+    },
+    {
+      "id": "caught-in-the-wire",
+      "title": "Caught in the Wire",
+      "description": "",
+      "kind": "single",
+      "musicalSlug": null,
+      "status": "released",
+      "webKey": "web/caught-in-the-wire/b6d312d6.m4a",
+      "duration": 40.379501133786846,
+      "links": [
+        {
+          "label": "Spotify",
+          "href": "#"
+        }
+      ],
+      "sortOrder": 28,
       "published": true
     },
     {
@@ -45,8 +45,8 @@
       "kind": "single",
       "musicalSlug": null,
       "status": "released",
-      "webKey": "/audio/releases/halfway-back-to-my-dreams.m4a",
-      "duration": 34.44,
+      "webKey": "web/halfway-back-to-my-dreams/f2081914.m4a",
+      "duration": 34.43519274376417,
       "links": [
         {
           "label": "Spotify",
@@ -63,8 +63,8 @@
       "kind": "single",
       "musicalSlug": null,
       "status": "released",
-      "webKey": "/audio/releases/leave-reality-behind.m4a",
-      "duration": 34.44,
+      "webKey": "web/leave-reality-behind/7cf382c8.m4a",
+      "duration": 34.43519274376417,
       "links": [
         {
           "label": "Spotify",
@@ -81,8 +81,8 @@
       "kind": "single",
       "musicalSlug": null,
       "status": "released",
-      "webKey": "/audio/releases/reasons.m4a",
-      "duration": 32.21,
+      "webKey": "web/reasons/cd5c140c.m4a",
+      "duration": 32.20607709750567,
       "links": [
         {
           "label": "Spotify",
@@ -99,8 +99,8 @@
       "kind": "demo",
       "musicalSlug": "pigs",
       "status": "released",
-      "webKey": "/audio/demos/pigs-snapshot.mp3",
-      "duration": 131.13,
+      "webKey": "web/pigs-snapshot/aac61a17.mp3",
+      "duration": 131.13469387755103,
       "links": [],
       "sortOrder": 60,
       "published": true
@@ -112,8 +112,8 @@
       "kind": "demo",
       "musicalSlug": "copperfield-co",
       "status": "released",
-      "webKey": "/audio/demos/copperfield-and-co-snapshot.mp3",
-      "duration": 286.01,
+      "webKey": "web/copperfield-and-co-snapshot/64dcf1ff.mp3",
+      "duration": 286.014693877551,
       "links": [],
       "sortOrder": 70,
       "published": true
@@ -125,8 +125,8 @@
       "kind": "demo",
       "musicalSlug": "guyana-skies",
       "status": "released",
-      "webKey": "/audio/demos/guyana-demo-1.mp3",
-      "duration": 193.52,
+      "webKey": "web/guyana-demo-1/e2b37c12.mp3",
+      "duration": 193.51510204081632,
       "links": [],
       "sortOrder": 80,
       "published": true
@@ -138,10 +138,23 @@
       "kind": "demo",
       "musicalSlug": "guyana-skies",
       "status": "released",
-      "webKey": "/audio/demos/guyana-demo-2.mp3",
-      "duration": 218.25,
+      "webKey": "web/guyana-demo-2/9cb0bbb2.mp3",
+      "duration": 218.25306122448978,
       "links": [],
       "sortOrder": 90,
+      "published": true
+    },
+    {
+      "id": "pigs",
+      "title": "Pigs",
+      "description": "",
+      "kind": "demo",
+      "musicalSlug": "pigs",
+      "status": "released",
+      "webKey": "web/pigs/6afba3cb.mp3",
+      "duration": 318.231125,
+      "links": [],
+      "sortOrder": 100,
       "published": true
     }
   ]

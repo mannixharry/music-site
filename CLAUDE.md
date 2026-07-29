@@ -21,6 +21,7 @@ It is mid-migration to a self-hosted admin CMS — see "Content" below.
 - `npm run db:migrate:local` / `db:migrate` — apply `migrations/` to the local or real database
 - `npm run db:seed:local` / `db:seed` — load `snapshot.json` into it. Idempotent, so it doubles as a reset
 - `node scripts/add-song.mjs --help` — add a song, and optionally its audio, without a browser. Local unless given `--remote`. Use this rather than hand-writing SQL: it reproduces what `createSong` does, including the `meta.version` bump that the client needs in order to notice the change at all
+- `node scripts/pull-snapshot.mjs` — refresh `src/content/snapshot.json` from the live `/api/content`. Run it after any catalogue change, and before a deploy that should ship one
 
 There is no test runner configured in this repo.
 
@@ -44,7 +45,7 @@ Miniflare persists its emulated cache to `.wrangler/state/v3/cache`, and `/api/c
 Songs are **data, not code**. The catalogue lives in `src/content/snapshot.json`, which is committed and bundled; `ContentProvider` renders it immediately and then revalidates against `/api/content`, keeping whichever is newer by `version`. That API is live and backed by D1, so the snapshot is now the offline fallback rather than the only source — and it goes stale, because nothing regenerates it on deploy yet. A song added through `/admin` or `scripts/add-song.mjs` exists in D1 and not in the committed snapshot until someone refreshes it.
 
 - `src/content/normalise.js` — `toSong(row, mediaBase)` turns a stored row into what components render. Rows hold a storage **key** and a **bare** title; the URL and the `"<Musical> — <demo>"` display title are composed here. `song.title` is the composed one, `song.shortTitle` the bare one.
-- A `webKey` starting with `/` is a file still in `public/`; anything else is an R2 object key. This is what lets the audio move to R2 without a flag day.
+- A `webKey` starting with `/` is a file in `public/`; anything else is an R2 object key. That fork is what let the audio move to R2 without a flag day — a move now complete, so every song holds an R2 key and `public/audio/` no longer exists. The branch stays in `normalise.js` because it costs a line and is the escape hatch if a file ever needs serving from the repo again.
 - `src/content/musicals.js` holds only the three musicals' editorial copy. Their demo tracks are songs like any other — `MusicalSection` pulls them via `demosFor(slug)`.
 - Rows with `published: false` never reach a visitor.
 
