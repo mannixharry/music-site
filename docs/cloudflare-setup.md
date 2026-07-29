@@ -136,6 +136,14 @@ First, your **team name**: Settings → Custom Pages (or General) shows a team
 domain like `yourteam.cloudflareaccess.com`. `ACCESS_TEAM` is the `yourteam`
 part only.
 
+If this is the account's first visit, Zero Trust asks you to choose a **team
+name** and pick a plan. Choose **Free** — it covers 50 users and this needs
+two. It may still ask for a card to complete signup; nothing here is billable.
+
+Then check One-time PIN is available under Settings → Authentication. It is on
+by default, and it is what means Frank needs no account anywhere — just an
+inbox.
+
 Create **two** self-hosted applications — Access → Applications → *Add an
 application* → **Self-hosted**:
 
@@ -144,6 +152,17 @@ application* → **Self-hosted**:
 | Name | Frank Kirwan admin | Frank Kirwan admin API |
 | Domain | `frankkirwan.com` | `frankkirwan.com` |
 | Path | `admin` | `api/admin` |
+
+> **Fill in the path.** An application on `frankkirwan.com` with the path left
+> blank puts the entire public site behind a login — every visitor met by a
+> PIN prompt. The path box is what confines each application to the admin. It
+> is the one mistake in this document with a blast radius beyond the admin
+> itself, and the check is simply to open the site in a private window
+> afterwards and confirm it still loads.
+
+`admin` also covers everything beneath it, and `api/admin` likewise. Neither
+matches `/api/content`, which must stay public — that is the endpoint the site
+itself reads.
 
 Two rather than one because an unauthenticated request should be redirected to
 a login page when it is a person opening `/admin`, and simply refused when it
