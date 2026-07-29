@@ -296,6 +296,21 @@ async function main() {
   writeFileSync(file, `${sql}\n`)
   wrangler(['d1', 'execute', DATABASE, remote ? '--remote' : '--local', `--file=${file}`, '--yes'])
 
+  // The R2 put and the D1 write are two commands with no transaction across
+  // them, and the interesting failure is the second one not landing after the
+  // first did: the object exists, the row still points at wherever it pointed
+  // before, and nothing about the output says so. That happened once, during
+  // the public/audio migration, and was caught by a separate pass afterwards
+  // rather than by the script. So it reads the row back.
+  const written = query(`SELECT web_key, duration_s FROM songs WHERE id = ${quote(id)}`, remote)[0]
+  if (!written) throw new Error(`wrote "${id}" but it is not in the database — nothing was saved`)
+  if (audio && written.web_key !== audio.key) {
+    throw new Error(
+      `uploaded ${audio.key} but "${id}" still points at ${written.web_key ?? 'nothing'} — ` +
+        `the object is in R2, the row was not updated. Re-run to retry.`,
+    )
+  }
+
   console.log(`\nDone — "${id}" is in, version ${version}.`)
   if (remote) {
     console.log('The edge cache holds /api/content for up to a minute; this cannot purge it.')

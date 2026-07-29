@@ -15,6 +15,12 @@ dist-ssr
 # Wrangler's local state: the emulated D1 database and R2 bucket contents.
 .wrangler
 
+# `npm run db:dump` writes here. Point-in-time dumps of the real database, taken
+# by hand before something risky — not a thing to commit. The catalogue already
+# has a committed copy in src/content/snapshot.json; this holds the rest of it,
+# including drafts and soft-deleted rows.
+backup
+
 # Local-only variables, read by `wrangler dev` and never uploaded. Holds
 # DEV_BYPASS_AUTH, which switches off the admin's authentication check — so
 # this must never be committed.

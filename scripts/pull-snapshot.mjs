@@ -25,6 +25,15 @@ import path from 'node:path'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const target = path.join(root, 'src/content/snapshot.json')
 
+// This runs as `prebuild`, so it stands between every build and its output —
+// including builds that have nothing to do with the catalogue. Failing is the
+// right default (a silently stale snapshot is the whole problem it exists to
+// prevent), but it must be possible to build on a train.
+if (process.env.SKIP_SNAPSHOT_PULL) {
+  console.log('SKIP_SNAPSHOT_PULL is set — keeping the committed snapshot.')
+  process.exit(0)
+}
+
 const fromIndex = process.argv.indexOf('--from')
 const origin = fromIndex === -1 ? 'https://frankkirwan.com' : process.argv[fromIndex + 1]
 if (!origin) throw new Error('--from needs an origin')

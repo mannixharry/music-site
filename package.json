@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:worker": "wrangler dev",
+    "prebuild": "node scripts/pull-snapshot.mjs",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
@@ -14,7 +15,7 @@
     "db:migrate": "wrangler d1 migrations apply artist-site --remote",
     "db:seed:local": "node scripts/seed-d1.mjs",
     "db:seed": "node scripts/seed-d1.mjs --remote",
-    "db:dump": "wrangler d1 export artist-site --remote --output backup/d1-dump.sql"
+    "db:dump": "mkdir -p backup && wrangler d1 export artist-site --remote --output backup/d1-dump.sql"
   },
   "dependencies": {
     "@breezystack/lamejs": "^1.2.7",

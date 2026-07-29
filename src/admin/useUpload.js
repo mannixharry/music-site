@@ -10,8 +10,13 @@ function extensionOf(file) {
 // Keys are unique per upload rather than per song, so replacing a track never
 // serves the old bytes from a cache. That is what lets the media domain send
 // `immutable` with a year-long max-age.
-function webKeyFor(songId) {
-  return `web/${songId}/${crypto.randomUUID().slice(0, 8)}.mp3`
+//
+// The extension defaults to mp3 because the transcoded path always produces
+// one, but the direct path does not — an .m4a served as-is has to keep its own,
+// or the key describes something the object is not. Playback is driven by the
+// stored content-type either way; this is about the object being inspectable.
+function webKeyFor(songId, extension = 'mp3') {
+  return `web/${songId}/${crypto.randomUUID().slice(0, 8)}.${extension}`
 }
 
 function masterKeyFor(songId, file) {
@@ -34,7 +39,7 @@ export function useUpload({ songId, capabilities, patch }) {
         if (canUseDirectly(file)) {
           setStatus({ phase: 'uploading', ratio: 0, message: 'Uploading…', error: null })
 
-          const key = webKeyFor(songId)
+          const key = webKeyFor(songId, extensionOf(file))
           const { size } = await uploadFile({
             file,
             key,
