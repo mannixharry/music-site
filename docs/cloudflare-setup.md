@@ -166,18 +166,30 @@ If this is the account's first visit, Zero Trust asks you to choose a **team
 name** and pick a plan. Choose **Free** — it covers 50 users and this needs
 two. It may still ask for a card to complete signup; nothing here is billable.
 
-Then check One-time PIN under **Settings → Authentication → Login methods**. It
-is what means Frank needs no account anywhere — just an inbox he can read.
+Next, add One-time PIN as a login method. It is what means Frank needs no
+account anywhere — just an inbox he can read.
 
-> **Do not leave the applications on the Cloudflare identity provider.** That
-> one authenticates only members of the Cloudflare account, so signing in with
-> any other address is refused with *"Cloudflare sign-in is restricted to
-> members of the account"*. It is easy to end up with, because the Cloudflare
-> account here is `harrymannix@icloud.com` while the Access policies name
-> `mannixharry@gmail.com` — and Frank will never be a member of the account at
-> all. On each application: **Access → Applications → edit → Authentication**,
-> and select **One-time PIN** (or turn on *Accept all available identity
-> providers*).
+> **A new organisation does not have it.** Since June 2026 Cloudflare gives new
+> Zero Trust organisations its own **Cloudflare identity provider** as the
+> default; before that they started with One-time PIN. The Cloudflare IdP
+> authenticates *only members of the Cloudflare account*, so signing in as
+> anyone else fails with *"Cloudflare sign-in is restricted to members of the
+> account"*. That bites here twice over: the account is
+> `harrymannix@icloud.com` while the Access policies name
+> `mannixharry@gmail.com`, and Frank will never be a member of the account at
+> all.
+
+**Zero Trust → Integrations → Identity providers → Add new identity provider →
+One-time PIN.** Not *Access controls → Access settings*, which is global
+policy settings and does not list login methods.
+
+Then point each application at it: **Access controls → Applications → edit →
+Authentication**, and select **One-time PIN** (or turn on *Accept all available
+identity providers*).
+
+Keep the policy's Include rule as a specific **email list**. One-time PIN with
+an unrestricted Include means anyone with any email address can request a code
+and get in.
 
 Whichever address you actually sign in with must also appear in `ADMIN_EMAILS`
 in `wrangler.jsonc`. `worker/access.js` checks it after Access has already let
