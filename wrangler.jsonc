@@ -49,7 +49,13 @@
     // hand and bindings do not expose the bucket name they point at.
     "MEDIA_BUCKET": "frank-kirwan-media",
     "MASTERS_BUCKET": "frank-kirwan-masters",
-    "ADMIN_EMAILS": "mannixharry@gmail.com",
+    // Checked after Access has already vetted the request — the Access policy
+    // is the gate, this is a second opinion that survives a mis-edited policy.
+    // Both of Harry's addresses are here because the Cloudflare account is the
+    // icloud one while the Access policy names the gmail one; whichever he
+    // signs in with has to appear in both places or the request dies here,
+    // after a login that looked like it worked.
+    "ADMIN_EMAILS": "mannixharry@gmail.com,harrymannix@icloud.com",
     "ACCESS_TEAM": "frankkirwan",
     // Two applications guard the admin — one the page, one this API — and each
     // signs its tokens with a different audience tag, so both belong here.

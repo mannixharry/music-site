@@ -166,9 +166,24 @@ If this is the account's first visit, Zero Trust asks you to choose a **team
 name** and pick a plan. Choose **Free** — it covers 50 users and this needs
 two. It may still ask for a card to complete signup; nothing here is billable.
 
-Then check One-time PIN is available under Settings → Authentication. It is on
-by default, and it is what means Frank needs no account anywhere — just an
-inbox.
+Then check One-time PIN under **Settings → Authentication → Login methods**. It
+is what means Frank needs no account anywhere — just an inbox he can read.
+
+> **Do not leave the applications on the Cloudflare identity provider.** That
+> one authenticates only members of the Cloudflare account, so signing in with
+> any other address is refused with *"Cloudflare sign-in is restricted to
+> members of the account"*. It is easy to end up with, because the Cloudflare
+> account here is `harrymannix@icloud.com` while the Access policies name
+> `mannixharry@gmail.com` — and Frank will never be a member of the account at
+> all. On each application: **Access → Applications → edit → Authentication**,
+> and select **One-time PIN** (or turn on *Accept all available identity
+> providers*).
+
+Whichever address you actually sign in with must also appear in `ADMIN_EMAILS`
+in `wrangler.jsonc`. `worker/access.js` checks it after Access has already let
+the request through, so a mismatch produces a login that appears to succeed
+followed by a refusal — with nothing on screen to say which of the two lists
+was the problem.
 
 Create **two** self-hosted applications — Access → Applications → *Add an
 application* → **Self-hosted**:
