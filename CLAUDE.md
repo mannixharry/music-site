@@ -20,6 +20,7 @@ It is mid-migration to a self-hosted admin CMS — see "Content" below.
 - `npm run deploy` — build, then `wrangler deploy`. Use this rather than calling either half alone
 - `npm run db:migrate:local` / `db:migrate` — apply `migrations/` to the local or real database
 - `npm run db:seed:local` / `db:seed` — load `snapshot.json` into it. Idempotent, so it doubles as a reset
+- `node scripts/add-song.mjs --help` — add a song, and optionally its audio, without a browser. Local unless given `--remote`. Use this rather than hand-writing SQL: it reproduces what `createSong` does, including the `meta.version` bump that the client needs in order to notice the change at all
 
 There is no test runner configured in this repo.
 
@@ -40,7 +41,7 @@ Miniflare persists its emulated cache to `.wrangler/state/v3/cache`, and `/api/c
 
 ## Content
 
-Songs are **data, not code**. The catalogue lives in `src/content/snapshot.json`, which is committed and bundled; `ContentProvider` renders it immediately and then revalidates against `/api/content`, keeping whichever is newer by `version`. The API does not exist yet (Phase 4), so the fetch currently always fails and is silently ignored — that is the designed fallback, not a bug.
+Songs are **data, not code**. The catalogue lives in `src/content/snapshot.json`, which is committed and bundled; `ContentProvider` renders it immediately and then revalidates against `/api/content`, keeping whichever is newer by `version`. That API is live and backed by D1, so the snapshot is now the offline fallback rather than the only source — and it goes stale, because nothing regenerates it on deploy yet. A song added through `/admin` or `scripts/add-song.mjs` exists in D1 and not in the committed snapshot until someone refreshes it.
 
 - `src/content/normalise.js` — `toSong(row, mediaBase)` turns a stored row into what components render. Rows hold a storage **key** and a **bare** title; the URL and the `"<Musical> — <demo>"` display title are composed here. `song.title` is the composed one, `song.shortTitle` the bare one.
 - A `webKey` starting with `/` is a file still in `public/`; anything else is an R2 object key. This is what lets the audio move to R2 without a flag day.

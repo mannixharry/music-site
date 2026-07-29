@@ -309,25 +309,50 @@ Then, in order:
 
 ## 7. First real upload
 
-The presigned path has never run — it needs an S3 endpoint, which the local
-emulator does not have, so this is its first execution. Expect to spend a
-little time here.
+**Done.** The presigned path ran successfully on 30 July 2026: `pigs` is in the
+catalogue with `web_key = web/pigs/6afba3cb.mp3`, and the object in R2 is
+5,096,050 bytes, matching `web_bytes` exactly. Presigning, CORS and the direct
+browser→R2 PUT are all therefore proven against the real bucket.
 
-Upload a short MP3 first (under 12MB), which skips conversion and exercises
-only the signing and CORS. Then try a WAV to test the encoder.
+What that upload did **not** exercise is the encoder. It was an MP3 under 12MB,
+so it took the direct path and skipped conversion entirely — which is the
+common case. The transcode path stays untested until there is a WAV or FLAC to
+put through it.
 
-If you get **`SignatureDoesNotMatch`**: the cause is almost always a
-`Content-Type` that differs between what the Worker signed and what the browser
-sent. Compare `worker/presign.js` against the `content-type` header in the
-failing PUT in devtools. If the request fails at the *browser* with an opaque
-CORS error instead, step 2's CORS did not apply to that bucket.
+If a future upload gives **`SignatureDoesNotMatch`**: the cause is almost always
+a `Content-Type` that differs between what the Worker signed and what the
+browser sent. Compare `worker/presign.js` against the `content-type` header in
+the failing PUT in devtools. If the request fails at the *browser* with an
+opaque CORS error instead, step 2's CORS did not apply to that bucket.
+
+### Adding songs without a browser
+
+`/admin` needs a human with an inbox, which makes it useless to a script. For
+anything already streamable there is `scripts/add-song.mjs`, which writes to D1
+and R2 with wrangler's own credentials:
+
+```
+node scripts/add-song.mjs --help
+node scripts/add-song.mjs track.mp3 --title "Song name" --remote
+```
+
+It reads the duration with `music-metadata` rather than the Web Audio API — on
+`guyana-demo-1.mp3` the two agree to 193.515s against the browser's 193.52 — and
+it refuses anything needing conversion rather than storing something the player
+cannot stream. It also cannot purge the cached `/api/content`, since that cache
+lives inside the Worker, so a change takes about a minute to appear rather than
+being instant. It bumps `meta.version`, so it is correct throughout, just not
+immediate.
 
 ---
 
 ## Afterwards
 
-- Migrate the seven files still in `public/audio/` into R2 and repoint their
-  `web_key`s, then delete them from the repo.
+- Migrate the nine files still in `public/audio/` into R2 and repoint their
+  `web_key`s, then delete them from the repo. `scripts/add-song.mjs` does one in
+  a line — `node scripts/add-song.mjs public/audio/releases/reasons.m4a --id
+  reasons --remote` — since an existing id keeps its row and replaces only the
+  audio.
 - Add `pull-snapshot.mjs` as a `prebuild` step so `snapshot.json` refreshes
   from D1 on every deploy.
 - Ask Frank for **FLAC** masters rather than WAV. At 150 songs that is roughly
