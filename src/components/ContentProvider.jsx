@@ -11,8 +11,10 @@ import snapshot from '../content/snapshot.json'
 //
 // snapshot.json is refreshed from the database at build time, so the gap it
 // covers is only ever "changes since the last deploy".
-
-const MEDIA_BASE = import.meta.env.VITE_MEDIA_BASE ?? ''
+//
+// Where the audio lives travels with the data as `mediaBase`, rather than being
+// compiled in — so local development can serve it from the emulated bucket and
+// production from media.frankkirwan.com, with no build-time switch to forget.
 
 function ContentProvider({ children }) {
   const [data, setData] = useState(snapshot)
@@ -20,7 +22,14 @@ function ContentProvider({ children }) {
   useEffect(() => {
     const controller = new AbortController()
 
-    fetch('/api/content', { signal: controller.signal })
+    // `no-cache` revalidates with the server every time instead of trusting the
+    // browser's copy for the full max-age. Without it, publishing a song and
+    // then looking at the site shows the old catalogue for up to a minute,
+    // which reads as the change having failed. The cost is one request, which
+    // the Worker answers from its own edge cache without touching D1 — so this
+    // spends the budget the 100k/day quota is generous with, not the D1
+    // rows-read budget that actually gets tight.
+    fetch('/api/content', { signal: controller.signal, cache: 'no-cache' })
       .then((response) => (response.ok ? response.json() : Promise.reject(response.status)))
       .then((live) => {
         if (!live?.version || live.version === snapshot.version) return
@@ -37,7 +46,7 @@ function ContentProvider({ children }) {
   }, [])
 
   const value = useMemo(() => {
-    const songs = toSongs(data.songs, MEDIA_BASE)
+    const songs = toSongs(data.songs, data.mediaBase ?? '')
 
     return {
       songs,

@@ -51,6 +51,14 @@ Songs are **data, not code**. The catalogue lives in `src/content/snapshot.json`
 
 `/admin` is protected by **Cloudflare Access**, which authenticates at the edge before a request reaches the Worker. There is no password, no session, and no login code in this repo — an Access policy is an allow-list of email addresses, and Access mails a one-time PIN. Do not add homemade auth alongside it.
 
+The admin lives at `/admin` (`src/pages/Admin.jsx` + `src/admin/`), lazily loaded and mounted outside `<Layout>`. The split is load-bearing: the admin pulls in an MP3 encoder, and the public bundle must not grow by 164 kB to carry it.
+
+**Uploads and transcoding.** Audio never passes through the Worker in production — the browser is handed a presigned URL and PUTs straight to R2, because the free plan gives 10 ms of CPU per request and caps bodies at 100 MB. Encoding therefore happens in the browser too, and it is split across two places for a reason worth remembering: **`decodeAudioData` runs on the main thread** (`src/admin/upload.js`) because the Web Audio API is not exposed to Web Workers at all, while the slow MP3 encode runs in `transcode.worker.js`. Decoding is native and quick; the encode is the long loop.
+
+An upload records the **master first** and patches the song before transcoding, so a failed decode or a closed tab leaves a recoverable song rather than a lost file. Files already MP3/M4A and under 12 MB skip encoding entirely — the common case, and the one that never downloads the encoder chunk.
+
+Locally there is no S3 endpoint to presign against, so `wrangler dev` uploads stream through `PUT /api/admin/blob` into the emulated bucket and are served back by `GET /api/media/*`. The client picks between the two on `capabilities.presign` from `/api/admin/session`, never by sniffing hostnames.
+
 `worker/access.js` is the second lock, and three things in it must not be softened:
 
 - The JWT **signature** is verified, and `aud` is checked against this application's AUD tag. Skipping the audience check accepts a valid token minted for any other app in the same Zero Trust organisation.

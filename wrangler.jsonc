@@ -46,6 +46,10 @@
 
   "vars": {
     "MEDIA_BASE": "https://media.frankkirwan.com",
+    // Repeated from r2_buckets above because presigning builds an S3 URL by
+    // hand and bindings do not expose the bucket name they point at.
+    "MEDIA_BUCKET": "frank-kirwan-media",
+    "MASTERS_BUCKET": "frank-kirwan-masters",
     "ADMIN_EMAILS": "mannixharry@gmail.com",
     // TODO: fill in from the Zero Trust dashboard once the Access applications
     // exist. Until both are set, every /api/admin/* route refuses everything

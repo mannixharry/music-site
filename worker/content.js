@@ -23,8 +23,11 @@ export async function getContent(request, env, ctx) {
 
   const [songs, version] = await Promise.all([listPublishedSongs(env), getVersion(env)])
 
+  // The base travels with the data rather than being compiled into the bundle,
+  // so the client has no build-time knowledge of where audio lives and local
+  // development can point somewhere else without a rebuild.
   const response = json(
-    { version, songs },
+    { version, mediaBase: env.MEDIA_BASE ?? '', songs },
     { headers: { 'cache-control': CACHE_CONTROL, 'x-content-source': 'd1' } },
   )
 

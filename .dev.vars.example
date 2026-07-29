@@ -11,3 +11,8 @@
 # If you ever see this value take effect on a real hostname, something is very
 # wrong: check `workers_dev` and `preview_urls` are still false.
 DEV_BYPASS_AUTH=true
+
+# Locally there is no media.frankkirwan.com, so audio uploaded into the emulated
+# R2 bucket is served back through the Worker instead. Overrides the production
+# value in wrangler.jsonc for `wrangler dev` only.
+MEDIA_BASE=/api/media

@@ -12,7 +12,7 @@ const musicalTitles = new Map(musicals.map((musical) => [musical.slug, musical.t
 // A leading slash means a file still sitting in public/; anything else is an R2
 // object key to be hung off the media domain. This is what lets the same
 // snapshot survive the move to R2 without a flag day.
-function toAudioSrc(webKey, mediaBase) {
+export function toAudioSrc(webKey, mediaBase) {
   if (!webKey) return null
   if (webKey.startsWith('/') || webKey.startsWith('http')) return webKey
   return `${mediaBase}/${webKey}`

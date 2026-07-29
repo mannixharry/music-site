@@ -17,6 +17,7 @@
     "db:dump": "wrangler d1 export artist-site --remote --output backup/d1-dump.sql"
   },
   "dependencies": {
+    "@breezystack/lamejs": "^1.2.7",
     "@tailwindcss/vite": "^4.3.3",
     "aws4fetch": "^1.0.20",
     "jose": "^6.2.4",

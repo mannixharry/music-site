@@ -25,12 +25,17 @@ CREATE TABLE songs (
   sort_order    INTEGER NOT NULL,
   published     INTEGER NOT NULL DEFAULT 0,        -- drafts are visible in /admin and nowhere else
 
+  -- Deleting is soft, and nothing ever removes the R2 objects. Between them
+  -- that makes an accidental delete recoverable: the row is still here with its
+  -- title and links, and the audio it pointed at is still in the bucket.
+  deleted_at    TEXT,
+
   created_at    TEXT NOT NULL,
   updated_at    TEXT NOT NULL
 );
 
 -- The one query /api/content makes.
-CREATE INDEX songs_published_order ON songs (published, sort_order);
+CREATE INDEX songs_published_order ON songs (published, deleted_at, sort_order);
 
 -- MusicalSection pulling a show's demos.
 CREATE INDEX songs_musical ON songs (musical_slug);
