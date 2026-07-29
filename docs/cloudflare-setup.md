@@ -95,9 +95,35 @@ npx wrangler r2 object delete frank-kirwan-media/probe.txt --remote
 
 A new R2 custom domain reports `ssl_status: pending` for a minute or two while
 its certificate is issued, and requests during that window can come back 401 —
-which looks alarming and means nothing. Re-check with
-`wrangler r2 bucket domain list frank-kirwan-media` and try again rather than
-reconfiguring anything.
+which looks alarming and means nothing.
+
+It can also fail properly. Watch `ownership_status`: `active` is healthy,
+**`unknown` is not**, and the symptom is the subdomain serving a file once and
+then going NXDOMAIN — the record is created, then rolled back. Remove the
+domain and add it again:
+
+```
+npx wrangler r2 bucket domain remove frank-kirwan-media --domain media.frankkirwan.com
+npx wrangler r2 bucket domain add    frank-kirwan-media --domain media.frankkirwan.com --zone-id <zone-id>
+```
+
+Diagnose it at the authoritative resolver rather than through your own
+machine, because a failed attempt leaves a negative cache entry that outlives
+the fix and makes a working domain look broken:
+
+```
+curl -s -H 'accept: application/dns-json' \
+  'https://1.1.1.1/dns-query?name=media.frankkirwan.com&type=A'
+```
+
+`"Status": 0` with an answer means DNS is fine and anything still failing
+locally is your resolver. `"Status": 3` is NXDOMAIN — the record really is
+absent. To test the origin while your own DNS is poisoned, pin the address:
+
+```
+curl -I --resolve media.frankkirwan.com:443:<ip-from-above> \
+  https://media.frankkirwan.com/probe.txt
+```
 
 **Also confirm the masters bucket is not reachable at all**, since this is the
 whole reason there are two:
