@@ -51,12 +51,11 @@ export async function verifyAccess(request, env) {
 
   if (!env.ACCESS_TEAM || !env.ACCESS_AUD) return null
 
-  // Each Access application mints tokens with its own audience tag, and the
-  // admin needs two — one guarding the page, one guarding this API, because
-  // they want different treatment for an unauthenticated request (a login
-  // redirect versus a refusal). So this is a list, comma-separated. Naming only
-  // one of the two produces a confusing failure where signing in appears to
-  // work and every request is then rejected.
+  // One Access application covers both the admin page and this API, so in
+  // practice this is a single tag. It is still parsed as a comma-separated
+  // list: splitting them across two applications is the tempting design, and
+  // if it is ever revisited, both tags have to be named here or signing in
+  // appears to work and every request is then rejected.
   const audience = env.ACCESS_AUD.split(',')
     .map((tag) => tag.trim())
     .filter(Boolean)

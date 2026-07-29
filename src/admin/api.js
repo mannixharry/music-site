@@ -3,20 +3,39 @@
 // look at status codes.
 //
 // There are no credentials here: Cloudflare Access authenticates at the edge
-// and the browser carries its cookie automatically. A 401 means the session
-// expired, and the fix is to reload so Access can challenge again.
+// and the browser carries its cookie automatically.
+//
+// An expired session does NOT arrive here as a 401. Access answers an
+// unauthenticated /api/admin/* request with a 302 to the login page on
+// <team>.cloudflareaccess.com, and a fetch that follows a redirect to another
+// origin is blocked by CORS — so it rejects with a bare TypeError reading
+// "Failed to fetch", which tells the user nothing. Only a navigation can
+// complete that handshake, which is why the remedy is always to reload rather
+// than to retry the request.
 
 const BASE = '/api/admin'
 
-async function request(path, { method = 'GET', body } = {}) {
-  const response = await fetch(`${BASE}${path}`, {
-    method,
-    headers: body ? { 'content-type': 'application/json' } : undefined,
-    body: body ? JSON.stringify(body) : undefined,
-  })
+const EXPIRED = 'Your session has expired — reload the page to sign in again.'
 
-  if (response.status === 401) {
-    throw new Error('Your session has expired — reload the page to sign in again.')
+async function request(path, { method = 'GET', body } = {}) {
+  let response
+  try {
+    response = await fetch(`${BASE}${path}`, {
+      method,
+      headers: body ? { 'content-type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+    })
+  } catch {
+    // Network-level failure. Being genuinely offline looks identical from here,
+    // but the Access redirect is much the likelier cause on a page that only
+    // loads from behind Access at all.
+    throw new Error(EXPIRED)
+  }
+
+  // Same-origin request that came back from somewhere else: Access bounced it
+  // to a login page and CORS happened to permit the read. Same meaning.
+  if (response.redirected || response.status === 401) {
+    throw new Error(EXPIRED)
   }
 
   const data = await response.json().catch(() => ({}))

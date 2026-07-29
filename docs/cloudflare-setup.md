@@ -197,41 +197,55 @@ the request through, so a mismatch produces a login that appears to succeed
 followed by a refusal — with nothing on screen to say which of the two lists
 was the problem.
 
-Create **two** self-hosted applications — Access → Applications → *Add an
-application* → **Self-hosted**:
+Create **one** self-hosted application — Access → Applications → *Add an
+application* → **Self-hosted** — covering **two** paths on the same hostname.
+Add the first as the application's domain, then *Add domain* for the second:
 
-| | Application 1 | Application 2 |
-|---|---|---|
-| Name | Frank Kirwan admin | Frank Kirwan admin API |
-| Domain | `frankkirwan.com` | `frankkirwan.com` |
-| Path | `admin` | `api/admin` |
+| | |
+|---|---|
+| Name | Frank Kirwan admin |
+| Domain | `frankkirwan.com`, path `admin` |
+| Domain | `frankkirwan.com`, path `api/admin` |
 
-> **Fill in the path.** An application on `frankkirwan.com` with the path left
-> blank puts the entire public site behind a login — every visitor met by a
-> PIN prompt. The path box is what confines each application to the admin. It
-> is the one mistake in this document with a blast radius beyond the admin
-> itself, and the check is simply to open the site in a private window
+> **Fill in the path, on both.** An application on `frankkirwan.com` with the
+> path left blank puts the entire public site behind a login — every visitor
+> met by a PIN prompt. The path box is what confines the application to the
+> admin. It is the one mistake in this document with a blast radius beyond the
+> admin itself, and the check is simply to open the site in a private window
 > afterwards and confirm it still loads.
 
 `admin` also covers everything beneath it, and `api/admin` likewise. Neither
 matches `/api/content`, which must stay public — that is the endpoint the site
 itself reads.
 
-Two rather than one because an unauthenticated request should be redirected to
-a login page when it is a person opening `/admin`, and simply refused when it
-is the page's own `fetch`.
+> **One application, not two.** Splitting the page and the API into separate
+> applications is the obvious design and it is broken. Each application keeps
+> its own session, and an Access session can only be established by a
+> **navigation**: an unauthenticated request is answered with a 302 to the
+> login page on `<team>.cloudflareaccess.com`, and a `fetch` that follows a
+> redirect to another origin is blocked by CORS before it can complete the
+> handshake. Nothing ever navigates to `/api/admin` — only the admin page's own
+> `fetch` goes there — so that application's session is never renewed. The
+> admin then fails with a bare `TypeError: Failed to fetch`, which names
+> neither Access nor the session, and the only cure is to visit an
+> `/api/admin/*` URL in the address bar by hand.
+>
+> Renaming the Zero Trust team invalidates existing sessions, which is a good
+> way to walk into this: the page's session silently repairs itself on the next
+> load, and the API's cannot.
 
-Give each the same policy:
+Give it this policy:
 
 - Action: **Allow**
 - Include → **Emails** → `mannixharry@gmail.com`
 
-Adding Frank later means adding his address to both policies — a dashboard
-edit, no deploy.
+Adding Frank later means adding his address to this policy and to
+`ADMIN_EMAILS` — the first is a dashboard edit, the second needs a deploy.
 
-Each application's Overview shows an **Application Audience (AUD) Tag**. Copy
-both. The Worker checks against a comma-separated list, so a token from either
-application is accepted and one minted for anything else is not.
+The application's Overview shows an **Application Audience (AUD) Tag**. Copy
+it. The Worker still parses `ACCESS_AUD` as a comma-separated list, so a token
+minted for any other application in the organisation is refused rather than
+quietly accepted.
 
 ---
 
@@ -241,7 +255,7 @@ In `wrangler.jsonc` → `vars`:
 
 ```jsonc
 "ACCESS_TEAM": "yourteam",
-"ACCESS_AUD": "<aud-of-app-1>,<aud-of-app-2>"
+"ACCESS_AUD": "<aud-tag>"
 ```
 
 Secrets are never written in that file:
@@ -273,13 +287,21 @@ Then, in order:
 3. Open `https://frankkirwan.com/admin` in a private window → Access asks for
    an email → PIN arrives → the song list appears. There should be **no**
    "Local development" banner.
-4. Send a forged token — this proves the signature check, not just Access:
+4. Send a forged token:
    ```
    curl -s -o /dev/null -w '%{http_code}\n' \
      -H 'Cf-Access-Jwt-Assertion: not.a.real.token' \
      https://frankkirwan.com/api/admin/songs
    ```
-   Expect 401 or an Access refusal; never 200.
+   Expect an Access refusal (302 or 403); never 200.
+
+   Note what this does **not** show. Access rejects the request at the edge
+   before the Worker runs, so the 302 is Access talking and `worker/access.js`
+   never sees the token — the signature check is not exercised here, and this
+   test would pass just the same if it were deleted. Verifying that lock needs
+   a request that reaches the Worker with Access satisfied, which means a real
+   session; `npm run dev:worker` with `DEV_BYPASS_AUTH` unset is the practical
+   place to test it.
 5. `curl -I https://artist-site.<your-subdomain>.workers.dev` → should not
    resolve. `workers_dev` is false because Access does not cover that hostname.
 

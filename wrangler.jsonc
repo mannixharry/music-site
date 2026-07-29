@@ -57,12 +57,21 @@
     // after a login that looked like it worked.
     "ADMIN_EMAILS": "mannixharry@gmail.com,harrymannix@icloud.com",
     "ACCESS_TEAM": "frankkirwan",
-    // Two applications guard the admin — one the page, one this API — and each
-    // signs its tokens with a different audience tag, so both belong here.
-    // First is frankkirwan.com/admin, second frankkirwan.com/api/admin.
-    // A token minted for anything else still fails; this is "one of these",
-    // not "any".
-    "ACCESS_AUD": "55928689a653e51d6545f4fb5865f2547091928eb79018d83ac34ccbe01f6802,7a06bffaf24a1d836c82afb8ac3f655b080444858508bab68919bad839b2806b"
+    // ONE Access application covers both frankkirwan.com/admin and
+    // frankkirwan.com/api/admin, so there is one audience tag here.
+    //
+    // It was two, and that was a bug. Each application keeps its own session,
+    // and an Access session can only be established by a NAVIGATION — an
+    // unauthenticated request is answered with a 302 to the login page on
+    // <team>.cloudflareaccess.com, and a fetch that follows a redirect to
+    // another origin is killed by CORS. Nothing ever navigates to /api/admin,
+    // so that application's session was never renewed, and the admin died with
+    // an unexplained "Failed to fetch" the moment it lapsed. One application
+    // means the login that loads the page also authorises the page's requests.
+    //
+    // Still parsed as a list, so a token minted for any other application in
+    // the organisation is refused. "One of these", not "any".
+    "ACCESS_AUD": "55928689a653e51d6545f4fb5865f2547091928eb79018d83ac34ccbe01f6802"
   }
 
   // Secrets, set with `wrangler secret put` and never written in this file:
