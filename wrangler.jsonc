@@ -32,7 +32,7 @@
       "database_name": "artist-site",
       // TODO: replace with the id printed by `wrangler d1 create artist-site`.
       // Only needed for --remote; local development ignores it.
-      "database_id": "00000000-0000-0000-0000-000000000000"
+      "database_id": "4af3cccf-2483-45d3-8f6c-7e06a89cdbfc"
     }
   ],
 

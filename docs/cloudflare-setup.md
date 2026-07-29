@@ -76,6 +76,14 @@ npx wrangler r2 bucket cors set frank-kirwan-media   --file infra/r2-cors.json
 npx wrangler r2 bucket cors set frank-kirwan-masters --file infra/r2-cors.json
 ```
 
+`infra/r2-cors.json` is in wrangler's schema — `{"rules": [{"allowed": {…}}]}`
+with camelCase keys. The R2 **dashboard** takes a different shape for the same
+thing (a bare array, PascalCase `AllowedOrigins`), so do not copy a policy from
+one into the other. It also permits `localhost:5173` and `localhost:8787`,
+which is what lets `wrangler dev --remote` exercise the presigned upload path;
+a presigned URL is still required, so this widens who the browser will let
+talk to R2, not who can write to it.
+
 **Check:** put a file in the public bucket and fetch it over the domain.
 
 ```
@@ -85,8 +93,23 @@ curl -I https://media.frankkirwan.com/probe.txt        # expect 200
 npx wrangler r2 object delete frank-kirwan-media/probe.txt --remote
 ```
 
-DNS for a new R2 custom domain can take a few minutes. If it 404s or does not
-resolve, wait rather than reaching for a second attempt.
+A new R2 custom domain reports `ssl_status: pending` for a minute or two while
+its certificate is issued, and requests during that window can come back 401 —
+which looks alarming and means nothing. Re-check with
+`wrangler r2 bucket domain list frank-kirwan-media` and try again rather than
+reconfiguring anything.
+
+**Also confirm the masters bucket is not reachable at all**, since this is the
+whole reason there are two:
+
+```
+npx wrangler r2 bucket domain list  frank-kirwan-masters   # expect none
+npx wrangler r2 bucket dev-url get  frank-kirwan-masters   # expect disabled
+npx wrangler r2 bucket dev-url get  frank-kirwan-media     # expect disabled too
+```
+
+The media bucket is public through its custom domain only. The `r2.dev` URL
+stays off: it is rate-limited and explicitly not for production.
 
 ---
 
