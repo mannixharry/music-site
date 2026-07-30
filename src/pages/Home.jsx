@@ -39,7 +39,12 @@ function Home() {
         <ul className="mt-4 space-y-1 text-sm">
           {musicals.map((musical) => (
             <li key={musical.slug}>
-              <span className="font-bold">{musical.title}</span> &mdash; {musical.teaser}
+              {/* Straight to that show's section rather than to the top of a
+                  page you would then have to find it on. */}
+              <Link to={`/musicals#${musical.slug}`} className="font-bold underline">
+                {musical.title}
+              </Link>{' '}
+              &mdash; {musical.teaser}
             </li>
           ))}
         </ul>
