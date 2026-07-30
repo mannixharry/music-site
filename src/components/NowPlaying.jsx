@@ -50,8 +50,12 @@ function NowPlaying() {
           <span className="font-bold">{track.title}</span>
         </p>
 
-        {/* Narrow, and hidden altogether on a phone: the title is what this is
-            for, and a scrubber squeezed to forty pixels is not a control. */}
+        {/* Hidden altogether on a phone: the title is what this is for, and a
+            scrubber squeezed to forty pixels is not a control.
+            Above that it takes a share of the row rather than a fixed width —
+            it was sized when this bar ran the full width of the screen, and
+            left stranded in the middle of a narrower column. Capped so it
+            cannot crowd out the title, which is the more important half. */}
         <input
           type="range"
           min="0"
@@ -60,8 +64,8 @@ function NowPlaying() {
           value={currentTime}
           disabled={!seekable}
           aria-label={`Seek within ${track.title}`}
+          className="hidden h-4 min-w-0 flex-1 accent-gray-700 sm:block sm:max-w-xs"
           onChange={(event) => seek(Number(event.currentTarget.value))}
-          className="hidden h-4 w-32 shrink-0 accent-gray-700 sm:block"
         />
 
         <span className="shrink-0 font-mono text-xs tabular-nums text-gray-600">
