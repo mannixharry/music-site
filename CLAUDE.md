@@ -91,9 +91,15 @@ No SVG in `IMAGE_TYPES`, and it should stay out: `media.frankkirwan.com` fronts 
 
 The range the form asks for is clamped to what the file turns out to contain, and what gets recorded is what was clamped to — asking for a minute from a 45-second recording is ordinary and should not fail. The cut is faded in and out (15 ms and 750 ms, the latter capped at a third of the preview) because a hard cut sounds like a file that failed to download.
 
-**A preview is only ever cut from the audio already published for the song**, fetched back down from `/api/media/<key>` — same-origin in both environments, so no CORS rule has to exist for it, and it reads the same public bucket the site does. There is deliberately no second route: the order of operations is upload the song, then cut a preview out of what went up, and a dropzone in that mode would be a second path with different consequences for the master. A song that is already a preview says so and sends you back through an upload, because cutting a preview out of a preview loses a generation each pass with no way back.
+**A preview is reversible, and `GET /api/admin/master/<key>` is what makes it so.** MASTERS has no custom domain and no `r2.dev` URL, so that route is the only way the full song is reachable from anywhere — which is why a preview used to be a one-way door. It sits under `/api/admin/` so Access has already vetted the caller, refuses any key whose prefix does not resolve to the MASTERS bucket, and sends `private, no-store`. The bucket in `env.MASTERS.get` is hardcoded, so no key can reach MEDIA through it.
 
-That path passes `archiveMaster: false` to `start()`, and it must: the file is a copy of the published audio, so filing it as the master would replace the pointer to Frank's original with one to a second-generation copy of itself.
+Three actions, in `PreviewControls`, and which source each uses matters:
+
+- **Make a preview** (song is not yet one) — cuts from the *published* copy, which is still the whole song and is a few MB rather than a few hundred.
+- **Change the preview** — cuts from the **master**, because the published copy is now the cut and only the master still holds what was removed. The trimmer opens at the stored `snippet_start_s`/`snippet_end_s`.
+- **Put the whole song back** — takes the master through the ordinary upload path with no range, so a streamable master is published as-is and anything else is converted.
+
+All three pass `archiveMaster: false` to `start()`, and must: the audio came out of the catalogue, so filing it as the master would replace the pointer to Frank's recording with one to a copy of itself. All three are hidden without a `masterKey` — there would be nothing to work from.
 
 Cutting is a **two-step upload**: the fetched audio goes to `SnippetTrimmer` and nothing leaves the browser until the trimmer's own button. That pause is what makes auditioning the cut before publishing possible at all. An ordinary upload has nothing left to decide and still goes straight up. The range is an argument to `start(file, range)` rather than a `useUpload` option, so dragging a handle does not rebuild the upload callback sixty times a second.
 

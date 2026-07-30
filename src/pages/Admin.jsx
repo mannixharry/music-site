@@ -27,15 +27,22 @@ function Admin() {
   // alongside them — it walks both buckets, and the list should not wait on it.
   const [storage, setStorage] = useState(null)
 
-  const refresh = useCallback(async () => {
-    const { songs: list, mediaBase: base } = await api.list()
-    setSongs(list)
-    setMediaBase(base)
-  }, [])
-
   const refreshStorage = useCallback(async () => {
     setStorage(await api.storage())
   }, [])
+
+  // Both, always. Deleting a song is the obvious case — it should drop into
+  // Recently deleted there and then rather than after a reload — but every
+  // upload moves the storage figures too, and one of the two going stale is how
+  // a number on this page ends up lying.
+  const refresh = useCallback(async () => {
+    const [{ songs: list, mediaBase: base }] = await Promise.all([
+      api.list(),
+      refreshStorage().catch(() => {}),
+    ])
+    setSongs(list)
+    setMediaBase(base)
+  }, [refreshStorage])
 
   useEffect(() => {
     let cancelled = false
@@ -179,12 +186,7 @@ function Admin() {
           <>
             <DeletedSongs
               deleted={storage.deleted}
-              onChanged={async () => {
-                // Putting a song back returns it to the list; deleting one for
-                // good changes what is stored. Both, either way — one of these
-                // going stale is how a number ends up lying.
-                await Promise.all([refresh(), refreshStorage()])
-              }}
+              onChanged={refresh}
             />
             <StoragePanel storage={storage} onChanged={refreshStorage} />
           </>

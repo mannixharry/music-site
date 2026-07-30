@@ -31,10 +31,13 @@ function Transport({ label, onClick, disabled }) {
   )
 }
 
-// The file has been chosen but nothing has been uploaded yet — this is where
-// the cut gets decided, and nothing leaves the browser until "Upload this
-// preview".
-function SnippetTrimmer({ file, onCancel, onConfirm }) {
+// The audio has been fetched but nothing has been uploaded yet — this is where
+// the cut gets decided, and nothing leaves the browser until "Use this preview".
+//
+// `initialRange` is where the handles start. Editing an existing preview passes
+// the range it was cut at, so the bars open where they were left rather than at
+// a default the previous edit has to be found again from.
+function SnippetTrimmer({ file, initialRange = null, onCancel, onConfirm }) {
   const audioRef = useRef(null)
   const trackRef = useRef(null)
   const canvasRef = useRef(null)
@@ -70,7 +73,12 @@ function SnippetTrimmer({ file, onCancel, onConfirm }) {
       ({ peaks, duration: length }) => {
         if (cancelled) return
         setAudio({ phase: 'ready', peaks, duration: length, error: null })
-        setRange({ start: 0, end: Math.min(DEFAULT_LENGTH_S, length) })
+
+        // Clamped to this file, because the range may have been recorded
+        // against a different upload of the same song.
+        const start = Math.min(initialRange?.start ?? 0, Math.max(0, length - MIN_LENGTH_S))
+        const end = Math.min(initialRange?.end ?? start + DEFAULT_LENGTH_S, length)
+        setRange({ start, end: Math.max(end, start + MIN_LENGTH_S) })
       },
       (error) => {
         if (cancelled) return
@@ -88,6 +96,9 @@ function SnippetTrimmer({ file, onCancel, onConfirm }) {
     return () => {
       cancelled = true
     }
+    // initialRange is read once, when the audio finishes decoding; it is where
+    // the handles open, not something they follow afterwards.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file])
 
   useEffect(() => {

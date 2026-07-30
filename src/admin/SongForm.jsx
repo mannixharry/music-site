@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import AudioPlayer from '../components/AudioPlayer'
 import { toMediaSrc } from '../content/normalise'
+import { formatTime } from '../format'
 import { api } from './api'
-import SnippetControls from './SnippetControls'
 import SnippetTrimmer from './SnippetTrimmer'
 import UploadDropzone from './UploadDropzone'
 import { useUpload } from './useUpload'
@@ -28,45 +28,67 @@ function Field({ label, hint, children }) {
   )
 }
 
-// Where a preview comes from, which is always the audio already published for
-// this song and never a file being uploaded. Keeping it to one source is what
-// makes the order of operations unambiguous — upload the song, then cut a
-// preview from it — and means there is no second route to keep working.
-function PreviewSource({ song, fetching, onCut }) {
-  if (!song.webKey) {
-    return (
-      <p className="border border-gray-400 bg-white p-3 text-xs">
-        No audio here yet. Untick the box above, upload the song, then come back to choose a
-        preview from it.
-      </p>
-    )
-  }
+// The preview, and everything you can do to it.
+//
+// Three states, because a song is in exactly one of them. The point of the
+// middle one is that a preview is no longer a one-way door: both actions work
+// from the master, which is the only copy of the full song there is, and which
+// nothing else on the site can reach.
+function PreviewControls({ song, fetching, onMake, onEdit, onRestore }) {
+  const busy = Boolean(fetching)
 
-  // Cutting a preview out of a preview would work and would be a trap: each
-  // pass loses a little more, and the full song is not here to start over from.
+  if (!song.webKey) return null
+
   if (song.isSnippet) {
     return (
-      <p className="border border-gray-400 bg-white p-3 text-xs">
-        This song is already a preview, so there is no full version here to work from. To choose
-        a different one: untick the box above, upload the song again, then tick it and start
-        over.
-      </p>
+      <div className="mt-3 border border-gray-400 bg-white p-3">
+        <p className="text-sm font-bold">The website is showing a preview of this song.</p>
+        {song.snippetStart !== null && (
+          <p className="mt-1 font-mono text-xs text-gray-600">
+            {formatTime(song.snippetStart)}–{formatTime(song.snippetEnd)} of the full recording
+          </p>
+        )}
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={onEdit}
+            disabled={busy}
+            className="border border-gray-500 bg-gray-200 px-3 py-1 text-sm disabled:opacity-50"
+          >
+            {fetching === 'edit' ? 'Loading your recording…' : 'Change the preview'}
+          </button>
+          <button
+            type="button"
+            onClick={onRestore}
+            disabled={busy}
+            className="border border-gray-500 bg-gray-200 px-3 py-1 text-sm disabled:opacity-50"
+          >
+            {fetching === 'full' ? 'Loading your recording…' : 'Put the whole song back'}
+          </button>
+        </div>
+
+        <p className="mt-2 text-xs text-gray-600">
+          Both work from your original recording, which is saved and untouched — so you can
+          change your mind as often as you like.
+        </p>
+      </div>
     )
   }
 
   return (
-    <div className="border border-gray-400 bg-white p-3">
+    <div className="mt-3 border border-gray-400 bg-white p-3">
       <button
         type="button"
-        onClick={onCut}
-        disabled={fetching}
-        className="border border-gray-500 bg-gray-200 px-3 py-1 text-sm font-bold disabled:opacity-50"
+        onClick={onMake}
+        disabled={busy}
+        className="border border-gray-500 bg-gray-200 px-3 py-1 text-sm disabled:opacity-50"
       >
-        {fetching ? 'Loading the audio…' : 'Choose a preview from this song'}
+        {fetching === 'preview' ? 'Loading the audio…' : 'Put only a preview on the website'}
       </button>
       <p className="mt-2 text-xs text-gray-600">
-        Uses the version already on the website, so there is nothing to find or upload again.
-        Your original recording is not touched.
+        You choose which part. Only that part goes on the website, so nobody can download the
+        whole song — and you can undo it afterwards.
       </p>
     </div>
   )
@@ -89,14 +111,13 @@ const inputClass = 'w-full border border-gray-400 bg-white px-2 py-1 text-sm'
 
 function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel }) {
   const [draft, setDraft] = useState(BLANK)
-  // Whether the next upload publishes a cut. Deliberately not read back off the
-  // song: a song that is already a preview is far likelier to be getting its
-  // full version than the same crop a second time.
-  const [cropping, setCropping] = useState(false)
-  // The published audio, pulled back down and waiting to be cut. Nothing else
-  // ever waits here: an ordinary upload has nothing left to decide.
-  const [pendingFile, setPendingFile] = useState(null)
-  const [fetching, setFetching] = useState(false)
+  // Audio pulled back down and waiting to be cut, with where the handles should
+  // open. Nothing else ever waits here: an ordinary upload has nothing left to
+  // decide, so it goes straight up.
+  const [pending, setPending] = useState(null)
+  // null | 'preview' | 'edit' | 'full' — which button is fetching, so only that
+  // one says so.
+  const [fetching, setFetching] = useState(null)
   // 'idle' | 'saving' | 'saved'. Saving is usually quicker than the eye, so
   // without the third state the button flickers and the change looks like it
   // may not have happened — which is the whole reason people press Save twice.
@@ -108,35 +129,67 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
 
   useEffect(() => {
     setDraft(song ? { ...BLANK, ...song, musicalSlug: song.musicalSlug ?? '' } : BLANK)
-    setCropping(false)
-    setPendingFile(null)
+    setPending(null)
+    setFetching(null)
     setSaveState('idle')
     setError(null)
   }, [song])
 
-  // Pulls the audio already published for this song back down into the trimmer.
-  // This is the only way a preview is ever cut, so the order of operations is
-  // fixed: upload the song, then cut a preview out of what went up.
+  // Fetching audio back out of the catalogue so it can be worked on.
   //
-  // Fetched from /api/media/, not from the media domain: that is same-origin in
-  // both environments, so no CORS rule has to exist for it, and it serves the
-  // same public bucket the site already reads.
-  async function cutFromWhatIsPublished() {
-    setFetching(true)
+  // Two sources, and which one matters. The published copy is small and is the
+  // whole song *while the song is not a preview* — fine to cut from, and a few
+  // megabytes. Once it is a preview the published copy is the cut, and the only
+  // remaining copy of the full song is the master, which nothing but
+  // /api/admin/master can reach. That is what makes a preview undoable.
+  async function fetchAudio(what, url) {
+    setFetching(what)
     setError(null)
     try {
-      const key = song.webKey
-      const response = await fetch(key.startsWith('/') ? key : `/api/media/${key}`)
-      if (!response.ok) throw new Error(`Could not fetch the site's copy (${response.status})`)
+      const response = await fetch(url)
+      if (!response.ok) throw new Error(`Could not load the audio (${response.status})`)
 
       const blob = await response.blob()
-      const name = key.split('/').pop() || 'audio.mp3'
-      setPendingFile(new File([blob], name, { type: blob.type || 'audio/mpeg' }))
+      const name = url.split('/').pop() || 'audio'
+      return new File([blob], name, { type: blob.type || 'audio/mpeg' })
     } catch (fetchError) {
       setError(fetchError.message)
+      return null
     } finally {
-      setFetching(false)
+      setFetching(null)
     }
+  }
+
+  const publishedUrl = () =>
+    song.webKey.startsWith('/') ? song.webKey : `/api/media/${song.webKey}`
+
+  const masterUrl = () => `/api/admin/master/${song.masterKey}`
+
+  // Not yet a preview: the published copy is the whole song, so cut from that
+  // rather than pulling down a master that may be ten times the size.
+  async function makePreview() {
+    const file = await fetchAudio('preview', publishedUrl())
+    if (file) setPending({ file, initialRange: null })
+  }
+
+  // Already a preview: only the master still has the parts that were cut away.
+  // The handles open where they were left.
+  async function editPreview() {
+    const file = await fetchAudio('edit', masterUrl())
+    if (!file) return
+    setPending({
+      file,
+      initialRange:
+        song.snippetStart === null ? null : { start: song.snippetStart, end: song.snippetEnd },
+    })
+  }
+
+  // Straight back to the whole thing — no trimmer, nothing to decide. Goes
+  // through the ordinary upload path, so a master that is already streamable is
+  // published as-is and anything else is converted.
+  async function restoreWholeSong() {
+    const file = await fetchAudio('full', masterUrl())
+    if (file) start(file, null, { archiveMaster: false })
   }
 
   const set = (fields) => setDraft((current) => ({ ...current, ...fields }))
@@ -336,51 +389,46 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
                 </div>
               )}
 
-              <SnippetControls
-                enabled={cropping}
-                onChange={(next) => {
-                  setCropping(next)
-                  // Turning it off mid-cut would otherwise leave the fetched
-                  // audio stranded behind a trimmer nothing renders.
-                  setPendingFile(null)
-                }}
-                current={
-                  song.isSnippet && song.snippetStart !== null
-                    ? { start: song.snippetStart, end: song.snippetEnd }
-                    : null
-                }
-              />
-
-              {/* Three states, and only one of them is ever on screen: cutting
-                  a preview from what is published, deciding to, or an ordinary
-                  upload. A preview is never cut from a file being uploaded —
-                  the audio has to be on the site first, so there is exactly one
-                  order to do things in and no second route to keep working. */}
-              {pendingFile ? (
+              {/* Either the trimmer is open, or it is not. When it is, it is
+                  the only thing here: choosing a cut is a decision that wants
+                  the whole block, not a corner of it. */}
+              {pending ? (
                 <SnippetTrimmer
-                  file={pendingFile}
-                  onCancel={() => setPendingFile(null)}
+                  file={pending.file}
+                  initialRange={pending.initialRange}
+                  onCancel={() => setPending(null)}
                   onConfirm={(range) => {
-                    setPendingFile(null)
-                    // Never as a master: this file IS the published audio, and
-                    // filing it as the original would orphan the real one.
-                    start(pendingFile, range, { archiveMaster: false })
+                    const { file } = pending
+                    setPending(null)
+                    // Never archived as a master: this audio came *from* the
+                    // catalogue, and filing it as the original would replace a
+                    // pointer to Frank's recording with one to a copy of itself.
+                    start(file, range, { archiveMaster: false })
                   }}
                 />
-              ) : cropping ? (
-                <PreviewSource
-                  song={song}
-                  fetching={fetching}
-                  onCut={cutFromWhatIsPublished}
-                />
               ) : (
-                <UploadDropzone
-                  status={status}
-                  onFile={start}
-                  onReset={reset}
-                  currentBytes={song.webBytes}
-                  hasMaster={Boolean(song.masterKey)}
-                />
+                <>
+                  <UploadDropzone
+                    status={status}
+                    onFile={start}
+                    onReset={reset}
+                    currentBytes={song.webBytes}
+                    hasMaster={Boolean(song.masterKey)}
+                  />
+
+                  {/* Only once there is a master to work from. Without one
+                      there is no full song to cut down or put back, and
+                      offering either would be a button that cannot work. */}
+                  {song.masterKey && (
+                    <PreviewControls
+                      song={song}
+                      fetching={fetching}
+                      onMake={makePreview}
+                      onEdit={editPreview}
+                      onRestore={restoreWholeSong}
+                    />
+                  )}
+                </>
               )}
             </>
           ) : (

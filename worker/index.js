@@ -122,6 +122,31 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
     })
   }
 
+  // Hands a master back to the browser. This is the only way the full song is
+  // reachable from anywhere — MASTERS has no custom domain and no r2.dev URL —
+  // and it is what makes a preview reversible rather than a one-way door.
+  //
+  // Safe only because of where it sits: everything under /api/admin/ has already
+  // been through verifyAccess by the time it gets here. The prefix check is the
+  // second lock, and it is not decoration — without it this route would serve
+  // any object in either bucket to anyone who reached it.
+  //
+  // no-store, because a master must not sit in a shared cache anywhere.
+  if (pathname.startsWith('/api/admin/master/')) {
+    if (method !== 'GET') return fail(405, 'Method not allowed')
+
+    const key = decodeURIComponent(pathname.slice('/api/admin/master/'.length))
+    if (ruleForKey(key)?.bucket !== 'MASTERS') return fail(400, 'not a master')
+
+    const object = await env.MASTERS.get(key)
+    if (!object) return fail(404, 'Not found')
+
+    const headers = new Headers()
+    object.writeHttpMetadata(headers)
+    headers.set('cache-control', 'private, no-store')
+    return new Response(object.body, { headers })
+  }
+
   if (pathname === '/api/admin/songs') {
     if (method === 'GET') {
       return json({ songs: await listAllSongs(env), mediaBase: env.MEDIA_BASE ?? '' })
