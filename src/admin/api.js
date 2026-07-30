@@ -51,6 +51,6 @@ export const api = {
   remove: (id) => request(`/songs/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   move: (id, after) =>
     request(`/songs/${encodeURIComponent(id)}/position`, { method: 'POST', body: { after } }),
-  orphans: () => request('/orphans'),
-  sweepOrphans: () => request('/orphans', { method: 'POST' }),
+  storage: () => request('/storage'),
+  sweepStorage: () => request('/storage', { method: 'POST' }),
 }

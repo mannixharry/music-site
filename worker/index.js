@@ -9,12 +9,7 @@ import {
   updateSong,
 } from './db'
 import { fail, json } from './json'
-import {
-  deleteOrphans,
-  deleteReplacedObjects,
-  findOrphans,
-  readObjectKeys,
-} from './objects'
+import { deleteOrphans, deleteReplacedObjects, readObjectKeys, readStorage } from './objects'
 import { presignPut } from './presign'
 import {
   slugify,
@@ -179,21 +174,21 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
     return fail(405, 'Method not allowed')
   }
 
-  // The sweep. Every write already removes the object it replaced, so this is
-  // for what got away before that existed, and for the gap no bookkeeping can
-  // close: an upload that succeeds and then fails to record itself leaves an
-  // object nothing has ever named.
+  // What the site is using, and what it is using for nothing.
   //
-  // GET reports, POST removes — separated so the count can be looked at before
-  // anything is destroyed.
-  if (pathname === '/api/admin/orphans') {
-    if (method === 'GET') {
-      const orphans = await findOrphans(env)
-      return json({ orphans, bytes: orphans.reduce((total, o) => total + o.size, 0) })
-    }
+  // GET reports both — how much is in D1 and R2, how many songs, and anything in
+  // the buckets no row names. POST removes that last set. Separated so the count
+  // can always be looked at before anything is destroyed.
+  //
+  // Every write already deletes the object it replaced, so in normal use the
+  // orphan list is empty; it covers what accumulated before that existed and the
+  // gap no bookkeeping closes, where an upload reaches R2 and then fails to
+  // record itself.
+  if (pathname === '/api/admin/storage') {
+    if (method === 'GET') return json(await readStorage(env))
 
     if (method === 'POST') {
-      const orphans = await findOrphans(env)
+      const { orphans } = await readStorage(env)
       return json({ deleted: await deleteOrphans(env, orphans), orphans })
     }
 

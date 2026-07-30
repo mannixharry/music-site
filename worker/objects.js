@@ -75,12 +75,12 @@ async function listAll(bucket, prefix) {
   return keys
 }
 
-// Everything in either bucket that no row names, live or soft-deleted.
+// Every key any row names, live or soft-deleted.
 //
 // Deleted songs count as referring to their objects, and must: a soft delete is
 // meant to be undoable, and a sweep that took the audio with it would make that
 // a lie. This is why the query has no WHERE clause.
-export async function findOrphans(env) {
+async function referencedKeys(env) {
   const { results } = await env.DB.prepare(SELECT_KEYS).all()
 
   const referenced = new Set()
@@ -90,15 +90,53 @@ export async function findOrphans(env) {
     }
   }
 
+  return referenced
+}
+
+// How big the database is, and what is in it.
+//
+// `size_after` comes back on the meta of any statement — D1 reports the whole
+// database's size with every query — so the count below pays for both answers.
+async function readDatabaseUsage(env) {
+  const { results, meta } = await env.DB.prepare(
+    `SELECT
+       COUNT(*) AS total,
+       SUM(CASE WHEN deleted_at IS NULL THEN 1 ELSE 0 END) AS songs,
+       SUM(CASE WHEN deleted_at IS NULL AND published = 1 THEN 1 ELSE 0 END) AS published,
+       SUM(CASE WHEN deleted_at IS NULL AND is_snippet = 1 THEN 1 ELSE 0 END) AS previews,
+       SUM(CASE WHEN deleted_at IS NOT NULL THEN 1 ELSE 0 END) AS deleted
+     FROM songs`,
+  ).all()
+
+  return { ...results[0], bytes: meta?.size_after ?? null }
+}
+
+// What is stored, and what is stored that nothing points at.
+//
+// One pass answers both, which is why they are not two endpoints: they need the
+// same walk of the same two buckets, and asking separately would do it twice for
+// one panel.
+export async function readStorage(env) {
+  const referenced = await referencedKeys(env)
+
+  const buckets = []
   const orphans = []
+
   for (const prefix of PREFIXES) {
     const { bucket } = ruleForKey(prefix)
+    let count = 0
+    let bytes = 0
+
     for (const object of await listAll(env[bucket], prefix)) {
+      count += 1
+      bytes += object.size
       if (!referenced.has(object.key)) orphans.push({ ...object, bucket })
     }
+
+    buckets.push({ prefix, bucket, count, bytes })
   }
 
-  return orphans
+  return { database: await readDatabaseUsage(env), buckets, orphans }
 }
 
 export async function deleteOrphans(env, orphans) {
