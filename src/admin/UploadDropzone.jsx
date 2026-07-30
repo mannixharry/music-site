@@ -1,12 +1,7 @@
 import { useRef, useState } from 'react'
+import { formatBytes } from '../format'
 import { ACCEPTED, canUseDirectly } from './upload'
 import { ACCEPTED_IMAGES } from './cover'
-
-function formatBytes(bytes) {
-  if (!bytes) return '—'
-  const mb = bytes / 1024 / 1024
-  return mb < 1 ? `${Math.round(bytes / 1024)} KB` : `${mb.toFixed(1)} MB`
-}
 
 function Bar({ ratio }) {
   return (

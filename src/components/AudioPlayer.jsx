@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { formatTime } from '../format'
 import { usePlayback } from '../context/playbackContext'
 
 // Drawn rather than typed: the ▶ and ❚❚ characters have emoji presentations,
@@ -19,13 +20,6 @@ function PauseIcon() {
       <rect x="9" y="3" width="3" height="10" />
     </svg>
   )
-}
-
-function formatTime(seconds) {
-  if (!Number.isFinite(seconds)) return '--:--'
-  const minutes = Math.floor(seconds / 60)
-  const rest = Math.floor(seconds % 60)
-  return `${minutes}:${String(rest).padStart(2, '0')}`
 }
 
 // Transport only — the visible track title is rendered by the parent, so this

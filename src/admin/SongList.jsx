@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { formatTime } from '../format'
 
 const GROUPS = [
   ['single', 'Singles'],
@@ -30,11 +31,6 @@ function neighbourFor(songs, song, direction) {
   const previous = group[target]
   const flatIndex = songs.findIndex((candidate) => candidate.id === previous.id)
   return flatIndex > 0 ? songs[flatIndex - 1].id : null
-}
-
-function formatDuration(seconds) {
-  if (!seconds) return '—'
-  return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`
 }
 
 function SongList({ songs, selectedId, onSelect, onMove, busy }) {
@@ -117,7 +113,7 @@ function SongList({ songs, selectedId, onSelect, onMove, busy }) {
                   </button>
 
                   <span className="shrink-0 font-mono text-xs text-gray-600">
-                    {formatDuration(song.duration)}
+                    {formatTime(song.duration, { blank: '—' })}
                   </span>
 
                   <span className="flex shrink-0">

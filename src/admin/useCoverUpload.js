@@ -1,23 +1,7 @@
 import { useCallback, useState } from 'react'
 import { canUseImageDirectly, imageTypeFor, resizeCover } from './cover'
-import { uploadFile } from './upload'
-
-const IDLE = { phase: 'idle', ratio: 0, message: '', error: null }
-
-function extensionOf(file) {
-  return file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'bin'
-}
-
-// Unique per upload, not per song, so replacing a cover never serves the old
-// bytes from a cache — the same reason webKeyFor works this way, and what lets
-// the media domain send `immutable` with a year-long max-age.
-function coverKeyFor(songId, extension) {
-  return `covers/${songId}/${crypto.randomUUID().slice(0, 8)}.${extension}`
-}
-
-function coverMasterKeyFor(songId, file) {
-  return `cover-masters/${songId}/${crypto.randomUUID().slice(0, 8)}.${extensionOf(file)}`
-}
+import { coverKeyFor, coverMasterKeyFor, extensionOf } from './keys'
+import { IDLE, uploadFile } from './upload'
 
 // The audio pipeline for artwork, and deliberately the same shape: the original
 // goes to the private bucket and is recorded before anything else happens, so a

@@ -1,27 +1,6 @@
 import { useCallback, useState } from 'react'
-import { canUseDirectly, contentTypeFor, readDuration, transcode, uploadFile } from './upload'
-
-const IDLE = { phase: 'idle', ratio: 0, message: '', error: null }
-
-function extensionOf(file) {
-  return file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'bin'
-}
-
-// Keys are unique per upload rather than per song, so replacing a track never
-// serves the old bytes from a cache. That is what lets the media domain send
-// `immutable` with a year-long max-age.
-//
-// The extension defaults to mp3 because the transcoded path always produces
-// one, but the direct path does not — an .m4a served as-is has to keep its own,
-// or the key describes something the object is not. Playback is driven by the
-// stored content-type either way; this is about the object being inspectable.
-function webKeyFor(songId, extension = 'mp3') {
-  return `web/${songId}/${crypto.randomUUID().slice(0, 8)}.${extension}`
-}
-
-function masterKeyFor(songId, file) {
-  return `masters/${songId}/${crypto.randomUUID().slice(0, 8)}.${extensionOf(file)}`
-}
+import { extensionOf, masterKeyFor, webKeyFor } from './keys'
+import { IDLE, canUseDirectly, contentTypeFor, readDuration, transcode, uploadFile } from './upload'
 
 // Written on every path that publishes a whole track, not just left out.
 // Replacing a preview with the full song has to clear the flag, or the site

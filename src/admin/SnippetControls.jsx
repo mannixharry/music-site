@@ -1,4 +1,4 @@
-import { formatTime } from './snippet'
+import { formatTime } from '../format'
 
 // The switch that decides what the next upload does. Everything about *where*
 // to cut is settled afterwards, in SnippetTrimmer, once there is a file to look

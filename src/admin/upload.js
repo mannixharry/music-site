@@ -1,5 +1,9 @@
 // The mechanics of getting a file into R2. No React here — useUpload drives it.
 
+// What both upload hooks start and end at. Shared so the two cannot drift into
+// disagreeing about what "nothing is happening" looks like.
+export const IDLE = { phase: 'idle', ratio: 0, message: '', error: null }
+
 import TranscodeWorker from './transcode.worker.js?worker'
 import { clipToSnippet } from './snippet'
 

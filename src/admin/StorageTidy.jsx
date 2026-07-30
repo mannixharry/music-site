@@ -1,10 +1,6 @@
 import { useState } from 'react'
+import { formatBytes } from '../format'
 import { api } from './api'
-
-function formatBytes(bytes) {
-  const mb = bytes / 1024 / 1024
-  return mb < 1 ? `${Math.round(bytes / 1024)} KB` : `${mb.toFixed(1)} MB`
-}
 
 // Files in the buckets that no song names any more.
 //

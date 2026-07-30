@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { formatTime } from './snippet'
+import { formatTime } from '../format'
 import { decodeForWaveform, drawWaveform } from './waveform'
 
 const BUCKETS = 800

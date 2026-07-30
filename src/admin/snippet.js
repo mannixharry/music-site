@@ -1,3 +1,5 @@
+import { formatTime } from '../format'
+
 // Making a preview: the arithmetic of cutting decoded audio down to the few
 // seconds of it that go on the website, and the two helpers the form needs to
 // read and write times.
@@ -64,10 +66,4 @@ export function clipToSnippet({ left, right, channels, duration }, range, sample
     // recorded, so it has to survive the clamping above.
     range: { start, end },
   }
-}
-
-export function formatTime(seconds) {
-  if (!Number.isFinite(seconds)) return '--:--'
-  const minutes = Math.floor(seconds / 60)
-  return `${minutes}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`
 }
