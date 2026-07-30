@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { ACCEPTED, canUseDirectly } from './upload'
+import { ACCEPTED_IMAGES } from './cover'
 
 function formatBytes(bytes) {
   if (!bytes) return '—'
@@ -15,16 +16,54 @@ function Bar({ ratio }) {
   )
 }
 
-function UploadDropzone({ status, onFile, onReset, currentBytes, hasMaster }) {
+// The two things Frank uploads differ in the wording and in what "already fine
+// as it is" means, and in nothing else — so they share the component and differ
+// by this table rather than by conditionals scattered through the markup.
+//
+// `describe` is async for images, where answering it means decoding the file to
+// read its dimensions. Audio can answer from the name and size alone, but both
+// are awaited so there is only one path through the code.
+const VARIANTS = {
+  audio: {
+    accept: ACCEPTED,
+    prompt: 'Drop an audio file here, or click to choose one',
+    hint: 'MP3, M4A, WAV, AIFF, FLAC or OGG. Upload the best version you have — a smaller one is made for the website automatically.',
+    describe: async (file) => (canUseDirectly(file) ? 'used as-is' : 'converted'),
+  },
+  image: {
+    accept: ACCEPTED_IMAGES,
+    prompt: 'Drop the cover art here, or click to choose it',
+    hint: 'JPEG, PNG, WebP or AVIF. Upload it at full size — a square 1000px copy is made for the website, and the original is kept.',
+    describe: async () => 'resized to 1000px square',
+  },
+}
+
+function UploadDropzone({
+  variant = 'audio',
+  status,
+  onFile,
+  onReset,
+  currentBytes,
+  hasMaster,
+  masterLabel = 'master',
+}) {
+  const { accept, prompt, hint, describe } = VARIANTS[variant]
+
   const inputRef = useRef(null)
   const [over, setOver] = useState(false)
   const [pending, setPending] = useState(null)
+  const [note, setNote] = useState('')
 
-  const busy = status.phase === 'uploading' || status.phase === 'transcoding'
+  const busy =
+    status.phase === 'uploading' || status.phase === 'transcoding' || status.phase === 'resizing'
 
   function choose(file) {
     if (!file) return
     setPending(file)
+    setNote('')
+    // Best-effort: the note is a courtesy, and a file this cannot describe is
+    // still a file the upload may well handle.
+    describe(file).then(setNote, () => setNote(''))
     onFile(file)
   }
 
@@ -49,7 +88,7 @@ function UploadDropzone({ status, onFile, onReset, currentBytes, hasMaster }) {
         <input
           ref={inputRef}
           type="file"
-          accept={ACCEPTED}
+          accept={accept}
           className="hidden"
           onChange={(event) => choose(event.currentTarget.files[0])}
         />
@@ -62,11 +101,8 @@ function UploadDropzone({ status, onFile, onReset, currentBytes, hasMaster }) {
           </>
         ) : (
           <>
-            <p>Drop an audio file here, or click to choose one</p>
-            <p className="mt-1 text-xs text-gray-600">
-              MP3, M4A, WAV, AIFF, FLAC or OGG. Upload the best version you have — a smaller
-              one is made for the website automatically.
-            </p>
+            <p>{prompt}</p>
+            <p className="mt-1 text-xs text-gray-600">{hint}</p>
           </>
         )}
       </div>
@@ -74,7 +110,7 @@ function UploadDropzone({ status, onFile, onReset, currentBytes, hasMaster }) {
       {pending && !busy && (
         <p className="mt-2 font-mono text-xs">
           {pending.name} · {formatBytes(pending.size)}
-          {canUseDirectly(pending) ? ' · used as-is' : ' · converted'}
+          {note && ` · ${note}`}
         </p>
       )}
 
@@ -85,12 +121,12 @@ function UploadDropzone({ status, onFile, onReset, currentBytes, hasMaster }) {
           <p className="font-bold">Could not use that file</p>
           <p className="mt-1">{status.error}</p>
           {/* Browsers differ over AIFF, ALAC and some WAV variants, and the
-              master is already stored by the time a decode fails — so this is
+              original is already stored by the time a decode fails — so this is
               a detour, not a dead end. */}
           {hasMaster && (
             <p className="mt-2">
-              The original is saved. Try another browser, or upload an MP3 to use for the
-              website player.
+              The original is saved. Try another browser, or upload
+              {variant === 'image' ? ' a JPEG or PNG' : ' an MP3'} to use for the website.
             </p>
           )}
           <button type="button" onClick={onReset} className="mt-2 underline">
@@ -102,7 +138,7 @@ function UploadDropzone({ status, onFile, onReset, currentBytes, hasMaster }) {
       {currentBytes ? (
         <p className="mt-2 font-mono text-xs text-gray-600">
           on the site: {formatBytes(currentBytes)}
-          {hasMaster ? ' · master held' : ' · no master held'}
+          {hasMaster ? ` · ${masterLabel} held` : ` · no ${masterLabel} held`}
         </p>
       ) : null}
     </div>

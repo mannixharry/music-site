@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import AudioPlayer from '../components/AudioPlayer'
-import { toAudioSrc } from '../content/normalise'
+import { toMediaSrc } from '../content/normalise'
 import { api } from './api'
 import UploadDropzone from './UploadDropzone'
 import { useUpload } from './useUpload'
+import { useCoverUpload } from './useCoverUpload'
 
 const BLANK = {
   title: '',
@@ -50,6 +51,7 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
   )
 
   const { status, start, reset } = useUpload({ songId: song?.id, capabilities, patch })
+  const cover = useCoverUpload({ songId: song?.id, capabilities, patch })
 
   async function save() {
     setSaving(true)
@@ -216,7 +218,7 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
                 <div className="mb-2">
                   <AudioPlayer
                     id={`admin-${song.id}`}
-                    src={toAudioSrc(song.webKey, mediaBase)}
+                    src={toMediaSrc(song.webKey, mediaBase)}
                     title={song.title}
                     duration={song.duration}
                   />
@@ -234,6 +236,52 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
             <p className="border border-gray-300 bg-gray-100 p-3 text-xs">
               Save the song first — the audio is filed under its name, so that has to exist
               before there is anywhere to put it.
+            </p>
+          )}
+        </Field>
+
+        {/* Offered whatever the song's type is, and the hint says why: only the
+            home page draws covers, but art uploaded now survives a song being
+            changed into a single later. */}
+        <Field
+          label="Cover art"
+          hint={
+            draft.kind === 'single'
+              ? 'optional — shown beside the song on the home page'
+              : 'optional — kept, but only shown once this is a single'
+          }
+        >
+          {song ? (
+            <>
+              {song.coverKey && (
+                <div className="mb-2 flex items-start gap-3">
+                  <img
+                    src={toMediaSrc(song.coverKey, mediaBase)}
+                    alt={`Cover art for ${song.title}`}
+                    className="aspect-square w-24 shrink-0 border border-gray-300 object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={cover.clear}
+                    className="text-sm underline"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+              <UploadDropzone
+                variant="image"
+                status={cover.status}
+                onFile={cover.start}
+                onReset={cover.reset}
+                currentBytes={song.coverBytes}
+                hasMaster={Boolean(song.coverMasterKey)}
+                masterLabel="original"
+              />
+            </>
+          ) : (
+            <p className="border border-gray-300 bg-gray-100 p-3 text-xs">
+              Save the song first — the art is filed under its name, same as the audio.
             </p>
           )}
         </Field>

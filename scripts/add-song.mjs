@@ -304,6 +304,16 @@ async function main() {
     master_bytes: number(master?.size ?? existing?.master_bytes ?? null),
     master_mime: quote(master?.mime ?? existing?.master_mime ?? null),
     duration_s: number(audio?.duration ?? existing?.duration_s ?? master?.duration ?? null),
+    // Carried through untouched. This script cannot set cover art — resizing it
+    // needs a canvas, so /admin does that — but the statement below is an
+    // INSERT OR REPLACE, which rebuilds the whole row: any column missing from
+    // this list would be silently reset to NULL. Updating a song from here must
+    // not cost it its artwork.
+    cover_key: quote(existing?.cover_key ?? null),
+    cover_bytes: number(existing?.cover_bytes ?? null),
+    cover_master_key: quote(existing?.cover_master_key ?? null),
+    cover_master_bytes: number(existing?.cover_master_bytes ?? null),
+    cover_master_mime: quote(existing?.cover_master_mime ?? null),
     links_json: quote(JSON.stringify(links.length ? links : JSON.parse(existing?.links_json ?? '[]'))),
     sort_order: number(sortOrder),
     published: options.draft ? '0' : String(existing?.published ?? 1),

@@ -21,6 +21,7 @@ function toRow(record) {
     musicalSlug: record.musical_slug,
     status: record.status,
     webKey: record.web_key,
+    coverKey: record.cover_key,
     duration: record.duration_s,
     links: Array.isArray(links) ? links : [],
     sortOrder: record.sort_order,
@@ -28,9 +29,12 @@ function toRow(record) {
   }
 }
 
+// No cover_master_* here, for the same reason there is no master_*: nothing in
+// the private bucket is reachable from the web, and naming it publicly would be
+// the first half of making it so.
 const PUBLIC_COLUMNS = `
   id, title, description, kind, musical_slug, status,
-  web_key, duration_s, links_json, sort_order, published
+  web_key, cover_key, duration_s, links_json, sort_order, published
 `
 
 export async function listPublishedSongs(env) {
@@ -48,7 +52,8 @@ export async function listPublishedSongs(env) {
 // from the database, not from the UI.
 export async function listAllSongs(env) {
   const { results } = await env.DB.prepare(
-    `SELECT ${PUBLIC_COLUMNS}, web_bytes, master_key, master_bytes, master_mime, updated_at
+    `SELECT ${PUBLIC_COLUMNS}, web_bytes, master_key, master_bytes, master_mime,
+            cover_bytes, cover_master_key, cover_master_bytes, updated_at
      FROM songs WHERE deleted_at IS NULL ORDER BY sort_order`,
   ).all()
 
@@ -58,6 +63,9 @@ export async function listAllSongs(env) {
     masterKey: record.master_key,
     masterBytes: record.master_bytes,
     masterMime: record.master_mime,
+    coverBytes: record.cover_bytes,
+    coverMasterKey: record.cover_master_key,
+    coverMasterBytes: record.cover_master_bytes,
     updatedAt: record.updated_at,
   }))
 }
@@ -107,6 +115,11 @@ const WRITABLE = {
   masterKey: 'master_key',
   masterBytes: 'master_bytes',
   masterMime: 'master_mime',
+  coverKey: 'cover_key',
+  coverBytes: 'cover_bytes',
+  coverMasterKey: 'cover_master_key',
+  coverMasterBytes: 'cover_master_bytes',
+  coverMasterMime: 'cover_master_mime',
   duration: 'duration_s',
   published: 'published',
 }
@@ -130,12 +143,16 @@ export async function createSong(env, input) {
   // name is free, so using it works — and it cannot clobber a live song,
   // since the route rejects an id that is still in use before reaching here.
   // deleted_at is absent from the column list and so resets to NULL.
+  // Every nullable column is listed and bound, including the cover ones nothing
+  // supplies yet. That is what makes the OR REPLACE above a clean slate: reusing
+  // a deleted song's id must not inherit its artwork.
   await env.DB.prepare(
     `INSERT OR REPLACE INTO songs (
        id, title, description, kind, musical_slug, status,
        web_key, web_bytes, master_key, master_bytes, master_mime, duration_s,
+       cover_key, cover_bytes, cover_master_key, cover_master_bytes, cover_master_mime,
        links_json, sort_order, published, created_at, updated_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       input.id,
@@ -150,6 +167,11 @@ export async function createSong(env, input) {
       input.masterBytes ?? null,
       input.masterMime ?? null,
       input.duration ?? null,
+      input.coverKey ?? null,
+      input.coverBytes ?? null,
+      input.coverMasterKey ?? null,
+      input.coverMasterBytes ?? null,
+      input.coverMasterMime ?? null,
       JSON.stringify(input.links ?? []),
       sortOrder,
       input.published ? 1 : 0,

@@ -12,10 +12,13 @@ const musicalTitles = new Map(musicals.map((musical) => [musical.slug, musical.t
 // A leading slash means a file still sitting in public/; anything else is an R2
 // object key to be hung off the media domain. This is what lets the same
 // snapshot survive the move to R2 without a flag day.
-export function toAudioSrc(webKey, mediaBase) {
-  if (!webKey) return null
-  if (webKey.startsWith('/') || webKey.startsWith('http')) return webKey
-  return `${mediaBase}/${webKey}`
+//
+// Audio and cover art are both public objects in the same bucket, so both
+// resolve through here.
+export function toMediaSrc(key, mediaBase) {
+  if (!key) return null
+  if (key.startsWith('/') || key.startsWith('http')) return key
+  return `${mediaBase}/${key}`
 }
 
 export function toSong(row, mediaBase = '') {
@@ -30,7 +33,11 @@ export function toSong(row, mediaBase = '') {
     // already the heading above it.
     shortTitle: row.title,
     description: row.description ?? '',
-    audioSrc: toAudioSrc(row.webKey, mediaBase),
+    audioSrc: toMediaSrc(row.webKey, mediaBase),
+    // Only the singles render this today, but every kind of song may carry it —
+    // so a song promoted to a single shows the art it already has, rather than
+    // asking for the file a second time.
+    coverSrc: toMediaSrc(row.coverKey, mediaBase),
     duration: row.duration ?? null,
     links: row.links ?? [],
     status: row.status ?? 'released',

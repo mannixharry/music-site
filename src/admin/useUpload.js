@@ -53,7 +53,7 @@ export function useUpload({ songId, capabilities, patch }) {
           const { size: masterBytes } = await uploadFile({
             file,
             key: masterKey,
-            bucket: 'masters',
+            contentType: contentTypeFor(file),
             capabilities,
             onProgress: (ratio) => setStatus((s) => ({ ...s, ratio })),
           })
@@ -65,7 +65,7 @@ export function useUpload({ songId, capabilities, patch }) {
           const { size } = await uploadFile({
             file,
             key,
-            bucket: 'media',
+            contentType: contentTypeFor(file),
             capabilities,
             onProgress: (ratio) => setStatus((s) => ({ ...s, ratio })),
           })
@@ -87,7 +87,7 @@ export function useUpload({ songId, capabilities, patch }) {
         const { size: masterBytes } = await uploadFile({
           file,
           key: masterKey,
-          bucket: 'masters',
+          contentType: contentTypeFor(file),
           capabilities,
           onProgress: (ratio) => setStatus((s) => ({ ...s, ratio })),
         })
@@ -104,7 +104,7 @@ export function useUpload({ songId, capabilities, patch }) {
         await uploadFile({
           file: new File([blob], 'web.mp3', { type: 'audio/mpeg' }),
           key: webKey,
-          bucket: 'media',
+          contentType: 'audio/mpeg',
           capabilities,
           onProgress: (ratio) => setStatus((s) => ({ ...s, ratio })),
         })

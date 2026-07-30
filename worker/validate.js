@@ -23,7 +23,16 @@ export const AUDIO_TYPES = [
   'audio/ogg',
 ]
 
+// Cover art. A short list for the same reason: the point is to know what is in
+// the bucket. No SVG — it is a script container, and these are served from a
+// domain that fronts a whole public bucket.
+export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif']
+
 export const MAX_UPLOAD_BYTES = 500 * 1024 * 1024
+
+// Artwork does not need the audio ceiling, and a limit that fits the job is one
+// less way for a mistaken drag to fill the bucket.
+export const MAX_IMAGE_BYTES = 25 * 1024 * 1024
 
 // Slugs are the primary key, the playback slot key, and part of the R2 path, so
 // they have to survive being all three: lowercase, ASCII, no punctuation.
@@ -95,15 +104,47 @@ export function validateSong(input, { partial = false } = {}) {
   return null
 }
 
-export function validateUpload({ contentType, size }) {
-  if (!AUDIO_TYPES.includes(contentType)) {
-    return `unsupported audio type: ${contentType}`
+// The key's prefix is the single fact that decides everything about an upload:
+// which bucket it lands in, what it is allowed to be, and how big it may get.
+// Tying all three to the destination means a request cannot ask for one thing
+// and store another — the caller does not get a say in the bucket at all, so a
+// cover cannot be talked into the private bucket or a master into the public one.
+//
+// MASTERS has no custom domain and no r2.dev URL: nothing under `masters/` or
+// `cover-masters/` is reachable from the web.
+const PREFIX_RULES = [
+  { prefix: 'web/', bucket: 'MEDIA', what: 'audio', types: AUDIO_TYPES, max: MAX_UPLOAD_BYTES },
+  { prefix: 'masters/', bucket: 'MASTERS', what: 'audio', types: AUDIO_TYPES, max: MAX_UPLOAD_BYTES },
+  { prefix: 'covers/', bucket: 'MEDIA', what: 'image', types: IMAGE_TYPES, max: MAX_IMAGE_BYTES },
+  {
+    prefix: 'cover-masters/',
+    bucket: 'MASTERS',
+    what: 'image',
+    types: IMAGE_TYPES,
+    max: MAX_IMAGE_BYTES,
+  },
+]
+
+export const PREFIXES = PREFIX_RULES.map((rule) => rule.prefix)
+
+// Unrecognised prefix rather than a default: a new kind of object has to declare
+// itself here before it can be stored at all.
+export function ruleForKey(key) {
+  return PREFIX_RULES.find((rule) => String(key ?? '').startsWith(rule.prefix)) ?? null
+}
+
+export function validateUpload({ key, contentType, size }) {
+  const rule = ruleForKey(key)
+  if (!rule) return `key must start with one of ${PREFIXES.join(', ')}`
+
+  if (!rule.types.includes(contentType)) {
+    return `unsupported ${rule.what} type: ${contentType}`
   }
   if (!Number.isFinite(size) || size <= 0) {
     return 'missing file size'
   }
-  if (size > MAX_UPLOAD_BYTES) {
-    return `file is larger than ${Math.round(MAX_UPLOAD_BYTES / 1024 / 1024)}MB`
+  if (size > rule.max) {
+    return `file is larger than ${Math.round(rule.max / 1024 / 1024)}MB`
   }
   return null
 }

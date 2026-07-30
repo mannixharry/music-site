@@ -40,6 +40,8 @@ const statements = songs.map((song) => {
     number(song.masterBytes),
     quote(song.masterMime),
     number(song.duration),
+    quote(song.coverKey),
+    number(song.coverBytes),
     quote(JSON.stringify(song.links ?? [])),
     number(song.sortOrder),
     song.published === false ? '0' : '1',
@@ -47,9 +49,13 @@ const statements = songs.map((song) => {
     quote(now),
   ]
 
+  // The cover_master_* columns are absent on purpose, as the master_* ones
+  // effectively are: the snapshot comes from /api/content, which exposes nothing
+  // about the private bucket, so seeding could only ever write NULL over them.
   return `INSERT OR REPLACE INTO songs (
   id, title, description, kind, musical_slug, status,
   web_key, web_bytes, master_key, master_bytes, master_mime, duration_s,
+  cover_key, cover_bytes,
   links_json, sort_order, published, created_at, updated_at
 ) VALUES (${columns.join(', ')});`
 })

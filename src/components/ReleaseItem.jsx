@@ -1,15 +1,28 @@
 import Placeholder from './Placeholder'
 import AudioPlayer from './AudioPlayer'
 
+// The cover box keeps its size whether or not there is art in it, so a
+// catalogue where only some songs have one still lines up.
+const COVER_CLASS = 'aspect-square w-24 shrink-0'
+
 function ReleaseItem({ release }) {
   return (
     <div className="flex gap-3">
-      <Placeholder
-        label="Cover art"
-        dims="1000×1000px"
-        aspect="aspect-square"
-        className="w-24 shrink-0"
-      />
+      {release.coverSrc ? (
+        <img
+          src={release.coverSrc}
+          // The title is already the heading beside it, so naming the song again
+          // would just be read out twice. This says what the image is.
+          alt={`Cover art for ${release.title}`}
+          width={1000}
+          height={1000}
+          loading="lazy"
+          decoding="async"
+          className={`${COVER_CLASS} border border-gray-300 object-cover`}
+        />
+      ) : (
+        <Placeholder label="Cover art" dims="1000×1000px" className={COVER_CLASS} />
+      )}
 
       <div className="min-w-0 flex-1">
         <h3 className="truncate text-sm font-bold">{release.title}</h3>

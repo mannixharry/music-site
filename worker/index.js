@@ -10,7 +10,16 @@ import {
 } from './db'
 import { fail, json } from './json'
 import { presignPut } from './presign'
-import { slugify, validateSong, validateUpload, AUDIO_TYPES, MAX_UPLOAD_BYTES } from './validate'
+import {
+  slugify,
+  validateSong,
+  validateUpload,
+  ruleForKey,
+  AUDIO_TYPES,
+  IMAGE_TYPES,
+  MAX_UPLOAD_BYTES,
+  MAX_IMAGE_BYTES,
+} from './validate'
 
 // This Worker answers /api/* and nothing else. Every page, script, stylesheet
 // and audio file is a static asset, which Cloudflare serves without invoking
@@ -91,7 +100,13 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
       // environment, so the difference between local and deployed is one
       // explicit flag. Presigned uploads need a real S3 endpoint, which the
       // local emulated R2 does not have.
-      capabilities: { presign, maxUploadBytes: MAX_UPLOAD_BYTES, audioTypes: AUDIO_TYPES },
+      capabilities: {
+        presign,
+        maxUploadBytes: MAX_UPLOAD_BYTES,
+        audioTypes: AUDIO_TYPES,
+        maxImageBytes: MAX_IMAGE_BYTES,
+        imageTypes: IMAGE_TYPES,
+      },
       bypass: identity.bypass,
     })
   }
@@ -155,14 +170,17 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
   if (pathname === '/api/admin/uploads' && method === 'POST') {
     if (!presign) return fail(400, 'Presigned uploads are not configured here')
 
-    const { key, bucket, contentType, size } = await request.json()
+    const { key, contentType, size } = await request.json()
     if (!key || key.includes('..') || key.startsWith('/')) return fail(400, 'bad key')
 
     // The browser checked this too. That check is a courtesy; this one decides.
-    const problem = validateUpload({ contentType, size })
+    const problem = validateUpload({ key, contentType, size })
     if (problem) return fail(400, problem)
 
-    const bucketName = bucket === 'masters' ? env.MASTERS_BUCKET : env.MEDIA_BUCKET
+    // The key's prefix chooses the bucket, not the request — so a signature for
+    // a public object can never be handed out for the private one, or the reverse.
+    const rule = ruleForKey(key)
+    const bucketName = rule.bucket === 'MASTERS' ? env.MASTERS_BUCKET : env.MEDIA_BUCKET
     const uploadUrl = await presignPut({ env, bucketName, key, contentType })
     return json({ uploadUrl, key })
   }
@@ -177,15 +195,16 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
 
     const url = new URL(request.url)
     const key = url.searchParams.get('key') ?? ''
-    const bucket = url.searchParams.get('bucket') === 'masters' ? 'MASTERS' : 'MEDIA'
     const contentType = request.headers.get('content-type') ?? ''
     const size = Number(request.headers.get('content-length') ?? 0)
 
     if (!key || key.includes('..') || key.startsWith('/')) return fail(400, 'bad key')
 
-    const problem = validateUpload({ contentType, size })
+    const problem = validateUpload({ key, contentType, size })
     if (problem) return fail(400, problem)
 
+    // Same rule as the presigned path: the prefix decides the bucket.
+    const { bucket } = ruleForKey(key)
     await env[bucket].put(key, request.body, { httpMetadata: { contentType } })
     return json({ key, bucket: bucket.toLowerCase(), size })
   }

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A portfolio/website for artist Frank Kirwan (see `<title>` in `index.html`). Built on Vite's `react` template. Five routes, a custom audio player, and no tests or component library.
 
-The site is still staged: `index.html` carries a `noindex, nofollow` meta tag. The About page, the home-page bio and the Guyana Skies copy are Frank's real words; still placeholder are the song descriptions (all empty), the Spotify links (all `#`), the Pigs and Copperfield teasers and resumes (lorem ipsum), and `contact.email` (`frank@example.com`).
+The site is still staged: `index.html` carries a `noindex, nofollow` meta tag. The About page, the home-page bio, and all three musicals' teasers and synopses are Frank's real words. Still outstanding: the song descriptions (all empty), `contact.email` (`frank@example.com`), the hero images, and cover art for the singles. No song carries streaming links — the placeholder `#` Spotify ones were removed rather than left dead, and Frank adds the real URLs from `/admin` himself.
 
 It is mid-migration to a self-hosted admin CMS — see "Content" below.
 
@@ -62,6 +62,17 @@ An upload records the **master first** and patches the song before doing anythin
 **Every upload keeps the original**, whatever format it arrives in — `master_key` is never null for a song that has audio. Files already MP3/M4A and under 12 MB skip *encoding* (the common case, and the one that never downloads the encoder chunk), but they are still archived: the same bytes go to both buckets, private original and public copy. That looks wasteful and is deliberate. The public object can then be replaced, re-encoded or deleted without it being a one-way door, and serving an MP3 as-is avoids compressing already-compressed audio twice. The masters bucket has no custom domain and no `r2.dev` URL, so nothing in it is reachable from the web; `/api/content` exposes no `master*` field.
 
 Locally there is no S3 endpoint to presign against, so `wrangler dev` uploads stream through `PUT /api/admin/blob` into the emulated bucket and are served back by `GET /api/media/*`. The client picks between the two on `capabilities.presign` from `/api/admin/session`, never by sniffing hostnames.
+
+**Where an object goes is decided by its key, not by the request.** `PREFIX_RULES` in `worker/validate.js` maps each prefix to a bucket, an allowed content-type list and a size cap, and both upload routes read it. Four prefixes exist: `web/` and `covers/` in `MEDIA`, `masters/` and `cover-masters/` in `MASTERS`. A key that matches none of them is refused. This is why the client no longer sends a bucket at all — it could otherwise ask for a public signature and name a private object, or the reverse. An unrecognised prefix must stay an error rather than defaulting to a bucket.
+
+**Cover art** is stored the same way audio is, and for the same reason: a public copy in `MEDIA` under `covers/` that the site serves off `media.frankkirwan.com`, and the untouched upload kept private in `MASTERS` under `cover-masters/`, so the public copy can be re-cropped or re-encoded later without going back to Frank for the file. `/api/content` exposes `coverKey` and nothing about `cover_master_*`.
+
+Two things about it are deliberate:
+
+- **Any song may carry art; only the singles show it.** `cover_key` is on `songs` with no reference to `kind`, and `ReleaseItem` is the only component that draws it. So changing a song's type to `single` starts showing art that was already uploaded rather than asking for the file again — which is the whole point of not keying this off `kind`.
+- **Resizing happens in the browser, on the main thread, with no worker.** `src/admin/cover.js` centre-crops to a square and encodes WebP at up to 1000px via `createImageBitmap` and `canvas.toBlob` — both native and quick, unlike the MP3 encode, so there is no second worker and no growth in the admin chunk. It never upscales: a 1600×900 upload becomes 900×900. Images already JPEG/PNG/WebP, under 400 kB and no larger than 1000px are stored untouched, mirroring `canUseDirectly` for audio.
+
+No SVG in `IMAGE_TYPES`, and it should stay out: `media.frankkirwan.com` fronts a whole public bucket, and an SVG is a script container.
 
 `worker/access.js` is the second lock, and three things in it must not be softened:
 

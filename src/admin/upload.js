@@ -62,14 +62,17 @@ function put(url, body, { contentType, onProgress, headers = {} }) {
 // bucket; deployed, the browser is handed a presigned URL and talks to R2
 // directly, so the audio never touches the Worker's 10ms CPU budget or runs
 // into its 100MB body limit.
-export async function uploadFile({ file, key, bucket, capabilities, onProgress }) {
-  const contentType = contentTypeFor(file)
-
+//
+// No bucket argument: the key's prefix decides which bucket an object lands in,
+// and that decision is the Worker's alone — see PREFIX_RULES in worker/validate.js.
+// `contentType` is passed in rather than derived, because this moves cover art as
+// well as audio and the two guess it from different tables.
+export async function uploadFile({ file, key, contentType, capabilities, onProgress }) {
   if (capabilities.presign) {
     const response = await fetch('/api/admin/uploads', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ key, bucket, contentType, size: file.size }),
+      body: JSON.stringify({ key, contentType, size: file.size }),
     })
     const data = await response.json()
     if (!response.ok) throw new Error(data.error ?? 'Could not start the upload')
@@ -78,7 +81,7 @@ export async function uploadFile({ file, key, bucket, capabilities, onProgress }
     return { key: data.key, size: file.size }
   }
 
-  const query = new URLSearchParams({ key, bucket })
+  const query = new URLSearchParams({ key })
   await put(`/api/admin/blob?${query}`, file, { contentType, onProgress })
   return { key, size: file.size }
 }
