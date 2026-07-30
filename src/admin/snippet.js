@@ -66,39 +66,8 @@ export function clipToSnippet({ left, right, channels, duration }, range, sample
   }
 }
 
-// "45", "0:45" and "1:05.5" all mean what they look like: Frank types whatever
-// he is reading off a player. Returns null for anything it cannot make sense
-// of, and the form treats that as "not ready to upload" rather than guessing.
-export function parseTime(input) {
-  const text = String(input).trim()
-  if (!text) return null
-
-  const parts = text.split(':')
-  if (parts.length > 2) return null
-
-  const numbers = parts.map((part) => (part === '' ? 0 : Number(part)))
-  if (numbers.some((value) => !Number.isFinite(value) || value < 0)) return null
-
-  return parts.length === 2 ? numbers[0] * 60 + numbers[1] : numbers[0]
-}
-
 export function formatTime(seconds) {
   if (!Number.isFinite(seconds)) return '--:--'
   const minutes = Math.floor(seconds / 60)
   return `${minutes}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`
-}
-
-// The form's two fields — held as strings, because they are half-typed most of
-// the time — turned into the range an upload wants, or null when they do not
-// yet add up to one. Null is what stops the form accepting a file: without a
-// range there is nothing to cut to, and uploading anyway would publish the
-// whole song under a row calling it a preview.
-export function toRange({ enabled, start: startText, length: lengthText }) {
-  if (!enabled) return null
-
-  const start = parseTime(startText)
-  const length = parseTime(lengthText)
-  if (start === null || length === null || length <= 0) return null
-
-  return { start, end: start + length }
 }

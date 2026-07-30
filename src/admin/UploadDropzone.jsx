@@ -46,14 +46,8 @@ function UploadDropzone({
   currentBytes,
   hasMaster,
   masterLabel = 'master',
-  // Overrides the variant's note about what will happen to the file. Cropping a
-  // preview is decided outside this component and contradicts what the audio
-  // variant would otherwise say — an MP3 bound for a preview is not "used
-  // as-is", however much it looks like one from here.
-  describe: describeOverride,
 }) {
-  const { accept, prompt, hint, describe: describeVariant } = VARIANTS[variant]
-  const describe = describeOverride ?? describeVariant
+  const { accept, prompt, hint, describe } = VARIANTS[variant]
 
   const inputRef = useRef(null)
   const [over, setOver] = useState(false)

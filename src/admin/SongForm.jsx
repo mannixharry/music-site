@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import AudioPlayer from '../components/AudioPlayer'
 import { toMediaSrc } from '../content/normalise'
 import { api } from './api'
 import SnippetControls from './SnippetControls'
-import { formatTime, toRange } from './snippet'
+import SnippetTrimmer from './SnippetTrimmer'
 import UploadDropzone from './UploadDropzone'
 import { useUpload } from './useUpload'
 import { useCoverUpload } from './useCoverUpload'
@@ -43,27 +43,24 @@ function Block({ label, hint, children }) {
 
 const inputClass = 'w-full border border-gray-400 bg-white px-2 py-1 text-sm'
 
-// Thirty seconds from the top, which is what a preview usually wants to be.
-// Deliberately not read back off the song: this describes the next upload, and
-// a song that is already a preview is far more likely to be getting its full
-// version than the same crop twice.
-const NO_SNIPPET = { enabled: false, start: '0:00', length: '0:30' }
-
 function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel }) {
   const [draft, setDraft] = useState(BLANK)
-  const [snippet, setSnippet] = useState(NO_SNIPPET)
+  // Whether the next upload publishes a cut. Deliberately not read back off the
+  // song: a song that is already a preview is far likelier to be getting its
+  // full version than the same crop a second time.
+  const [cropping, setCropping] = useState(false)
+  // A file that has been chosen but not sent. Only previews wait here — an
+  // ordinary upload has nothing left to decide, so it goes straight up.
+  const [pendingFile, setPendingFile] = useState(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     setDraft(song ? { ...BLANK, ...song, musicalSlug: song.musicalSlug ?? '' } : BLANK)
-    setSnippet(NO_SNIPPET)
+    setCropping(false)
+    setPendingFile(null)
     setError(null)
   }, [song])
-
-  // Memoised because useUpload holds it in a dependency list: rebuilding the
-  // object on every keystroke would rebuild the upload callback with it.
-  const range = useMemo(() => toRange(snippet), [snippet])
 
   const set = (fields) => setDraft((current) => ({ ...current, ...fields }))
 
@@ -77,12 +74,7 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
     [song, onChanged],
   )
 
-  const { status, start, reset } = useUpload({
-    songId: song?.id,
-    capabilities,
-    patch,
-    snippet: range,
-  })
+  const { status, start, reset } = useUpload({ songId: song?.id, capabilities, patch })
   const cover = useCoverUpload({ songId: song?.id, capabilities, patch })
 
   async function save() {
@@ -263,9 +255,13 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
               )}
 
               <SnippetControls
-                snippet={snippet}
-                range={range}
-                onChange={setSnippet}
+                enabled={cropping}
+                onChange={(next) => {
+                  setCropping(next)
+                  // Turning it off with a file waiting would otherwise leave
+                  // that file stranded behind a trimmer nothing renders.
+                  setPendingFile(null)
+                }}
                 current={
                   song.isSnippet && song.snippetStart !== null
                     ? { start: song.snippetStart, end: song.snippetEnd }
@@ -273,22 +269,24 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
                 }
               />
 
-              {/* Withheld rather than disabled while the times are unreadable.
-                  A dropzone that takes the file and then publishes the whole
-                  song because it could not work out where to cut would be the
-                  one failure this feature must not have. */}
-              {snippet.enabled && !range ? null : (
+              {pendingFile ? (
+                <SnippetTrimmer
+                  file={pendingFile}
+                  onCancel={() => setPendingFile(null)}
+                  onConfirm={(range) => {
+                    setPendingFile(null)
+                    start(pendingFile, range)
+                  }}
+                />
+              ) : (
                 <UploadDropzone
                   status={status}
-                  onFile={start}
+                  // A preview stops here to be cut. Everything else is already
+                  // decided, so it goes straight up as it always has.
+                  onFile={(file) => (cropping ? setPendingFile(file) : start(file))}
                   onReset={reset}
                   currentBytes={song.webBytes}
                   hasMaster={Boolean(song.masterKey)}
-                  describe={
-                    range
-                      ? async () => `cut to ${formatTime(range.start)}–${formatTime(range.end)}`
-                      : undefined
-                  }
                 />
               )}
             </>

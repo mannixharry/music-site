@@ -32,15 +32,17 @@ const NOT_A_SNIPPET = { isSnippet: false, snippetStart: null, snippetEnd: null }
 // twice on the slow path — once the master is safely stored and again once the
 // web version exists — because the gap between them is where things fail.
 //
-// `snippet` is `{ start, end }` in seconds when only a preview should be
-// published, and null for the whole track.
-export function useUpload({ songId, capabilities, patch, snippet = null }) {
+// `start(file, snippet)` takes the crop as an argument rather than the hook
+// taking it as an option: the range is settled in the trimmer at the moment of
+// pressing the button, and passing it here keeps it out of the dependency list
+// that would otherwise rebuild this callback on every drag of a handle.
+export function useUpload({ songId, capabilities, patch }) {
   const [status, setStatus] = useState(IDLE)
 
   const reset = useCallback(() => setStatus(IDLE), [])
 
   const start = useCallback(
-    async (file) => {
+    async (file, snippet = null) => {
       try {
         // The quick path: it is already something browsers stream, and small
         // enough to serve untouched. No decode, so nothing to go wrong.
@@ -149,7 +151,7 @@ export function useUpload({ songId, capabilities, patch, snippet = null }) {
         setStatus({ phase: 'error', ratio: 0, message: '', error: error.message })
       }
     },
-    [songId, capabilities, patch, snippet],
+    [songId, capabilities, patch],
   )
 
   return { status, start, reset }

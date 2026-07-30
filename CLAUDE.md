@@ -85,6 +85,10 @@ No SVG in `IMAGE_TYPES`, and it should stay out: `media.frankkirwan.com` fronts 
 
 The range the form asks for is clamped to what the file turns out to contain, and what gets recorded is what was clamped to — asking for a minute from a 45-second recording is ordinary and should not fail. The cut is faded in and out (15 ms and 750 ms, the latter capped at a third of the preview) because a hard cut sounds like a file that failed to download.
 
+Choosing the range is a **two-step upload, and only for previews**: the dropzone hands the file to `SnippetTrimmer` instead of sending it, and nothing leaves the browser until the trimmer's own button. That pause is what makes auditioning the cut before publishing possible at all. An ordinary upload has nothing left to decide and still goes straight up. The range is an argument to `start(file, range)` rather than a `useUpload` option, so dragging a handle does not rebuild the upload callback sixty times a second.
+
+The trimmer decodes the file a second time to draw its waveform (`src/admin/waveform.js`), which the upload then decodes again on its way to the encoder. That is deliberate: threading one `AudioBuffer` out of here would save about a second and couple the trimmer to the pipeline's internals permanently. The buffer is dropped once the peaks are computed — five minutes of stereo is ~100MB of floats, and holding it for the length of an edit is the thing to avoid. Playback during editing is an `<audio>` element streaming the same file, not that buffer.
+
 `worker/access.js` is the second lock, and three things in it must not be softened:
 
 - The JWT **signature** is verified, and `aud` is checked against this application's AUD tag. Skipping the audience check accepts a valid token minted for any other app in the same Zero Trust organisation.
