@@ -2,6 +2,14 @@
 // it bothers the server, but that is a courtesy to the person uploading — this
 // is the copy that decides.
 
+// The musicals' own file, imported rather than a second list of slugs kept in
+// step by hand. It is editorial copy with no imports of its own, so Wrangler
+// bundles it as happily as Vite does — and a demo can no longer be filed under
+// a show that does not exist.
+import { musicals } from '../src/content/musicals'
+
+const MUSICAL_SLUGS = new Set(musicals.map((musical) => musical.slug))
+
 export const KINDS = ['single', 'demo', 'other']
 export const STATUSES = ['released', 'coming-soon']
 
@@ -43,6 +51,16 @@ export const D1_LIMIT_BYTES = 5 * 1024 * 1024 * 1024
 
 export const MAX_UPLOAD_BYTES = 500 * 1024 * 1024
 
+// Ceilings on the text fields. Not tidiness: every one of these is downloaded
+// by every visitor inside /api/content, so without them a slip of the paste
+// buffer puts two megabytes of anything on the front page. A song given 5000
+// links reached D1 and came back SQLITE_TOOBIG as a 500.
+export const MAX_TITLE_LENGTH = 200
+export const MAX_DESCRIPTION_LENGTH = 5000
+export const MAX_LINKS = 20
+export const MAX_LABEL_LENGTH = 80
+export const MAX_HREF_LENGTH = 2000
+
 // Artwork does not need the audio ceiling, and a limit that fits the job is one
 // less way for a mistaken drag to fill the bucket.
 export const MAX_IMAGE_BYTES = 25 * 1024 * 1024
@@ -62,18 +80,73 @@ export function slugify(input) {
     .slice(0, 80)
 }
 
-function isLinkArray(value) {
-  return (
-    Array.isArray(value) &&
-    value.every(
-      (link) =>
-        link &&
-        typeof link.label === 'string' &&
-        link.label.length > 0 &&
-        typeof link.href === 'string',
-    )
-  )
+// A link has to be something that can only ever navigate. `javascript:` and
+// `data:` URLs in an href are one click from running script on
+// frankkirwan.com, and these links are rendered to every visitor — so the
+// scheme is an allow-list, not a block-list.
+//
+// A leading "/" is allowed, so a song can point at a page on this site. "//" is
+// not: it is protocol-relative and goes wherever the other end says.
+const SAFE_SCHEMES = ['http:', 'https:', 'mailto:']
+
+function isSafeHref(value) {
+  if (typeof value !== 'string') return false
+  if (value.length === 0 || value.length > MAX_HREF_LENGTH) return false
+  if (value.startsWith('//')) return false
+  if (value.startsWith('/')) return true
+
+  try {
+    return SAFE_SCHEMES.includes(new URL(value).protocol)
+  } catch {
+    // Not an absolute URL at all, which for a streaming link is a mistake.
+    return false
+  }
 }
+
+function linkProblem(links) {
+  if (!Array.isArray(links)) return 'links must be a list of {label, href}'
+  if (links.length > MAX_LINKS) return `that is more than ${MAX_LINKS} links`
+
+  for (const link of links) {
+    if (!link || typeof link.label !== 'string' || link.label.length === 0) {
+      return 'every link needs a label'
+    }
+    if (link.label.length > MAX_LABEL_LENGTH) {
+      return `a link label is longer than ${MAX_LABEL_LENGTH} characters`
+    }
+    if (!isSafeHref(link.href)) {
+      return `"${String(link.href).slice(0, 40)}" is not an address a link can point at`
+    }
+  }
+
+  return null
+}
+
+// Which prefixes each column may name. This is the check that stops something
+// genuinely destructive rather than merely untidy.
+//
+// Nothing checked it before, so a song's web_key could be set to another song's
+// master. The next audio upload displaces that key, deleteReplacedObjects
+// removes whatever was displaced, and the original — the only copy of it
+// anywhere — is gone. Two PATCHes, no warning, nothing to restore from.
+const KEY_PREFIXES = {
+  webKey: ['web/'],
+  coverKey: ['covers/'],
+  masterKey: ['masters/'],
+  coverMasterKey: ['cover-masters/'],
+}
+
+// Numbers, or null. A string here used to be stored as-is and then added into
+// the storage figures.
+const NUMBER_FIELDS = [
+  'webBytes',
+  'masterBytes',
+  'coverBytes',
+  'coverMasterBytes',
+  'duration',
+  'snippetStart',
+  'snippetEnd',
+]
 
 // Returns an error string, or null when the input is acceptable. `partial` is
 // for PATCH, where only the supplied fields are checked.
@@ -83,6 +156,16 @@ export function validateSong(input, { partial = false } = {}) {
   if (!partial || has('title')) {
     if (typeof input.title !== 'string' || input.title.trim().length === 0) {
       return 'title is required'
+    }
+    if (input.title.length > MAX_TITLE_LENGTH) {
+      return `the title is longer than ${MAX_TITLE_LENGTH} characters`
+    }
+  }
+
+  if (has('description')) {
+    if (typeof input.description !== 'string') return 'description must be text'
+    if (input.description.length > MAX_DESCRIPTION_LENGTH) {
+      return `the description is longer than ${MAX_DESCRIPTION_LENGTH} characters`
     }
   }
 
@@ -97,7 +180,9 @@ export function validateSong(input, { partial = false } = {}) {
   }
 
   // A demo belongs to a musical; nothing else does. Letting these drift apart
-  // means a demo that MusicalSection can never find.
+  // means a demo MusicalSection can never find — which is what an unrecognised
+  // slug used to produce: a song filed under a show that does not exist, and so
+  // shown nowhere at all.
   const kind = input.kind
   if (kind === 'demo' && has('musicalSlug') && !input.musicalSlug) {
     return 'a demo needs a musical'
@@ -105,31 +190,53 @@ export function validateSong(input, { partial = false } = {}) {
   if (kind && kind !== 'demo' && input.musicalSlug) {
     return 'only a demo can belong to a musical'
   }
-
-  if (has('links') && !isLinkArray(input.links)) {
-    return 'links must be a list of {label, href}'
+  if (has('musicalSlug') && input.musicalSlug && !MUSICAL_SLUGS.has(input.musicalSlug)) {
+    return `there is no musical called "${String(input.musicalSlug).slice(0, 40)}"`
   }
 
-  if (has('duration') && input.duration !== null && !(Number(input.duration) > 0)) {
+  if (has('links')) {
+    const problem = linkProblem(input.links)
+    if (problem) return problem
+  }
+
+  for (const [field, prefixes] of Object.entries(KEY_PREFIXES)) {
+    if (!has(field) || input[field] === null) continue
+
+    const key = input[field]
+    if (typeof key !== 'string') return `${field} must be a storage key`
+    // A leading slash is a file still sitting in public/ — see normalise.js.
+    if (field === 'webKey' && key.startsWith('/')) continue
+    if (!prefixes.some((prefix) => key.startsWith(prefix))) {
+      return `${field} must name an object under ${prefixes.join(' or ')}`
+    }
+  }
+
+  for (const field of NUMBER_FIELDS) {
+    if (!has(field) || input[field] === null) continue
+    if (typeof input[field] !== 'number' || !Number.isFinite(input[field]) || input[field] < 0) {
+      return `${field} must be a number`
+    }
+  }
+
+  if (has('duration') && input.duration !== null && !(input.duration > 0)) {
     return 'duration must be a positive number of seconds'
   }
 
-  // The flag only describes what web_key already holds — nothing here cuts
-  // anything, and setting it by hand on a full track would mislabel it rather
-  // than shorten it. See migrations/0003_snippets.sql.
-  for (const flag of ['isSnippet', 'showSnippetTag']) {
-    if (has(flag) && typeof input[flag] !== 'boolean') return `${flag} must be true or false`
+  for (const [field, allowed] of [['masterMime', AUDIO_TYPES], ['coverMasterMime', IMAGE_TYPES]]) {
+    if (has(field) && input[field] !== null && !allowed.includes(input[field])) {
+      return `${field} is not a type this stores`
+    }
   }
 
-  for (const field of ['snippetStart', 'snippetEnd']) {
-    if (has(field) && input[field] !== null && !(Number(input[field]) >= 0)) {
-      return `${field} must be a number of seconds`
-    }
+  // These only ever describe what is already stored; nothing here changes a
+  // file. See migrations/0003_snippets.sql and 0004_snippet_tag.sql.
+  for (const flag of ['isSnippet', 'showSnippetTag', 'published']) {
+    if (has(flag) && typeof input[flag] !== 'boolean') return `${flag} must be true or false`
   }
 
   const { snippetStart: from, snippetEnd: to } = input
   if (has('snippetStart') && has('snippetEnd') && from !== null && to !== null) {
-    if (!(Number(to) > Number(from))) return 'the preview has to end after it starts'
+    if (!(to > from)) return 'the preview has to end after it starts'
   }
 
   return null

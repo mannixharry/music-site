@@ -36,8 +36,11 @@ function Field({ label, hint, children }) {
 // middle one is that a preview is no longer a one-way door: both actions work
 // from the master, which is the only copy of the full song there is, and which
 // nothing else on the site can reach.
-function PreviewControls({ song, fetching, onMake, onEdit, onRestore }) {
-  const busy = Boolean(fetching)
+function PreviewControls({ song, fetching, transferring, onMake, onEdit, onRestore }) {
+  // `transferring` as well as `fetching`: these buttons all end in start(),
+  // and one already running means a second upload racing the first for the same
+  // song's web_key. Whichever lost would leave its object behind.
+  const busy = Boolean(fetching) || transferring
 
   if (!song.webKey) return null
 
@@ -460,6 +463,7 @@ function SongForm({ song, justCreated, musicals, capabilities, mediaBase, onChan
                     <PreviewControls
                       song={song}
                       fetching={fetching}
+                      transferring={transferring}
                       onMake={makePreview}
                       onEdit={editPreview}
                       onRestore={restoreWholeSong}

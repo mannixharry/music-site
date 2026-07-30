@@ -115,6 +115,14 @@ Cutting is a **two-step upload**: the fetched audio goes to `SnippetTrimmer` and
 
 The trimmer decodes the fetched audio to draw its waveform (`src/admin/waveform.js`), which the upload then decodes again on its way to the encoder. That is deliberate: threading one `AudioBuffer` out of here would save about a second and couple the trimmer to the pipeline's internals permanently. The buffer is dropped once the peaks are computed — five minutes of stereo is ~100MB of floats, and holding it for the length of an edit is the thing to avoid. Playback during editing is an `<audio>` element streaming the same file, not that buffer.
 
+`worker/validate.js` is what stands between the admin API and the database, and three of its rules exist because the absence of them was demonstrably destructive rather than merely untidy:
+
+- **A link's `href` is scheme-allow-listed** (`http:`, `https:`, `mailto:`, or a `/` path). These links are rendered to every visitor, so a stored `javascript:` URL was a click away from running script on frankkirwan.com.
+- **Every key column must name its own prefix.** `web_key` could previously be set to another song's master; the next upload displaces it, `deleteReplacedObjects` removes what was displaced, and the only copy of that original is gone. Two PATCHes, no warning, nothing to restore from.
+- **A `musicalSlug` must name a musical that exists**, or the demo is filed under a show nothing renders and disappears from the site entirely.
+
+Everything else is typed and bounded — text has ceilings because `/api/content` ships it to every visitor, and untyped fields used to reach D1 and come back as 500s carrying SQLite's own error text.
+
 `worker/access.js` is the second lock, and three things in it must not be softened:
 
 - The JWT **signature** is verified, and `aud` is checked against this application's AUD tag. Skipping the audience check accepts a valid token minted for any other app in the same Zero Trust organisation.
