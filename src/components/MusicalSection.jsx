@@ -26,8 +26,8 @@ function MusicalSection({ musical }) {
         ))}
       </div>
 
-      {/* Guyana Skies has no demos on the site yet. A heading over an empty box
-          reads like something failed to load, so the block goes entirely. */}
+      {/* A heading over an empty box reads like something failed to load, so a
+          show with no demos yet loses the block entirely. */}
       {demos.length > 0 && (
         <>
           <h3 className="mt-6 font-bold">Demos</h3>
