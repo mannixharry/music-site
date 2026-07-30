@@ -22,14 +22,14 @@ const VARIANTS = {
   audio: {
     accept: ACCEPTED,
     prompt: 'Drop an audio file here, or click to choose one',
-    hint: 'MP3, M4A, WAV, AIFF, FLAC or OGG. Upload the best version you have — a smaller one is made for the website automatically.',
-    describe: async (file) => (canUseDirectly(file) ? 'used as-is' : 'converted'),
+    hint: 'MP3, M4A, WAV, AIFF, FLAC or OGG. Upload the best quality you have — a smaller version is made for the website automatically.',
+    describe: async (file) => (canUseDirectly(file) ? 'ready to use' : 'will be converted'),
   },
   image: {
     accept: ACCEPTED_IMAGES,
     prompt: 'Drop the cover art here, or click to choose it',
-    hint: 'JPEG, PNG, WebP or AVIF. Upload it at full size — a square 1000px copy is made for the website, and the original is kept.',
-    describe: async () => 'resized to 1000px square',
+    hint: 'JPEG, PNG, WebP or AVIF. Upload it full size — it is cropped square for the website and your original is kept.',
+    describe: async () => 'will be cropped square',
   },
 }
 
@@ -113,15 +113,15 @@ function UploadDropzone({
 
       {status.phase === 'error' && (
         <div className="mt-2 border border-gray-500 bg-gray-100 p-3 text-xs">
-          <p className="font-bold">Could not use that file</p>
+          <p className="font-bold">That file could not be used</p>
           <p className="mt-1">{status.error}</p>
           {/* Browsers differ over AIFF, ALAC and some WAV variants, and the
               original is already stored by the time a decode fails — so this is
               a detour, not a dead end. */}
           {hasMaster && (
             <p className="mt-2">
-              The original is saved. Try another browser, or upload
-              {variant === 'image' ? ' a JPEG or PNG' : ' an MP3'} to use for the website.
+              Your original is safely saved. Try another browser, or upload
+              {variant === 'image' ? ' a JPEG or PNG' : ' an MP3'} for the website to use.
             </p>
           )}
           <button type="button" onClick={onReset} className="mt-2 underline">
@@ -132,8 +132,8 @@ function UploadDropzone({
 
       {currentBytes ? (
         <p className="mt-2 font-mono text-xs text-gray-600">
-          on the site: {formatBytes(currentBytes)}
-          {hasMaster ? ` · ${masterLabel} held` : ` · no ${masterLabel} held`}
+          on the website: {formatBytes(currentBytes)}
+          {hasMaster ? ` · ${masterLabel} saved` : ` · no ${masterLabel} saved`}
         </p>
       ) : null}
     </div>

@@ -15,25 +15,23 @@ function SnippetControls({ enabled, onChange, current }) {
           checked={enabled}
           onChange={(event) => onChange(event.currentTarget.checked)}
         />
-        <span className="font-bold">Put only a preview on the website</span>
+        <span className="font-bold">Only put a short preview on the website</span>
       </label>
 
       <p className="mt-1 text-xs text-gray-600">
-        Only the cut goes to the public bucket, so the full recording is never on the website to
-        be found. Whatever the master is stays private and whole.
+        Your full recording stays private — only the part you choose goes on the website, so
+        nobody can download the whole song.
       </p>
 
       {enabled && (
         <p className="mt-2 text-xs text-gray-600">
-          A preview is always re-encoded, because there is no way to cut one without it. Only the
-          seconds you keep get encoded, though — a half-minute preview takes a few seconds
-          whether it came out of a three-minute song or a ten-minute one.
+          Making the preview takes a few seconds.
         </p>
       )}
 
       {current && (
         <p className="mt-2 border-t border-gray-300 pt-2 font-mono text-xs text-gray-600">
-          on the site now: {formatTime(current.start)}–{formatTime(current.end)} of the master
+          on the website now: {formatTime(current.start)}–{formatTime(current.end)} of the song
         </p>
       )}
     </div>

@@ -5,7 +5,6 @@ import {
   deleteSong,
   getSong,
   listAllSongs,
-  listDeletedSongs,
   moveSong,
   purgeSong,
   restoreSong,
@@ -162,7 +161,7 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
       if (method !== 'POST') return fail(405, 'Method not allowed')
       const song = await restoreSong(env, route.id)
       if (!song) return fail(404, 'No such song in the bin')
-      return json({ song, songs: await listAllSongs(env), deleted: await listDeletedSongs(env) })
+      return json({ song, songs: await listAllSongs(env) })
     }
 
     // The end of the line: the row goes, and so does everything in R2 it was
@@ -176,7 +175,7 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
       if (!(await purgeSong(env, route.id))) return fail(404, 'No such song in the bin')
 
       ctx.waitUntil(deleteObjects(env, keys))
-      return json({ purged: route.id, deleted: await listDeletedSongs(env) })
+      return json({ purged: route.id })
     }
 
     if (method === 'PATCH') {
@@ -209,17 +208,11 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
     return fail(405, 'Method not allowed')
   }
 
-  // The bin. Soft-deleted songs, newest first, with what each is costing in R2
-  // — the number that makes "permanently delete" a decision rather than a guess.
-  if (pathname === '/api/admin/deleted') {
-    if (method !== 'GET') return fail(405, 'Method not allowed')
-    return json({ deleted: await listDeletedSongs(env) })
-  }
-
-  // What the site is using, and what it is using for nothing.
+  // What the site is using, what it is using for nothing, and what is in the
+  // bin — one answer, because the admin shows all three together and every one
+  // of them moves when any of the others does.
   //
-  // GET reports both — how much is in D1 and R2, how many songs, and anything in
-  // the buckets no row names. POST removes that last set. Separated so the count
+  // POST removes only the unreferenced files. Separated from GET so the count
   // can always be looked at before anything is destroyed.
   //
   // Every write already deletes the object it replaced, so in normal use the

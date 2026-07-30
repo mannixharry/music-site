@@ -22,11 +22,19 @@ function Admin() {
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
+  // The bin and the storage figures come from one call, because they move
+  // together: emptying the bin changes both. Loaded after the songs rather than
+  // alongside them — it walks both buckets, and the list should not wait on it.
+  const [storage, setStorage] = useState(null)
 
   const refresh = useCallback(async () => {
     const { songs: list, mediaBase: base } = await api.list()
     setSongs(list)
     setMediaBase(base)
+  }, [])
+
+  const refreshStorage = useCallback(async () => {
+    setStorage(await api.storage())
   }, [])
 
   useEffect(() => {
@@ -49,6 +57,12 @@ function Admin() {
       cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    // Best effort, and deliberately not fatal: the storage figures are a
+    // footnote, and failing to count files should not take the page down.
+    refreshStorage().catch(() => {})
+  }, [refreshStorage])
 
   async function move(id, after) {
     setBusy(true)
@@ -161,8 +175,20 @@ function Admin() {
           </div>
         </div>
 
-        <DeletedSongs onRestored={refresh} />
-        <StoragePanel />
+        {storage && (
+          <>
+            <DeletedSongs
+              deleted={storage.deleted}
+              onChanged={async () => {
+                // Putting a song back returns it to the list; deleting one for
+                // good changes what is stored. Both, either way — one of these
+                // going stale is how a number ends up lying.
+                await Promise.all([refresh(), refreshStorage()])
+              }}
+            />
+            <StoragePanel storage={storage} onChanged={refreshStorage} />
+          </>
+        )}
       </div>
     </PlaybackProvider>
   )

@@ -209,7 +209,7 @@ function SnippetTrimmer({ file, onCancel, onConfirm }) {
   if (audio.phase === 'decoding') {
     return (
       <div className="border border-gray-400 bg-gray-100 p-4 text-sm">
-        Reading {file.name}…
+        Loading the audio…
       </div>
     )
   }
@@ -217,14 +217,14 @@ function SnippetTrimmer({ file, onCancel, onConfirm }) {
   if (audio.phase === 'error') {
     return (
       <div className="border border-gray-500 bg-gray-100 p-3 text-sm">
-        <p className="font-bold">That file could not be read</p>
+        <p className="font-bold">That audio could not be read</p>
         <p className="mt-1 text-xs">{audio.error}</p>
         <p className="mt-1 text-xs">
-          Browsers disagree about AIFF, ALAC and some WAVs. Try an MP3 or a WAV from the same
-          export.
+          Some formats only work in some browsers. Try again in a different browser, or upload
+          an MP3 version of the song.
         </p>
         <button type="button" onClick={onCancel} className="mt-2 text-sm underline">
-          Choose another file
+          Go back
         </button>
       </div>
     )
@@ -332,13 +332,13 @@ function SnippetTrimmer({ file, onCancel, onConfirm }) {
           label={playing ? 'Pause' : 'Play'}
           onClick={() => (playing ? pause() : play(null, null))}
         />
-        <Transport label="Play the preview" onClick={() => play(range.start, range.end)} />
+        <Transport label="Play preview" onClick={() => play(range.start, range.end)} />
         <button
           type="button"
           onClick={() => onConfirm({ start: range.start, end: range.end })}
           className="ml-auto border border-gray-500 bg-gray-200 px-3 py-1 text-sm font-bold"
         >
-          Upload this preview
+          Use this preview
         </button>
         <button type="button" onClick={onCancel} className="text-sm underline">
           Cancel
@@ -346,9 +346,9 @@ function SnippetTrimmer({ file, onCancel, onConfirm }) {
       </div>
 
       <p className="mt-2 text-xs text-gray-600">
-        Drag the two bars to set where the preview starts and ends, or the middle to move the
-        whole window. Dragging plays from the bar you are holding. Arrow keys nudge a bar a
-        quarter second, with shift for two.
+        Drag the two bars to set where the preview starts and ends, or drag the middle to move
+        the whole thing. You will hear the song as you drag. Arrow keys nudge a bar slightly —
+        hold shift to move further.
       </p>
     </div>
   )

@@ -7,10 +7,12 @@
 // either, so re-uploading a master a few times quietly left copies behind.
 //
 // Two halves. `deleteReplacedObjects` is the cheap one and runs on every write:
-// it removes exactly the object a patch has just stopped pointing at. `findOrphans`
-// is the sweep, for anything that got away before this existed — or after a
-// failure between the upload and the row that was meant to name it.
+// it removes exactly the object a patch has just stopped pointing at.
+// `readStorage` is the survey — what is stored, what is stored that nothing
+// names, and what is in the bin — for anything that got away before this
+// existed, or after a failure between an upload and the row meant to name it.
 
+import { listDeletedSongs } from './db'
 import { ruleForKey, PREFIXES } from './validate'
 
 // The four columns that name an object. A key's prefix decides which bucket it
@@ -130,11 +132,13 @@ async function readDatabaseUsage(env) {
   return { ...results[0], bytes: meta?.size_after ?? null }
 }
 
-// What is stored, and what is stored that nothing points at.
+// Everything the admin's two bottom sections need, in one answer.
 //
-// One pass answers both, which is why they are not two endpoints: they need the
-// same walk of the same two buckets, and asking separately would do it twice for
-// one panel.
+// They were two endpoints and that was wrong twice over: usage and the orphan
+// check need the same walk of the same two buckets, and the bin is the
+// explanation for the usage figure — permanently deleting a song changes both,
+// so fetching them apart meant one could be left showing a number the other had
+// just made false.
 export async function readStorage(env) {
   const referenced = await referencedKeys(env)
 
@@ -155,7 +159,12 @@ export async function readStorage(env) {
     buckets.push({ prefix, bucket, count, bytes })
   }
 
-  return { database: await readDatabaseUsage(env), buckets, orphans }
+  return {
+    database: await readDatabaseUsage(env),
+    buckets,
+    orphans,
+    deleted: await listDeletedSongs(env),
+  }
 }
 
 export async function deleteOrphans(env, orphans) {

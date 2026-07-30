@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import AudioPlayer from '../components/AudioPlayer'
 import { toMediaSrc } from '../content/normalise'
 import { api } from './api'
@@ -36,8 +36,8 @@ function PreviewSource({ song, fetching, onCut }) {
   if (!song.webKey) {
     return (
       <p className="border border-gray-400 bg-white p-3 text-xs">
-        There is no audio on the site for this song yet. Untick the box above, upload the song,
-        and then come back to cut a preview from it.
+        No audio here yet. Untick the box above, upload the song, then come back to choose a
+        preview from it.
       </p>
     )
   }
@@ -47,9 +47,9 @@ function PreviewSource({ song, fetching, onCut }) {
   if (song.isSnippet) {
     return (
       <p className="border border-gray-400 bg-white p-3 text-xs">
-        The site is holding the preview for this song, not the whole of it — so there is nothing
-        here to re-cut. To choose a different preview, untick the box above, upload the full song
-        again, then tick it and cut afresh.
+        This song is already a preview, so there is no full version here to work from. To choose
+        a different one: untick the box above, upload the song again, then tick it and start
+        over.
       </p>
     )
   }
@@ -62,12 +62,11 @@ function PreviewSource({ song, fetching, onCut }) {
         disabled={fetching}
         className="border border-gray-500 bg-gray-200 px-3 py-1 text-sm font-bold disabled:opacity-50"
       >
-        {fetching ? 'Fetching the audio…' : 'Cut a preview from this song'}
+        {fetching ? 'Loading the audio…' : 'Choose a preview from this song'}
       </button>
       <p className="mt-2 text-xs text-gray-600">
-        Works on the copy already on the site, so there is nothing to find or upload again. It
-        gets encoded once more in the process, which costs a little quality — acceptable for a
-        preview, and the master on file is left exactly as it is.
+        Uses the version already on the website, so there is nothing to find or upload again.
+        Your original recording is not touched.
       </p>
     </div>
   )
@@ -98,13 +97,20 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
   // ever waits here: an ordinary upload has nothing left to decide.
   const [pendingFile, setPendingFile] = useState(null)
   const [fetching, setFetching] = useState(false)
-  const [saving, setSaving] = useState(false)
+  // 'idle' | 'saving' | 'saved'. Saving is usually quicker than the eye, so
+  // without the third state the button flickers and the change looks like it
+  // may not have happened — which is the whole reason people press Save twice.
+  const [saveState, setSaveState] = useState('idle')
   const [error, setError] = useState(null)
+
+  const savedTimer = useRef(null)
+  useEffect(() => () => clearTimeout(savedTimer.current), [])
 
   useEffect(() => {
     setDraft(song ? { ...BLANK, ...song, musicalSlug: song.musicalSlug ?? '' } : BLANK)
     setCropping(false)
     setPendingFile(null)
+    setSaveState('idle')
     setError(null)
   }, [song])
 
@@ -149,7 +155,8 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
   const cover = useCoverUpload({ songId: song?.id, capabilities, patch })
 
   async function save() {
-    setSaving(true)
+    clearTimeout(savedTimer.current)
+    setSaveState('saving')
     setError(null)
     try {
       const payload = {
@@ -166,25 +173,29 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
       else await api.create(payload)
 
       await onChanged()
-      if (!song) onCancel()
+      if (!song) return onCancel()
+
+      // Held long enough to be read, then back to Save so the button never
+      // sits there claiming something that has since been edited again.
+      setSaveState('saved')
+      savedTimer.current = setTimeout(() => setSaveState('idle'), 2500)
     } catch (saveError) {
       setError(saveError.message)
-    } finally {
-      setSaving(false)
+      setSaveState('idle')
     }
   }
 
   async function remove() {
     // eslint-disable-next-line no-alert
     if (!window.confirm(`Delete "${song.title}"? It can be restored from the database.`)) return
-    setSaving(true)
+    setSaveState('saving')
     try {
       await api.remove(song.id)
       await onChanged()
       onCancel()
     } catch (deleteError) {
       setError(deleteError.message)
-      setSaving(false)
+      setSaveState('idle')
     }
   }
 
@@ -241,7 +252,7 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
           </Field>
         )}
 
-        <Field label="Description" hint="optional — shown under the title on /songs">
+        <Field label="Description" hint="optional — appears under the title on the Songs page">
           <textarea
             rows={3}
             className={inputClass}
@@ -313,7 +324,7 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
                 <div className="mb-3">
                   {song.isSnippet && (
                     <p className="mb-1 text-xs text-gray-600">
-                      What is on the site is a preview. The master is whole.
+                      This is the preview. Your full recording is safe.
                     </p>
                   )}
                   <AudioPlayer
@@ -374,8 +385,7 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
             </>
           ) : (
             <p className="border border-gray-300 bg-gray-100 p-3 text-xs">
-              Save the song first — the audio is filed under its name, so that has to exist
-              before there is anywhere to put it.
+              Save the song first, then you can add the audio.
             </p>
           )}
         </Block>
@@ -387,8 +397,8 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
           label="Cover art"
           hint={
             draft.kind === 'single'
-              ? 'optional — shown beside the song on the home page'
-              : 'optional — kept, but only shown once this is a single'
+              ? 'optional — appears beside the song on the home page'
+              : 'optional — saved now, and shown if you make this a single'
           }
         >
           {song ? (
@@ -421,7 +431,7 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
             </>
           ) : (
             <p className="border border-gray-300 bg-gray-100 p-3 text-xs">
-              Save the song first — the art is filed under its name, same as the audio.
+              Save the song first, then you can add the artwork.
             </p>
           )}
         </Field>
@@ -442,10 +452,14 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
           <button
             type="button"
             onClick={save}
-            disabled={saving || !draft.title.trim()}
-            className="border border-gray-500 bg-gray-200 px-3 py-1 text-sm disabled:opacity-50"
+            disabled={saveState === 'saving' || !draft.title.trim()}
+            className={`border px-3 py-1 text-sm disabled:opacity-50 ${
+              saveState === 'saved'
+                ? 'border-gray-700 bg-gray-700 text-white'
+                : 'border-gray-500 bg-gray-200'
+            }`}
           >
-            {saving ? 'Saving…' : 'Save'}
+            {{ saving: 'Saving…', saved: 'Saved ✓' }[saveState] ?? 'Save'}
           </button>
           <button type="button" onClick={onCancel} className="text-sm underline">
             Cancel
