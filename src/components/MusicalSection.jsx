@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import BackToTop from './BackToTop'
 import Placeholder from './Placeholder'
 import AudioPlayer from './AudioPlayer'
 import ScriptwriterCallout from './ScriptwriterCallout'
@@ -103,9 +103,7 @@ function MusicalSection({ musical }) {
 
       {/* Opening a synopsis makes the section long again, so the way back to
           the quick links has to be at the bottom as well as the top. */}
-      <Link to="#top" className="mt-8 inline-block text-sm underline">
-        Back to the top
-      </Link>
+      <BackToTop />
     </section>
   )
 }

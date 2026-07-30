@@ -1,16 +1,45 @@
-import { contact, mailtoUrl } from '../content/contact'
+import { NavLink } from 'react-router-dom'
+import { contact, instagramUrl, mailtoUrl } from '../content/contact'
+import { navItems } from '../nav'
 
+// The bottom of a long page is the other place you want the site's index, and
+// the header is a scroll away even sticky — on a phone it is behind a tap.
 function Footer() {
   return (
-    <footer className="border-t border-gray-300 bg-gray-100">
-      <div className="mx-auto max-w-2xl px-4 py-6 text-sm">
-        <p className="font-bold">Frank Kirwan</p>
-        <p>
-          <a href={mailtoUrl} className="underline">
-            {contact.email}
-          </a>
-        </p>
-        <p>&copy; {new Date().getFullYear()} Frank Kirwan</p>
+    <footer className="mt-16 border-t border-gray-300 bg-gray-100">
+      <div className="mx-auto flex max-w-2xl flex-col gap-8 px-4 py-8 text-sm sm:flex-row sm:justify-between">
+        <div>
+          <p className="font-bold">Frank Kirwan</p>
+          <p className="mt-1">
+            <a href={mailtoUrl} className="underline">
+              {contact.email}
+            </a>
+          </p>
+          <p>
+            <a href={instagramUrl} className="underline" target="_blank" rel="noreferrer">
+              @{contact.instagramHandle}
+            </a>
+          </p>
+          <p className="mt-3 text-gray-600">&copy; {new Date().getFullYear()} Frank Kirwan</p>
+        </div>
+
+        {/* A different label from the header's, so a screen reader listing the
+            page's landmarks names two things rather than "Site" twice. */}
+        <nav aria-label="Footer">
+          <ul className="space-y-1">
+            {navItems.map((item) => (
+              <li key={item.to}>
+                <NavLink
+                  to={item.to}
+                  end={item.to === '/'}
+                  className={({ isActive }) => (isActive ? 'font-bold underline' : 'underline')}
+                >
+                  {item.label}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </footer>
   )
