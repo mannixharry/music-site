@@ -1,6 +1,10 @@
 import Placeholder from './Placeholder'
 
-// A row of pictures belonging to a page, two up on anything wider than a phone.
+// The pictures belonging to a page.
+//
+// One of them sits at half width on a desktop and full width on a phone: a
+// portrait photograph across the whole 42rem column is taller than the screen
+// and pushes everything else off it. Two or more share the row.
 //
 // A slot whose `src` is still null draws a placeholder rather than vanishing,
 // which is the opposite of what ReleaseItem does with a missing cover — and
@@ -15,7 +19,7 @@ function PageImages({ images }) {
   if (images.length === 0) return null
 
   return (
-    <div className="mt-10 grid gap-4 sm:grid-cols-2">
+    <div className={`mt-10 grid gap-4 ${images.length > 1 ? 'sm:grid-cols-2' : 'sm:max-w-xs'}`}>
       {images.map((image) =>
         image.src ? (
           <img

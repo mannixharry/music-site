@@ -10,13 +10,6 @@ export const aboutImages = [
     dims: '1000×1250px',
     aspect: 'aspect-[4/5]',
   },
-  {
-    src: null,
-    alt: 'Frank Kirwan',
-    label: 'Second picture',
-    dims: '1000×1250px',
-    aspect: 'aspect-[4/5]',
-  },
 ]
 
 export const about = {

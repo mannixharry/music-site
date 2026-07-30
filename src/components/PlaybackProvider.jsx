@@ -16,6 +16,10 @@ import { PlaybackContext } from '../context/playbackContext'
 function PlaybackProvider({ children }) {
   const audioRef = useRef(null)
   const frameRef = useRef(0)
+  // What the element is actually pointed at, kept in a ref as well as in state.
+  // The ref is the one the handlers read, because they have to know *now* — see
+  // the note on play() below.
+  const trackRef = useRef(null)
 
   // The whole track, not just its id — the bar at the bottom has to name what
   // is playing after you have left the page the row was on.
@@ -38,6 +42,20 @@ function PlaybackProvider({ children }) {
 
   useEffect(() => () => cancelAnimationFrame(frameRef.current), [])
 
+  // Everything that touches the element happens here, synchronously, in the
+  // click that asked for it. Both halves of that matter.
+  //
+  // Synchronously, because this was written with the src assignment inside a
+  // setTrack updater — and React runs updaters during the *next render*, not
+  // when you call them. So play() ran first, against whatever the element was
+  // pointed at before: nothing on the first press, the previous song after
+  // that. It looked like random songs failing and a reload fixing some while
+  // breaking others, because a reload changes which one is loaded. A state
+  // updater is also allowed to run more than once, which is reason enough not
+  // to put an assignment in one.
+  //
+  // In the click, because a phone will only start audio from a gesture, and
+  // anything awaited first loses that.
   const play = useCallback((next) => {
     const element = audioRef.current
     if (!element) return
@@ -45,15 +63,18 @@ function PlaybackProvider({ children }) {
     // A different song: point the element at it and start from the top. The
     // same one: carry on from where it was, which is what makes pressing play
     // on the bar and on the row the same button.
-    setTrack((current) => {
-      if (current?.id !== next.id) {
-        setCurrentTime(0)
-        setDuration(next.duration ?? NaN)
-        setHasMetadata(false)
-        element.src = next.src
-      }
-      return next
-    })
+    if (trackRef.current?.id !== next.id) {
+      trackRef.current = next
+      element.src = next.src
+      // Tells the element to pick the new source up now rather than at some
+      // point of its choosing, which phones are markedly less relaxed about.
+      element.load()
+
+      setTrack(next)
+      setCurrentTime(0)
+      setDuration(next.duration ?? NaN)
+      setHasMetadata(false)
+    }
 
     // Rejects under autoplay policy and on rapid play/pause. Either way the
     // element did not start, so nothing should claim it did.
@@ -63,13 +84,11 @@ function PlaybackProvider({ children }) {
   const pause = useCallback(() => audioRef.current?.pause(), [])
 
   // Only whoever owns the slot may give it up, so a stale call from a row that
-  // has already lost it cannot stop the song that took it.
+  // has already lost it cannot stop the song that took it. Reads the ref for
+  // the same reason play() does: the answer is needed now, not next render.
   const stop = useCallback((id) => {
-    setTrack((current) => {
-      if (id !== undefined && current?.id !== id) return current
-      audioRef.current?.pause()
-      return current
-    })
+    if (id !== undefined && trackRef.current?.id !== id) return
+    audioRef.current?.pause()
   }, [])
 
   // Ends playback outright and empties the bar, which is what its close button
@@ -81,6 +100,7 @@ function PlaybackProvider({ children }) {
       element.removeAttribute('src')
       element.load()
     }
+    trackRef.current = null
     setTrack(null)
     setPlaying(false)
     setCurrentTime(0)

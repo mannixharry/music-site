@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import PlaybackProvider from '../components/PlaybackProvider'
-import { SIGN_OUT_URL, forgetAdminSession, rememberAdminSession } from '../adminHint'
+import { SIGN_OUT_URL, signOut, rememberAdminSession } from '../adminHint'
 import { musicals } from '../content/musicals'
 import { api } from '../admin/api'
 import SongForm from '../admin/SongForm'
@@ -29,6 +29,7 @@ function Admin() {
   // together: emptying the bin changes both. Loaded after the songs rather than
   // alongside them — it walks both buckets, and the list should not wait on it.
   const [storage, setStorage] = useState(null)
+  const formRef = useRef(null)
 
   const refreshStorage = useCallback(async () => {
     setStorage(await api.storage())
@@ -73,6 +74,17 @@ function Admin() {
     // footnote, and failing to count files should not take the page down.
     refreshStorage().catch(() => {})
   }, [refreshStorage])
+
+  // On a phone the two columns stack, so the form is below the whole song list
+  // — choosing a song appeared to do nothing at all. Brings it into view.
+  //
+  // Only on the narrow layout: side by side, the form is already on screen and
+  // scrolling the page would be an unexplained jump.
+  useEffect(() => {
+    if (!selectedId && !creating) return
+    if (window.matchMedia('(min-width: 768px)').matches) return
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [selectedId, creating])
 
   async function move(id, after) {
     setBusy(true)
@@ -122,7 +134,7 @@ function Admin() {
             {/* Nothing to sign out of when the local bypass is what let you in;
                 the notice below says so. */}
             {!session.bypass && (
-              <a href={SIGN_OUT_URL} onClick={forgetAdminSession} className="underline">
+              <a href={SIGN_OUT_URL} onClick={signOut} className="underline">
                 Sign out
               </a>
             )}
@@ -173,7 +185,7 @@ function Admin() {
             />
           </div>
 
-          <div>
+          <div ref={formRef} className="scroll-mt-4">
             {creating || selected ? (
               <SongForm
                 key={selected?.id ?? 'new'}

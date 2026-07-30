@@ -46,6 +46,30 @@ export function rememberAdminSession(email) {
 // there is no Access to log out of.
 export const SIGN_OUT_URL = '/cdn-cgi/access/logout'
 
+// Signing out, then coming back here rather than stopping on Cloudflare's own
+// "you have been logged out" page.
+//
+// That page has no redirect parameter, so the way home is to ask for the logout
+// ourselves and then navigate. A same-origin fetch applies the Set-Cookie that
+// clears the session exactly as a navigation would; the anchor keeps its href
+// so that without JavaScript, or if the fetch fails, the plain logout still
+// happens and simply ends up on Cloudflare's page.
+export async function signOut(event) {
+  event.preventDefault()
+  forgetAdminSession()
+
+  try {
+    await fetch(SIGN_OUT_URL, { credentials: 'include', cache: 'no-store' })
+  } catch {
+    // Offline, or something between here and Cloudflare. Fall through: the
+    // navigation below still goes to the logout endpoint in that case.
+    window.location.assign(SIGN_OUT_URL)
+    return
+  }
+
+  window.location.assign('/')
+}
+
 // Paired with the link above rather than folded into it, so signing out is a
 // real anchor — the hint goes on the way past, and the browser does the rest.
 export function forgetAdminSession() {

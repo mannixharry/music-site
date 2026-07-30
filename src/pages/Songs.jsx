@@ -4,7 +4,7 @@ import BackToTop from '../components/BackToTop'
 import Placeholder from '../components/Placeholder'
 import SongItem from '../components/SongItem'
 import { useContent } from '../context/contentContext'
-import { HEADING, LIST, LIST_ITEM, SECTION } from '../rules'
+import { HEADING, LIST, LIST_ITEM, SECTION, SECTION_FIRST } from '../rules'
 
 // The three kinds the catalogue already sorts itself into — the same split the
 // admin's list uses, and the one the paragraph below has always described. It
@@ -107,8 +107,12 @@ function Songs() {
         <Placeholder label="No songs added yet — add one from /admin" className="mt-8 h-32" />
       )}
 
-      {groups.map((group) => (
-        <section key={group.slug} id={group.slug} className={`${SECTION} scroll-mt-20`}>
+      {groups.map((group, i) => (
+        <section
+          key={group.slug}
+          id={group.slug}
+          className={`${i === 0 && !searching ? SECTION_FIRST : SECTION} scroll-mt-20`}
+        >
           <h2 className={HEADING}>{group.title}</h2>
           <div className={`mt-2 ${LIST}`}>
             {group.songs.map((song) => (

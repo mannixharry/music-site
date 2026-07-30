@@ -15,6 +15,11 @@
 
 export const SECTION = 'mt-12 border-t border-gray-300 pt-8'
 
+// For the first section on a page that opens with a row of quick links. That
+// row already draws a rule, so the full SECTION margin left two lines with an
+// awkward stretch of nothing between them.
+export const SECTION_FIRST = 'mt-5 border-t border-gray-300 pt-6'
+
 // Which is also why the quick-links rows on /songs and /musicals carry only a
 // top rule: the first section's own rule closes them. A border on both sides
 // left two lines with an empty band between.

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { SIGN_OUT_URL, adminSessionEmail, forgetAdminSession, hasAdminSession } from '../adminHint'
+import { SIGN_OUT_URL, adminSessionEmail, signOut, hasAdminSession } from '../adminHint'
 
 // Frank's own strip, above the site's own header and only ever visible to him.
 //
@@ -35,7 +35,7 @@ function AdminBar() {
           <Link to="/admin" className="font-bold underline">
             Back to admin
           </Link>
-          <a href={SIGN_OUT_URL} onClick={forgetAdminSession} className="underline">
+          <a href={SIGN_OUT_URL} onClick={signOut} className="underline">
             Sign out
           </a>
         </span>

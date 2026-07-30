@@ -26,11 +26,4 @@ export const contactImages = [
     dims: '1000×1250px',
     aspect: 'aspect-[4/5]',
   },
-  {
-    src: null,
-    alt: 'Frank Kirwan playing live',
-    label: 'Live shot',
-    dims: '1000×1250px',
-    aspect: 'aspect-[4/5]',
-  },
 ]
