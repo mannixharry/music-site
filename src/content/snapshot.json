@@ -1,5 +1,5 @@
 {
-  "version": "ms7s0659-416eb935",
+  "version": "ms84dty0-ea847f0c",
   "mediaBase": "https://media.frankkirwan.com",
   "songs": [
     {
@@ -153,11 +153,11 @@
       "kind": "demo",
       "musicalSlug": "pigs",
       "status": "released",
-      "webKey": "web/pigs/6afba3cb.mp3",
+      "webKey": "web/pigs/6c92c44d.mp3",
       "coverKey": null,
-      "duration": 318.231125,
+      "duration": 318.9551020408163,
       "isSnippet": false,
-      "showSnippetTag": false,
+      "showSnippetTag": true,
       "links": [],
       "sortOrder": 100,
       "published": true
