@@ -4,7 +4,7 @@ import BackToTop from '../components/BackToTop'
 import Placeholder from '../components/Placeholder'
 import SongItem from '../components/SongItem'
 import { useContent } from '../context/contentContext'
-import { HEADING, LIST, LIST_ITEM, SECTION, SECTION_FIRST } from '../rules'
+import { ANCHOR, HEADING, LIST, LIST_ITEM, SECTION, SECTION_FIRST } from '../rules'
 
 // The three kinds the catalogue already sorts itself into — the same split the
 // admin's list uses, and the one the paragraph below has always described. It
@@ -44,7 +44,7 @@ function Songs() {
   const searching = query.trim().length > 0
 
   return (
-    <div id="top" className="scroll-mt-20 py-8">
+    <div id="top" className={`${ANCHOR} py-8`}>
       <h1 className="text-4xl font-bold">Songs</h1>
       <p className="mt-2 text-sm leading-relaxed">
         The whole catalogue in one place — the singles, the snapshots from the musicals, and
@@ -111,7 +111,7 @@ function Songs() {
         <section
           key={group.slug}
           id={group.slug}
-          className={`${i === 0 && !searching ? SECTION_FIRST : SECTION} scroll-mt-20`}
+          className={`${i === 0 && !searching ? SECTION_FIRST : SECTION} ${ANCHOR}`}
         >
           <h2 className={HEADING}>{group.title}</h2>
           <div className={`mt-2 ${LIST}`}>

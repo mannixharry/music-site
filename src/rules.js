@@ -30,3 +30,12 @@ export const LIST_ITEM = 'py-6'
 // Every section heading on the public site. The home page had two at one size
 // and a third at another, on the same screen.
 export const HEADING = 'text-xl font-bold'
+
+// How far an in-page anchor holds off the top, so a hash jump does not land
+// with its heading under the sticky header.
+//
+// Sized for the header *and* the now-playing strip that appears beneath it,
+// because the alternative is a target that lands correctly only when nothing is
+// playing. The cost is a little extra headroom the rest of the time, which
+// reads as space rather than as a mistake.
+export const ANCHOR = 'scroll-mt-28'

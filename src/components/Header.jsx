@@ -37,10 +37,9 @@ function Header() {
   useEffect(() => setMenuOpen(false), [key])
 
   return (
-    // Sticky, because the pages this now has to serve are long: /songs runs to
-    // a few dozen entries and each musical carries a synopsis. Reaching another
-    // page used to mean scrolling back to the top first.
-    <header className="sticky top-0 z-20 border-b border-gray-300 bg-gray-100">
+    // Not sticky itself: Layout pins this and the now-playing strip together,
+    // so the two cannot drift apart or need an offset guessed between them.
+    <header className="border-b border-gray-300 bg-gray-100">
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-4 px-4 py-4">
         <Link to="/" className="text-xl font-bold" onClick={closeMenu}>
           Frank Kirwan

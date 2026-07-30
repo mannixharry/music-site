@@ -1,18 +1,19 @@
-import { PauseIcon, PlayIcon, transportClass } from './AudioPlayer'
 import { formatTime } from '../format'
 import { usePlayback } from '../context/playbackContext'
+import { PauseIcon, PlayIcon } from './AudioPlayer'
 
-// The bar along the bottom, once something is playing.
+// A slim strip under the header, once something is playing.
 //
-// It exists because the audio outliving the page is only useful if you can tell
-// that it has: without this, leaving /songs mid-song leaves a sound with no
-// visible source and no way to stop it. It names the track, and carries the
-// same transport the row does.
+// It was fixed to the bottom of the viewport, which is where a player usually
+// goes and which turned out to be the one edge the site does not control: if
+// the browser window overhangs the work area, Windows draws its taskbar over
+// that strip and the bar is simply gone. A page cannot see OS chrome —
+// env(safe-area-inset-*) describes iOS cutouts and reports zero here — so the
+// only reliable answer is not to sit against that edge.
 //
-// Fixed rather than sticky, and the same on a phone as on a desktop — the
-// layout is one column at every width, so there is nothing to rearrange. Layout
-// gives <main> a matching bottom padding while this is up, so it never covers
-// the last thing on a page.
+// It rides with the header instead, which is already pinned and which nothing
+// else draws over. Identical at every width, so there is no second layout to
+// keep working.
 function NowPlaying() {
   const { track, playing, currentTime, duration, hasMetadata, play, pause, clear, seek } =
     usePlayback()
@@ -22,65 +23,61 @@ function NowPlaying() {
   const seekable = hasMetadata && Number.isFinite(duration) && duration > 0
 
   return (
-    <>
-      {/* In the flow, matching the bar's height, so the fixed bar can never sit
-          on top of the last thing on the page. Coloured like the footer it
-          extends, rather than leaving a white band under it. */}
-      <div aria-hidden className="h-20 bg-gray-100" />
+    <div
+      // A landmark you might jump to, not a section of the page you are reading.
+      role="region"
+      aria-label="Now playing"
+      // A tone darker than the header above it, as the admin strip is: this is
+      // a state the site is in rather than a part of the site.
+      className="border-b border-gray-300 bg-gray-200"
+    >
+      <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-1.5">
+        <button
+          type="button"
+          onClick={() => (playing ? pause() : play(track))}
+          aria-label={`${playing ? 'Pause' : 'Play'} ${track.title}`}
+          className={`grid h-7 w-7 shrink-0 place-items-center border transition-colors ${
+            playing
+              ? 'border-gray-500 bg-gray-300 text-gray-900'
+              : 'border-gray-400 bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+          }`}
+        >
+          {playing ? <PauseIcon /> : <PlayIcon />}
+        </button>
 
-      <div
-        // aria-label rather than a heading: it is a landmark you may want to
-        // jump to, not a section of the page you are reading.
-        role="region"
-        aria-label="Now playing"
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-gray-400 bg-gray-100"
-      >
-        <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-2">
-          <button
-            type="button"
-            onClick={() => (playing ? pause() : play(track))}
-            aria-label={`${playing ? 'Pause' : 'Play'} ${track.title}`}
-            className={`${transportClass} ${
-              playing
-                ? 'border-gray-500 bg-gray-300 text-gray-900'
-                : 'border-gray-400 bg-white text-gray-600 hover:bg-gray-200 hover:text-gray-900'
-            }`}
-          >
-            {playing ? <PauseIcon /> : <PlayIcon />}
-          </button>
+        <p className="min-w-0 flex-1 truncate text-xs">
+          <span className="text-gray-600">Playing</span>{' '}
+          <span className="font-bold">{track.title}</span>
+        </p>
 
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-bold">{track.title}</p>
+        {/* Narrow, and hidden altogether on a phone: the title is what this is
+            for, and a scrubber squeezed to forty pixels is not a control. */}
+        <input
+          type="range"
+          min="0"
+          max={seekable ? duration : 0}
+          step="0.01"
+          value={currentTime}
+          disabled={!seekable}
+          aria-label={`Seek within ${track.title}`}
+          onChange={(event) => seek(Number(event.currentTarget.value))}
+          className="hidden h-4 w-32 shrink-0 accent-gray-700 sm:block"
+        />
 
-            <div className="mt-0.5 flex items-center gap-2">
-              <input
-                type="range"
-                min="0"
-                max={seekable ? duration : 0}
-                step="0.01"
-                value={currentTime}
-                disabled={!seekable}
-                aria-label={`Seek within ${track.title}`}
-                onChange={(event) => seek(Number(event.currentTarget.value))}
-                className="h-4 min-w-0 flex-1 accent-gray-700"
-              />
-              <span className="shrink-0 font-mono text-xs tabular-nums text-gray-600">
-                {formatTime(currentTime)} / {formatTime(duration)}
-              </span>
-            </div>
-          </div>
+        <span className="shrink-0 font-mono text-xs tabular-nums text-gray-600">
+          {formatTime(currentTime)} / {formatTime(duration)}
+        </span>
 
-          <button
-            type="button"
-            onClick={clear}
-            aria-label="Stop and close"
-            className="shrink-0 border border-gray-400 bg-white px-2 py-1 text-xs"
-          >
-            ✕
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={clear}
+          aria-label="Stop and close"
+          className="shrink-0 border border-gray-400 bg-white px-1.5 text-xs leading-5"
+        >
+          ✕
+        </button>
       </div>
-    </>
+    </div>
   )
 }
 

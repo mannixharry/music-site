@@ -6,6 +6,7 @@ import NowPlaying from './NowPlaying'
 import PlaybackProvider from './PlaybackProvider'
 import RefreshOnNavigate from './RefreshOnNavigate'
 import ScrollToTop from './ScrollToTop'
+import { ANCHOR } from '../rules'
 
 function Layout() {
   return (
@@ -27,7 +28,15 @@ function Layout() {
         </a>
 
         <AdminBar />
-        <Header />
+
+        {/* Header and now-playing pinned as one unit. Sticky, because the pages
+            this serves are long — /songs runs to a few dozen entries and each
+            musical carries a synopsis — and reaching another page used to mean
+            scrolling back to the top first. */}
+        <div className="sticky top-0 z-20">
+          <Header />
+          <NowPlaying />
+        </div>
 
         {/* tabIndex so the skip link actually moves focus here rather than only
             scrolling; scroll-mt so the sticky header does not cover the top of
@@ -35,17 +44,12 @@ function Layout() {
         <main
           id="main"
           tabIndex={-1}
-          className="mx-auto w-full max-w-2xl flex-1 scroll-mt-20 px-4 focus:outline-none"
+          className={`mx-auto w-full max-w-2xl flex-1 px-4 focus:outline-none ${ANCHOR}`}
         >
           <Outlet />
         </main>
 
         <Footer />
-
-        {/* Last in the flow so its spacer extends the footer rather than
-            interrupting the page. Inside the provider, which is what owns the
-            one <audio> element the whole site shares. */}
-        <NowPlaying />
       </div>
     </PlaybackProvider>
   )

@@ -5,7 +5,7 @@ import AudioPlayer from './AudioPlayer'
 import ScriptwriterCallout from './ScriptwriterCallout'
 import SnippetTag from './SnippetTag'
 import { useContent } from '../context/contentContext'
-import { SECTION } from '../rules'
+import { ANCHOR, SECTION, SECTION_FIRST } from '../rules'
 
 // Above this many characters the resume opens shortened, with the first few
 // lines showing and the rest a click away. Two of the three shows carry several
@@ -21,7 +21,7 @@ const FOLD_ABOVE = 600
 // instead of one being cut mid-word and the other not at all.
 const PREVIEW_LINES = 'line-clamp-4'
 
-function MusicalSection({ musical }) {
+function MusicalSection({ musical, first = false }) {
   const { demosFor } = useContent()
   const demos = demosFor(musical.slug)
   const [expanded, setExpanded] = useState(false)
@@ -33,7 +33,7 @@ function MusicalSection({ musical }) {
   return (
     // scroll-mt keeps the heading clear of the sticky site header when the
     // quick links above jump to this section.
-    <section id={musical.slug} className={`${SECTION} scroll-mt-20`}>
+    <section id={musical.slug} className={`${first ? SECTION_FIRST : SECTION} ${ANCHOR}`}>
       <h2 className="text-2xl font-bold">{musical.title}</h2>
       <p className="text-sm">{musical.status}</p>
 
