@@ -64,15 +64,37 @@ export async function deleteReplacedObjects(env, before, patch) {
   return removed
 }
 
-// Every object a row named, for when the row itself is going. Takes what
-// readObjectKeys returned, so the caller never has to know which bucket a key
-// belongs to — the prefix decides that, here as everywhere.
-export async function deleteObjects(env, keys) {
+// Everything a song ever put in either bucket, for when the song itself is
+// going for good.
+//
+// Not just the four keys the row currently names. A song accumulates objects
+// across its life — each upload writes a new key rather than overwriting, and a
+// preview adds another — and while a write now deletes the object it displaces,
+// that has not always been true and cannot cover an upload that reached R2 and
+// then failed to record itself. All of them are filed under the song's own id,
+// so listing by that finds the lot.
+//
+// THE TRAILING SLASH IS LOAD-BEARING. Without it `web/pigs` would also match
+// `web/pigs-snapshot/…`, and this catalogue contains both that pair and
+// `copperfield-and-co` / `copperfield-and-co-snapshot`. Deleting one show's
+// demo would have taken another song's audio with it.
+export async function deleteSongObjects(env, songId, namedKeys) {
+  const targets = new Set()
+
+  for (const prefix of PREFIXES) {
+    const { bucket } = ruleForKey(prefix)
+    for (const object of await listAll(env[bucket], `${prefix}${songId}/`)) {
+      targets.add(object.key)
+    }
+  }
+
+  // Plus whatever the row named, in case a key was ever filed off that shape.
+  for (const key of Object.values(namedKeys ?? {})) {
+    if (key) targets.add(key)
+  }
+
   const removed = []
-
-  for (const key of Object.values(keys ?? {})) {
-    if (!key) continue
-
+  for (const key of targets) {
     const rule = ruleForKey(key)
     if (!rule) continue
 
@@ -83,6 +105,8 @@ export async function deleteObjects(env, keys) {
   return removed
 }
 
+// Hoisted above its callers by declaration; used by both the sweep and the
+// per-song delete.
 async function listAll(bucket, prefix) {
   const keys = []
   let cursor
@@ -132,6 +156,13 @@ async function readDatabaseUsage(env) {
   return { ...results[0], bytes: meta?.size_after ?? null }
 }
 
+// "web/<songId>/<file>" — the middle segment. Every key this app writes has
+// that shape; anything else belongs to no song in particular.
+function songIdFromKey(key) {
+  const parts = key.split('/')
+  return parts.length >= 3 ? parts[1] : null
+}
+
 // Everything the admin's two bottom sections need, in one answer.
 //
 // They were two endpoints and that was wrong twice over: usage and the orphan
@@ -144,6 +175,7 @@ export async function readStorage(env) {
 
   const buckets = []
   const orphans = []
+  const bySong = new Map()
 
   for (const prefix of PREFIXES) {
     const { bucket } = ruleForKey(prefix)
@@ -154,17 +186,28 @@ export async function readStorage(env) {
       count += 1
       bytes += object.size
       if (!referenced.has(object.key)) orphans.push({ ...object, bucket })
+
+      const songId = songIdFromKey(object.key)
+      if (songId) {
+        const owned = bySong.get(songId) ?? { files: 0, bytes: 0 }
+        owned.files += 1
+        owned.bytes += object.size
+        bySong.set(songId, owned)
+      }
     }
 
     buckets.push({ prefix, bucket, count, bytes })
   }
 
-  return {
-    database: await readDatabaseUsage(env),
-    buckets,
-    orphans,
-    deleted: await listDeletedSongs(env),
-  }
+  // What a deleted song is really holding, measured rather than added up from
+  // the row's four size columns — which count only the objects it still names,
+  // and so understate what deleting it for good would actually free.
+  const deleted = (await listDeletedSongs(env)).map((song) => ({
+    ...song,
+    ...(bySong.get(song.id) ?? { files: 0, bytes: 0 }),
+  }))
+
+  return { database: await readDatabaseUsage(env), buckets, orphans, deleted }
 }
 
 export async function deleteOrphans(env, orphans) {

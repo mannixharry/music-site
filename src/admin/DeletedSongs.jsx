@@ -42,8 +42,9 @@ function DeletedSongs({ deleted, onChanged }) {
     // eslint-disable-next-line no-alert
     const sure = window.confirm(
       `Permanently delete “${song.title}”?\n\n` +
-        `The song and its ${formatBytes(song.bytes)} of audio and artwork — including your ` +
-        `original — are removed for good. This cannot be undone.`,
+        `Everything stored for it goes — ${song.files} file${song.files === 1 ? '' : 's'}, ` +
+        `${formatBytes(song.bytes)}, including your original recording, the website copy and ` +
+        `any preview made from it. This cannot be undone.`,
     )
     if (sure) act(song, () => api.purge(song.id))
   }
@@ -53,7 +54,8 @@ function DeletedSongs({ deleted, onChanged }) {
       <h2 className="text-xs font-bold uppercase tracking-wide text-gray-600">Recently deleted</h2>
       <p className="mt-2 text-xs text-gray-600">
         Already off the website. The files are still here, so you can put a song back — it comes
-        back as a draft, so you decide when it goes live again.
+        back as a draft, so you decide when it goes live again. Deleting one for good removes
+        everything stored for it: your recording, the website copy and any preview.
       </p>
 
       {error && <p className="mt-2 border border-gray-500 bg-gray-100 p-2 text-xs">{error}</p>}
@@ -67,7 +69,7 @@ function DeletedSongs({ deleted, onChanged }) {
             <span className="min-w-0 flex-1 truncate">{song.title}</span>
             <span className="shrink-0 text-xs text-gray-600">deleted {when(song.deletedAt)}</span>
             <span className="shrink-0 font-mono text-xs text-gray-600">
-              {formatBytes(song.bytes)}
+              {song.files} · {formatBytes(song.bytes)}
             </span>
 
             <span className="flex shrink-0 gap-2">

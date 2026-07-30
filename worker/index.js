@@ -12,9 +12,9 @@ import {
 } from './db'
 import { fail, json } from './json'
 import {
-  deleteObjects,
   deleteOrphans,
   deleteReplacedObjects,
+  deleteSongObjects,
   readObjectKeys,
   readStorage,
 } from './objects'
@@ -189,17 +189,20 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
       return json({ song, songs: await listAllSongs(env) })
     }
 
-    // The end of the line: the row goes, and so does everything in R2 it was
-    // the last thing naming. Keys are read first and the objects removed after
-    // the row — that way a failure between them leaves files nothing points at,
-    // which the storage sweep can find, rather than a row pointing at nothing.
+    // The end of the line: the row goes, and so does every object the song
+    // ever put in either bucket — not only the four it still names, but the
+    // previews and converted copies left over from earlier uploads.
+    //
+    // Keys are read first and the objects removed after the row: a failure
+    // between them leaves files nothing points at, which the storage sweep can
+    // find, rather than a row pointing at nothing.
     if (route.action === 'purge') {
       if (method !== 'DELETE') return fail(405, 'Method not allowed')
 
       const keys = await readObjectKeys(env, route.id)
       if (!(await purgeSong(env, route.id))) return fail(404, 'No such song in the bin')
 
-      ctx.waitUntil(deleteObjects(env, keys))
+      ctx.waitUntil(deleteSongObjects(env, route.id, keys))
       return json({ purged: route.id })
     }
 
