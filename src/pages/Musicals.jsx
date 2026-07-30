@@ -16,7 +16,7 @@ function Musicals() {
 
       {/* The sections run long, and before this the only way to the third one
           was to scroll past the first two. */}
-      <nav aria-label="Jump to a musical" className="mt-6 border-y border-gray-300 py-3">
+      <nav aria-label="Jump to a musical" className="mt-6 border-t border-gray-300 pt-3">
         <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
           {musicals.map((musical) => (
             <li key={musical.slug}>
@@ -28,11 +28,8 @@ function Musicals() {
         </ul>
       </nav>
 
-      {musicals.map((musical, i) => (
-        <div key={musical.slug}>
-          {i > 0 && <hr className="mt-4 border-gray-300" />}
-          <MusicalSection musical={musical} />
-        </div>
+      {musicals.map((musical) => (
+        <MusicalSection key={musical.slug} musical={musical} />
       ))}
     </div>
   )

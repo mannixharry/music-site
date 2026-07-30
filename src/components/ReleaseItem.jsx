@@ -41,18 +41,24 @@ function ReleaseItem({ release }) {
           />
         </div>
 
-        {/* Fixed height either way so released and coming-soon rows stay level. */}
-        <div className="mt-2 flex h-8 items-center gap-3 text-sm">
-          {release.status === 'coming-soon' ? (
-            <Placeholder label="Coming soon" className="h-full w-40 p-0" />
-          ) : (
-            release.links.map((link) => (
-              <a key={link.label} href={link.href} className="underline">
-                {link.label}
-              </a>
-            ))
-          )}
-        </div>
+        {/* Only when there is something to put in it. This was a fixed-height
+            row either way, to keep released and coming-soon songs level — but
+            almost nothing carries streaming links yet, so in practice it was
+            32px of nothing under every song, which is what made a list of
+            coverless singles look so strung out. */}
+        {(release.status === 'coming-soon' || release.links.length > 0) && (
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-sm">
+            {release.status === 'coming-soon' ? (
+              <Placeholder label="Coming soon" className="w-40" />
+            ) : (
+              release.links.map((link) => (
+                <a key={link.label} href={link.href} className="underline">
+                  {link.label}
+                </a>
+              ))
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

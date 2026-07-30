@@ -3,6 +3,7 @@ import MusicSection from '../components/MusicSection'
 import { profile } from '../content/profile'
 import { musicals } from '../content/musicals'
 import { instagramUrl } from '../content/contact'
+import { HEADING, SECTION } from '../rules'
 
 function Home() {
   return (
@@ -27,12 +28,12 @@ function Home() {
         ))}
       </section>
 
-      <div className="mt-12">
+      <div className={SECTION}>
         <MusicSection />
       </div>
 
-      <section className="mt-16">
-        <h2 className="text-xl font-bold">Musicals</h2>
+      <section className={SECTION}>
+        <h2 className={HEADING}>Musicals</h2>
         <p className="mt-2 text-sm">
           Two of Frank&apos;s musicals were previously published by Warner Chappell.
         </p>
@@ -53,8 +54,8 @@ function Home() {
         </Link>
       </section>
 
-      <section className="mt-16">
-        <h2 className="text-xl font-bold">Elsewhere</h2>
+      <section className={SECTION}>
+        <h2 className={HEADING}>Elsewhere</h2>
         <div className="mt-3 flex gap-4 text-sm">
           <a href={instagramUrl} className="underline" target="_blank" rel="noreferrer">
             Instagram

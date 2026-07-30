@@ -7,7 +7,7 @@ function SongItem({ song }) {
   const links = song.links ?? []
 
   return (
-    <article className="border-t border-gray-300 pt-6">
+    <article>
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="text-lg font-bold">{song.title}</h3>
         {song.isSnippet && <SnippetTag title={song.title} />}

@@ -59,7 +59,7 @@ function Admin() {
         // Lets the site's header offer a way back here, so previewing a change
         // is not a one-way trip through the URL bar. A hint only — Access is
         // still what decides whether following it works. See src/adminHint.js.
-        rememberAdminSession()
+        rememberAdminSession(sessionData.email)
       })
       .catch((loadError) => !cancelled && setError(loadError.message))
 

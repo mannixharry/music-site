@@ -19,12 +19,16 @@
 
 const KEY = 'admin-session'
 
-// Called by the admin page once the API has confirmed a session. That is the
-// only writer: the flag has to mean "this tab really was signed in", not "this
-// tab once visited a URL".
-export function rememberAdminSession() {
+// Called by the admin page once the API has confirmed a session, with the
+// address Access authenticated. That is the only writer: this has to mean "this
+// tab really was signed in", not "this tab once visited a URL".
+//
+// The address is stored rather than re-fetched so the site can name who is
+// signed in without asking the Worker — the whole point of the hint. It is the
+// reader's own email, in their own tab, and grants nothing.
+export function rememberAdminSession(email) {
   try {
-    sessionStorage.setItem(KEY, '1')
+    sessionStorage.setItem(KEY, email ?? '')
   } catch {
     // Private browsing, or storage switched off. A missing shortcut is the
     // right way for this to fail — /admin is still one URL away.
@@ -53,10 +57,22 @@ export function forgetAdminSession() {
   }
 }
 
-export function hasAdminSession() {
+function stored() {
   try {
-    return sessionStorage.getItem(KEY) === '1'
+    return sessionStorage.getItem(KEY)
   } catch {
-    return false
+    return null
   }
+}
+
+export function hasAdminSession() {
+  return stored() !== null
+}
+
+// Null when there is no session, and also when the stored value predates this
+// carrying an address at all — a tab left open across that deploy holds the old
+// marker, and "signed in as 1" is worse than not saying.
+export function adminSessionEmail() {
+  const value = stored()
+  return value?.includes('@') ? value : null
 }

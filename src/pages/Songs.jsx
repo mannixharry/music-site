@@ -3,6 +3,7 @@ import BackToTop from '../components/BackToTop'
 import Placeholder from '../components/Placeholder'
 import SongItem from '../components/SongItem'
 import { useContent } from '../context/contentContext'
+import { HEADING, LIST, LIST_ITEM, SECTION } from '../rules'
 
 // The three kinds the catalogue already sorts itself into — the same split the
 // admin's list uses, and the one the paragraph below has always described. It
@@ -35,7 +36,7 @@ function Songs() {
 
       {/* Only worth the row when there is more than one place to go. */}
       {groups.length > 1 && (
-        <nav aria-label="Jump to a group" className="mt-6 border-y border-gray-300 py-3">
+        <nav aria-label="Jump to a group" className="mt-6 border-t border-gray-300 pt-3">
           <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
             {groups.map((group) => (
               <li key={group.slug}>
@@ -51,11 +52,13 @@ function Songs() {
 
       {groups.length > 0 ? (
         groups.map((group) => (
-          <section key={group.slug} id={group.slug} className="mt-10 scroll-mt-20">
-            <h2 className="text-xl font-bold">{group.title}</h2>
-            <div className="mt-4 space-y-6">
+          <section key={group.slug} id={group.slug} className={`${SECTION} scroll-mt-20`}>
+            <h2 className={HEADING}>{group.title}</h2>
+            <div className={`mt-2 ${LIST}`}>
               {group.songs.map((song) => (
-                <SongItem key={song.id} song={song} />
+                <div key={song.id} className={LIST_ITEM}>
+                  <SongItem song={song} />
+                </div>
               ))}
             </div>
             {/* Singles alone runs past a screen, so each group ends with the

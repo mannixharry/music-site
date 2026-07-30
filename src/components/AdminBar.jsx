@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { SIGN_OUT_URL, forgetAdminSession, hasAdminSession } from '../adminHint'
+import { SIGN_OUT_URL, adminSessionEmail, forgetAdminSession, hasAdminSession } from '../adminHint'
 
 // Frank's own strip, above the site's own header and only ever visible to him.
 //
@@ -17,12 +17,19 @@ function AdminBar() {
   // Read once, at mount, exactly as the header used to: the admin page writes
   // the hint before you can click through, and this does not mount until you do.
   const [signedIn] = useState(hasAdminSession)
+  const [email] = useState(adminSessionEmail)
   if (!signedIn) return null
 
   return (
     <div className="border-b border-gray-300 bg-gray-200">
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-4 px-4 py-1.5 text-xs">
-        <span className="text-gray-600">You are signed in as the site owner.</span>
+        {/* Named the same way the admin page names it, so it is obvious which
+            account is being previewed from — and monospaced for the same reason
+            it is there. */}
+        <span className="min-w-0 truncate text-gray-600">
+          Signed in{email ? ' as ' : ''}
+          {email && <span className="font-mono">{email}</span>}
+        </span>
 
         <span className="flex shrink-0 items-center gap-3">
           <Link to="/admin" className="font-bold underline">

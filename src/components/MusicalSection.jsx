@@ -5,6 +5,7 @@ import AudioPlayer from './AudioPlayer'
 import ScriptwriterCallout from './ScriptwriterCallout'
 import SnippetTag from './SnippetTag'
 import { useContent } from '../context/contentContext'
+import { SECTION } from '../rules'
 
 // Above this many characters the resume opens shortened, with the first few
 // lines showing and the rest a click away. Two of the three shows carry several
@@ -32,7 +33,7 @@ function MusicalSection({ musical }) {
   return (
     // scroll-mt keeps the heading clear of the sticky site header when the
     // quick links above jump to this section.
-    <section id={musical.slug} className="scroll-mt-20 py-8">
+    <section id={musical.slug} className={`${SECTION} scroll-mt-20`}>
       <h2 className="text-2xl font-bold">{musical.title}</h2>
       <p className="text-sm">{musical.status}</p>
 
