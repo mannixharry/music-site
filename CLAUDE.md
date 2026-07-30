@@ -55,6 +55,8 @@ Songs are **data, not code**. The catalogue lives in `src/content/snapshot.json`
 
 The admin lives at `/admin` (`src/pages/Admin.jsx` + `src/admin/`), lazily loaded and mounted outside `<Layout>`. The split is load-bearing: the admin pulls in an MP3 encoder, and the public bundle must not grow by 164 kB to carry it.
 
+`src/adminHint.js` is the one thing on the public side that mentions the admin at all, and it is **not** auth. The admin page writes a sessionStorage flag once its API call has succeeded; the site header reads it and offers a "Back to admin" link, so previewing a change is a round trip rather than a one-way one. It carries no identity and grants nothing — Access still decides who may open `/admin`, and a visitor who sets the flag by hand gets a link to a login page. It exists in that shape because asking `/api/admin/session` instead would wake the Worker on every visitor's page load, which is exactly what the static-asset arrangement above is protecting.
+
 **Uploads and transcoding.** Audio never passes through the Worker in production — the browser is handed a presigned URL and PUTs straight to R2, because the free plan gives 10 ms of CPU per request and caps bodies at 100 MB. Encoding therefore happens in the browser too, and it is split across two places for a reason worth remembering: **`decodeAudioData` runs on the main thread** (`src/admin/upload.js`) because the Web Audio API is not exposed to Web Workers at all, while the slow MP3 encode runs in `transcode.worker.js`. Decoding is native and quick; the encode is the long loop.
 
 An upload records the **master first** and patches the song before doing anything else, so a failed decode or a closed tab leaves a recoverable song rather than a lost file.

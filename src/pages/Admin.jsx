@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import PlaybackProvider from '../components/PlaybackProvider'
+import { rememberAdminSession } from '../adminHint'
 import { musicals } from '../content/musicals'
 import { api } from '../admin/api'
 import SongForm from '../admin/SongForm'
@@ -35,6 +36,10 @@ function Admin() {
         setSession(sessionData)
         setSongs(listData.songs)
         setMediaBase(listData.mediaBase)
+        // Lets the site's header offer a way back here, so previewing a change
+        // is not a one-way trip through the URL bar. A hint only — Access is
+        // still what decides whether following it works. See src/adminHint.js.
+        rememberAdminSession()
       })
       .catch((loadError) => !cancelled && setError(loadError.message))
 
@@ -77,8 +82,10 @@ function Admin() {
           <h1 className="text-2xl font-bold">Songs</h1>
           <div className="flex items-center gap-4 text-xs">
             <span className="font-mono text-gray-600">{session.email}</span>
-            <Link to="/songs" className="underline">
-              View the site
+            {/* The home page rather than /songs: this is the "how does it look
+                now?" link, and the site's header carries a way straight back. */}
+            <Link to="/" className="underline">
+              Preview the site
             </Link>
           </div>
         </header>
