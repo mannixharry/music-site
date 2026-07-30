@@ -5,6 +5,7 @@ import { formatTime } from '../format'
 import { api } from './api'
 import SnippetTrimmer from './SnippetTrimmer'
 import UploadDropzone from './UploadDropzone'
+import { isUploading } from './upload'
 import { useUpload } from './useUpload'
 import { useCoverUpload } from './useCoverUpload'
 
@@ -132,6 +133,11 @@ function SongForm({ song, justCreated, musicals, capabilities, mediaBase, onChan
   const savedTimer = useRef(null)
   useEffect(() => () => clearTimeout(savedTimer.current), [])
 
+  // Keyed on the id, not the object. Every upload patches the song and
+  // refreshes the list, which hands this a new object for the same song — and
+  // resetting the draft on that threw away anything typed and not yet saved.
+  // Nothing an upload writes belongs to this form anyway: it deals in titles,
+  // links and flags, never in keys or durations.
   useEffect(() => {
     setDraft(song ? { ...BLANK, ...song, musicalSlug: song.musicalSlug ?? '' } : BLANK)
     setPending(null)
@@ -139,7 +145,8 @@ function SongForm({ song, justCreated, musicals, capabilities, mediaBase, onChan
     setError(null)
     // saveState is deliberately not reset here: this effect also runs on mount,
     // and a just-created song mounts already showing its confirmation.
-  }, [song])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [song?.id])
 
   useEffect(() => {
     if (!justCreated) return
@@ -217,7 +224,15 @@ function SongForm({ song, justCreated, musicals, capabilities, mediaBase, onChan
   )
 
   const { status, start, reset } = useUpload({ songId: song?.id, capabilities, patch })
+
   const cover = useCoverUpload({ songId: song?.id, capabilities, patch })
+
+  // Deleting a song mid-upload is the one combination that actually loses
+  // something: the bytes are already in R2, and the patch that was going to
+  // record them fails on a row that is no longer there, leaving a file nothing
+  // points at. Saving is safe — it writes different columns — and cancelling is
+  // too, since the upload carries on and records itself either way.
+  const transferring = isUploading(status) || isUploading(cover.status)
 
   async function save() {
     clearTimeout(savedTimer.current)
@@ -553,7 +568,13 @@ function SongForm({ song, justCreated, musicals, capabilities, mediaBase, onChan
             Cancel
           </button>
           {song && (
-            <button type="button" onClick={remove} className="ml-auto text-sm underline">
+            <button
+              type="button"
+              onClick={remove}
+              disabled={transferring}
+              title={transferring ? 'Wait for the upload to finish first' : undefined}
+              className="ml-auto text-sm underline disabled:no-underline disabled:opacity-50"
+            >
               Delete
             </button>
           )}

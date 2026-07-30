@@ -1,5 +1,11 @@
 // The mechanics of getting a file into R2. No React here — useUpload drives it.
 
+// Whether a transfer is in flight. One definition, because two things now turn
+// on it — the dropzone refusing another file, and Delete refusing to pull the
+// song out from under one.
+export const isUploading = (status) =>
+  status.phase === 'uploading' || status.phase === 'transcoding' || status.phase === 'resizing'
+
 // What both upload hooks start and end at. Shared so the two cannot drift into
 // disagreeing about what "nothing is happening" looks like.
 export const IDLE = { phase: 'idle', ratio: 0, message: '', error: null }

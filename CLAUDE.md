@@ -69,6 +69,10 @@ The admin lives at `/admin` (`src/pages/Admin.jsx` + `src/admin/`), lazily loade
 
 An upload records the **master first** and patches the song before doing anything else, so a failed decode or a closed tab leaves a recoverable song rather than a lost file.
 
+Of the buttons beside an upload in progress, only **Delete** is disabled, and the asymmetry is deliberate. Deleting mid-upload is the one combination that loses something: the bytes are already in R2 and the patch meant to record them fails on a row that is no longer there, leaving a file nothing points at. Saving is safe because it writes different columns — verified, not assumed — and cancelling is safe because the upload carries on and records itself whether the panel is open or not.
+
+Relatedly, `SongForm`'s reset effect keys on `song?.id`, **not** on `song`. Every upload patches the song and refreshes the list, handing the form a new object for the same song; resetting on that threw away anything typed and not yet saved.
+
 **Every upload keeps the original**, whatever format it arrives in — `master_key` is never null for a song that has audio. Files already MP3/M4A and under 12 MB skip *encoding* (the common case, and the one that never downloads the encoder chunk), but they are still archived: the same bytes go to both buckets, private original and public copy. That looks wasteful and is deliberate. The public object can then be replaced, re-encoded or deleted without it being a one-way door, and serving an MP3 as-is avoids compressing already-compressed audio twice. The masters bucket has no custom domain and no `r2.dev` URL, so nothing in it is reachable from the web; `/api/content` exposes no `master*` field.
 
 Locally there is no S3 endpoint to presign against, so `wrangler dev` uploads stream through `PUT /api/admin/blob` into the emulated bucket and are served back by `GET /api/media/*`. The client picks between the two on `capabilities.presign` from `/api/admin/session`, never by sniffing hostnames.

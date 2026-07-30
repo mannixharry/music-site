@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { formatBytes } from '../format'
-import { ACCEPTED, canUseDirectly } from './upload'
+import { ACCEPTED, canUseDirectly, isUploading } from './upload'
 import { ACCEPTED_IMAGES } from './cover'
 
 function Bar({ ratio }) {
@@ -49,8 +49,7 @@ function UploadDropzone({
   const [pending, setPending] = useState(null)
   const [note, setNote] = useState('')
 
-  const busy =
-    status.phase === 'uploading' || status.phase === 'transcoding' || status.phase === 'resizing'
+  const busy = isUploading(status)
 
   function choose(file) {
     if (!file) return
