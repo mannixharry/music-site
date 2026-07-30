@@ -347,7 +347,7 @@ function SongForm({ song, justCreated, musicals, capabilities, mediaBase, onChan
           </Field>
         )}
 
-        <Field label="Links" hint="Spotify, Bandcamp, anywhere else">
+        <Field label="Links" hint="Spotify, Apple Music, anywhere else">
           <div className="space-y-2">
             {draft.links.map((link, index) => (
               <div key={index} className="flex gap-2">
