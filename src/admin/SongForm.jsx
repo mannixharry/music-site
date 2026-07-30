@@ -109,7 +109,7 @@ function Block({ label, hint, children }) {
 
 const inputClass = 'w-full border border-gray-400 bg-white px-2 py-1 text-sm'
 
-function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel }) {
+function SongForm({ song, justCreated, musicals, capabilities, mediaBase, onChanged, onCreated, onCancel }) {
   const [draft, setDraft] = useState(BLANK)
   // Audio pulled back down and waiting to be cut, with where the handles should
   // open. Nothing else ever waits here: an ordinary upload has nothing left to
@@ -121,7 +121,11 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
   // 'idle' | 'saving' | 'saved'. Saving is usually quicker than the eye, so
   // without the third state the button flickers and the change looks like it
   // may not have happened — which is the whole reason people press Save twice.
-  const [saveState, setSaveState] = useState('idle')
+  //
+  // A song that has just been created arrives already saved: the form is
+  // re-keyed onto the new row the moment it exists, so the confirmation has to
+  // start here rather than being set by the save that caused the remount.
+  const [saveState, setSaveState] = useState(justCreated ? 'saved' : 'idle')
   const [error, setError] = useState(null)
 
   const savedTimer = useRef(null)
@@ -131,9 +135,16 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
     setDraft(song ? { ...BLANK, ...song, musicalSlug: song.musicalSlug ?? '' } : BLANK)
     setPending(null)
     setFetching(null)
-    setSaveState('idle')
     setError(null)
+    // saveState is deliberately not reset here: this effect also runs on mount,
+    // and a just-created song mounts already showing its confirmation.
   }, [song])
+
+  useEffect(() => {
+    if (!justCreated) return
+    const timer = setTimeout(() => setSaveState('idle'), 2500)
+    return () => clearTimeout(timer)
+  }, [justCreated])
 
   // Fetching audio back out of the catalogue so it can be worked on.
   //
@@ -222,11 +233,20 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
         published: draft.published,
       }
 
-      if (song) await api.update(song.id, payload)
-      else await api.create(payload)
+      // Creating hands the form straight on to the song it just made, rather
+      // than closing and leaving you to find it in the list — the audio and
+      // artwork sections only exist once the row does, so the moment after
+      // saving is exactly when they are wanted.
+      if (!song) {
+        const { song: created } = await api.create(payload)
+        // Before handing over, so the new row is in the list by the time the
+        // selection points at it — otherwise the form blinks out and back.
+        await onChanged()
+        return onCreated(created.id)
+      }
 
+      await api.update(song.id, payload)
       await onChanged()
-      if (!song) return onCancel()
 
       // Held long enough to be read, then back to Save so the button never
       // sits there claiming something that has since been edited again.

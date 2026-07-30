@@ -20,6 +20,9 @@ function Admin() {
   const [mediaBase, setMediaBase] = useState('')
   const [selectedId, setSelectedId] = useState(null)
   const [creating, setCreating] = useState(false)
+  // The song made by the last Save, so the form it hands over to can show that
+  // it saved. Cleared the moment attention moves anywhere else.
+  const [justCreatedId, setJustCreatedId] = useState(null)
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
   // The bin and the storage figures come from one call, because they move
@@ -142,6 +145,7 @@ function Admin() {
               onClick={() => {
                 setCreating(true)
                 setSelectedId(null)
+                setJustCreatedId(null)
               }}
               className="mb-3 border border-gray-500 bg-gray-200 px-3 py-1 text-sm"
             >
@@ -155,6 +159,7 @@ function Admin() {
               onSelect={(id) => {
                 setCreating(false)
                 setSelectedId(id)
+                setJustCreatedId(null)
               }}
               onMove={move}
             />
@@ -165,13 +170,21 @@ function Admin() {
               <SongForm
                 key={selected?.id ?? 'new'}
                 song={selected}
+                justCreated={Boolean(selected) && selected.id === justCreatedId}
                 musicals={musicals}
                 capabilities={session.capabilities}
                 mediaBase={mediaBase}
                 onChanged={refresh}
+                // Straight from "New song" to editing the row it just made.
+                onCreated={(id) => {
+                  setCreating(false)
+                  setSelectedId(id)
+                  setJustCreatedId(id)
+                }}
                 onCancel={() => {
                   setCreating(false)
                   setSelectedId(null)
+                  setJustCreatedId(null)
                 }}
               />
             ) : (
