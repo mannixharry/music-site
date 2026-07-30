@@ -36,7 +36,29 @@ export function useUpload({ songId, capabilities, patch }) {
       try {
         // The quick path: it is already something browsers stream, and small
         // enough to serve untouched. No decode, so nothing to go wrong.
+        //
+        // It still keeps the original. The same bytes go to both buckets, which
+        // looks wasteful and is the point: whatever Frank uploaded is preserved
+        // untouched and private, while the public copy is free to be replaced,
+        // re-encoded or deleted later without that being a one-way door. Serving
+        // it as-is rather than re-encoding avoids compressing already-compressed
+        // audio a second time.
         if (canUseDirectly(file)) {
+          setStatus({ phase: 'uploading', ratio: 0, message: 'Uploading master…', error: null })
+
+          // Master first, exactly as on the slow path below: if the second
+          // upload fails or the tab closes between them, the original is safe
+          // and the song is recoverable rather than lost.
+          const masterKey = masterKeyFor(songId, file)
+          const { size: masterBytes } = await uploadFile({
+            file,
+            key: masterKey,
+            bucket: 'masters',
+            capabilities,
+            onProgress: (ratio) => setStatus((s) => ({ ...s, ratio })),
+          })
+          await patch({ masterKey, masterBytes, masterMime: contentTypeFor(file) })
+
           setStatus({ phase: 'uploading', ratio: 0, message: 'Uploading…', error: null })
 
           const key = webKeyFor(songId, extensionOf(file))

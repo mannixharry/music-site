@@ -57,7 +57,9 @@ The admin lives at `/admin` (`src/pages/Admin.jsx` + `src/admin/`), lazily loade
 
 **Uploads and transcoding.** Audio never passes through the Worker in production — the browser is handed a presigned URL and PUTs straight to R2, because the free plan gives 10 ms of CPU per request and caps bodies at 100 MB. Encoding therefore happens in the browser too, and it is split across two places for a reason worth remembering: **`decodeAudioData` runs on the main thread** (`src/admin/upload.js`) because the Web Audio API is not exposed to Web Workers at all, while the slow MP3 encode runs in `transcode.worker.js`. Decoding is native and quick; the encode is the long loop.
 
-An upload records the **master first** and patches the song before transcoding, so a failed decode or a closed tab leaves a recoverable song rather than a lost file. Files already MP3/M4A and under 12 MB skip encoding entirely — the common case, and the one that never downloads the encoder chunk.
+An upload records the **master first** and patches the song before doing anything else, so a failed decode or a closed tab leaves a recoverable song rather than a lost file.
+
+**Every upload keeps the original**, whatever format it arrives in — `master_key` is never null for a song that has audio. Files already MP3/M4A and under 12 MB skip *encoding* (the common case, and the one that never downloads the encoder chunk), but they are still archived: the same bytes go to both buckets, private original and public copy. That looks wasteful and is deliberate. The public object can then be replaced, re-encoded or deleted without it being a one-way door, and serving an MP3 as-is avoids compressing already-compressed audio twice. The masters bucket has no custom domain and no `r2.dev` URL, so nothing in it is reachable from the web; `/api/content` exposes no `master*` field.
 
 Locally there is no S3 endpoint to presign against, so `wrangler dev` uploads stream through `PUT /api/admin/blob` into the emulated bucket and are served back by `GET /api/media/*`. The client picks between the two on `capabilities.presign` from `/api/admin/session`, never by sniffing hostnames.
 

@@ -10,8 +10,13 @@
 //
 // It deliberately does NOT transcode. The browser path decodes with the Web
 // Audio API, which does not exist in node, so anything that is not already
-// streamable is refused rather than half-handled — upload those through /admin.
-// See --help for the flags.
+// streamable is refused as a web object rather than half-handled — upload those
+// through /admin. It can still archive one as a master, which is never served
+// and so has no format requirement at all. See --help for the flags.
+//
+// Like the admin, it keeps the original of everything: an audio file given here
+// is uploaded to both buckets unless the song already has a master, so no song
+// with audio ends up without one.
 //
 // One caveat with no workaround here: an admin write purges the cached
 // /api/content, and this cannot, because that cache lives inside the Worker.
@@ -59,6 +64,9 @@ Usage: node scripts/add-song.mjs [audio-file] [options]
 
   --title <text>          Required for a new song.
   --id <slug>             Defaults to a slug of the title.
+  --master <file>         Archive this as the master instead of the audio file.
+                          Any format — it is never served. Use it alone to
+                          attach a master to a song that already has audio.
   --kind <k>              single | demo | other      (default: single)
   --musical <slug>        Required when kind is demo.
   --description <text>
@@ -99,6 +107,7 @@ function parseArgs(argv) {
     else if (arg === '--kind') options.kind = value()
     else if (arg === '--musical') options.musical = value()
     else if (arg === '--description') options.description = value()
+    else if (arg === '--master') options.master = value()
     else if (arg === '--status') options.status = value()
     else if (arg === '--link') options.links.push(value())
     else if (arg.startsWith('--')) throw new Error(`unknown option ${arg}`)
@@ -147,16 +156,20 @@ function query(sql, remote) {
 
 // ---------------------------------------------------------------------------
 
-async function describeAudio(file) {
+// `forWeb` is the only thing that limits the format. A master is archival — it
+// is never served to anyone, so any of these formats is fine. A web object has
+// to be something a browser can stream, and this script cannot convert.
+async function describeAudio(file, { forWeb = true } = {}) {
   const extension = path.extname(file).slice(1).toLowerCase()
   const contentType = EXTENSION_TYPES[extension]
   if (!contentType) throw new Error(`unrecognised audio extension: .${extension}`)
 
-  if (!STREAMABLE.has(contentType)) {
+  if (forWeb && !STREAMABLE.has(contentType)) {
     throw new Error(
       `${extension} has to be converted before it can be served, and this script cannot ` +
         `do that — decoding needs the Web Audio API, which node does not have.\n` +
-        `Upload it through /admin instead, which decodes in the browser and encodes in a worker.`,
+        `Upload it through /admin instead, which decodes in the browser and encodes in a worker.\n` +
+        `To keep it only as an archival master, pass it as --master ${file} instead.`,
     )
   }
 
@@ -214,32 +227,51 @@ async function main() {
   // Audio first. A row pointing at an object that failed to upload is worse
   // than an upload with no row — the second is invisible, the first is broken.
   let audio = null
+  // Keys are unique per upload rather than per song, so replacing a track never
+  // serves the old bytes from a cache. That is what lets the media domain send
+  // `immutable` with a year-long max-age.
+  const keyFor = (prefix, described) =>
+    `${prefix}/${id}/${createHash('sha256').update(described.bytes).digest('hex').slice(0, 8)}.${described.extension}`
+
+  const put = (bucket, key, file, contentType) => {
+    if (options.dryRun) return
+    wrangler([
+      'r2',
+      'object',
+      'put',
+      `${bucket}/${key}`,
+      `--file=${file}`,
+      `--content-type=${contentType}`,
+      remote ? '--remote' : '--local',
+    ])
+  }
+
+  // The master goes first, and is recorded before the web object is even
+  // uploaded. Everything Frank sends is kept untouched and private, whatever
+  // format it arrives in, so the public copy can be replaced or re-encoded
+  // later without that being a one-way door.
+  let master = null
+  const masterSource = options.master ?? options.file
+  if (masterSource && !existing?.master_key) {
+    const described = await describeAudio(masterSource, { forWeb: false })
+    const key = keyFor('masters', described)
+    console.log(`  master: ${(described.size / 1048576).toFixed(1)}MB ${described.contentType} → ${key}`)
+    put('frank-kirwan-masters', key, masterSource, described.contentType)
+    master = { key, size: described.size, mime: described.contentType, duration: described.duration }
+  } else if (masterSource) {
+    console.log(`  master: keeping the existing one (${existing.master_key})`)
+  }
+
   if (options.file) {
     const described = await describeAudio(options.file)
-
-    // Unique per upload, not per song, so replacing a track never serves the
-    // old bytes from a cache. That is what lets the media domain send
-    // `immutable` with a year-long max-age.
-    const suffix = createHash('sha256').update(described.bytes).digest('hex').slice(0, 8)
-    const key = `web/${id}/${suffix}.${described.extension}`
+    const key = keyFor('web', described)
 
     console.log(
       `  audio: ${(described.size / 1048576).toFixed(1)}MB ${described.contentType}` +
         `${described.duration ? `, ${described.duration.toFixed(1)}s` : ''} → ${key}`,
     )
 
-    if (!options.dryRun) {
-      wrangler([
-        'r2',
-        'object',
-        'put',
-        `frank-kirwan-media/${key}`,
-        `--file=${options.file}`,
-        `--content-type=${described.contentType}`,
-        remote ? '--remote' : '--local',
-      ])
-    }
-
+    put('frank-kirwan-media', key, options.file, described.contentType)
     audio = { key, size: described.size, duration: described.duration }
   }
 
@@ -268,12 +300,10 @@ async function main() {
     status: quote(status),
     web_key: quote(audio?.key ?? existing?.web_key ?? null),
     web_bytes: number(audio?.size ?? existing?.web_bytes ?? null),
-    // Untouched: this script never uploads a master, because the only reason to
-    // hold one is to re-encode from it, which it cannot do.
-    master_key: quote(existing?.master_key ?? null),
-    master_bytes: number(existing?.master_bytes ?? null),
-    master_mime: quote(existing?.master_mime ?? null),
-    duration_s: number(audio?.duration ?? existing?.duration_s ?? null),
+    master_key: quote(master?.key ?? existing?.master_key ?? null),
+    master_bytes: number(master?.size ?? existing?.master_bytes ?? null),
+    master_mime: quote(master?.mime ?? existing?.master_mime ?? null),
+    duration_s: number(audio?.duration ?? existing?.duration_s ?? master?.duration ?? null),
     links_json: quote(JSON.stringify(links.length ? links : JSON.parse(existing?.links_json ?? '[]'))),
     sort_order: number(sortOrder),
     published: options.draft ? '0' : String(existing?.published ?? 1),
@@ -302,13 +332,18 @@ async function main() {
   // before, and nothing about the output says so. That happened once, during
   // the public/audio migration, and was caught by a separate pass afterwards
   // rather than by the script. So it reads the row back.
-  const written = query(`SELECT web_key, duration_s FROM songs WHERE id = ${quote(id)}`, remote)[0]
+  const written = query(`SELECT web_key, master_key FROM songs WHERE id = ${quote(id)}`, remote)[0]
   if (!written) throw new Error(`wrote "${id}" but it is not in the database — nothing was saved`)
-  if (audio && written.web_key !== audio.key) {
-    throw new Error(
-      `uploaded ${audio.key} but "${id}" still points at ${written.web_key ?? 'nothing'} — ` +
-        `the object is in R2, the row was not updated. Re-run to retry.`,
-    )
+  for (const [what, uploaded, stored] of [
+    ['web', audio?.key, written.web_key],
+    ['master', master?.key, written.master_key],
+  ]) {
+    if (uploaded && stored !== uploaded) {
+      throw new Error(
+        `uploaded ${uploaded} but "${id}" still has ${what}_key = ${stored ?? 'NULL'} — ` +
+          `the object is in R2, the row was not updated. Re-run to retry.`,
+      )
+    }
   }
 
   console.log(`\nDone — "${id}" is in, version ${version}.`)

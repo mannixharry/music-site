@@ -352,7 +352,12 @@ immediate.
   All ten songs now hold R2 keys, `public/audio/` is gone, and every object was
   checked against `web_bytes` over `media.frankkirwan.com` before the files were
   deleted. Git history still holds them if a byte-for-byte original is ever
-  wanted: `git show be4b3f6:public/audio/demos/guyana-demo-1.mp3 > out.mp3`.
+  wanted: `git show f180ea4:public/audio/demos/guyana-demo-1.mp3 > out.mp3`.
+- ~~Archive a master for every song~~ — done 30 July 2026. All ten were
+  backfilled from git history (and `pigs` from its media object, which is the
+  file that was uploaded). Every master was checked to return **404** over
+  `media.frankkirwan.com`, which is the property the two-bucket split exists to
+  provide — the masters bucket has no custom domain and no `r2.dev` URL.
 - Wire `scripts/pull-snapshot.mjs` into a `prebuild` step so the snapshot cannot
   be forgotten. It is currently run by hand, and a forgotten run is invisible:
   the site still works, it just shows the catalogue as it was.
