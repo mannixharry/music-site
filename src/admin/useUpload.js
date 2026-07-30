@@ -36,13 +36,18 @@ const NOT_A_SNIPPET = { isSnippet: false, snippetStart: null, snippetEnd: null }
 // taking it as an option: the range is settled in the trimmer at the moment of
 // pressing the button, and passing it here keeps it out of the dependency list
 // that would otherwise rebuild this callback on every drag of a handle.
+//
+// `archiveMaster: false` is for the one case where the file did not come from
+// Frank: re-cutting the copy already on the site. Archiving that as the master
+// would point master_key at a second-generation copy of itself and orphan the
+// real master — still in the bucket, but with nothing in the row naming it.
 export function useUpload({ songId, capabilities, patch }) {
   const [status, setStatus] = useState(IDLE)
 
   const reset = useCallback(() => setStatus(IDLE), [])
 
   const start = useCallback(
-    async (file, snippet = null) => {
+    async (file, snippet = null, { archiveMaster = true } = {}) => {
       try {
         // The quick path: it is already something browsers stream, and small
         // enough to serve untouched. No decode, so nothing to go wrong.
@@ -96,18 +101,24 @@ export function useUpload({ songId, capabilities, patch }) {
         // the decode then fails, or the tab is closed mid-encode, the upload is
         // not lost — the song simply sits with a master and no web version, and
         // can be retried.
-        setStatus({ phase: 'uploading', ratio: 0, message: 'Uploading master…', error: null })
+        //
+        // Skipped when the file is the site's own copy being re-cut: there is
+        // nothing new to archive, and writing master_key here would replace a
+        // pointer to Frank's original with one to a copy of the published audio.
+        if (archiveMaster) {
+          setStatus({ phase: 'uploading', ratio: 0, message: 'Uploading master…', error: null })
 
-        const masterKey = masterKeyFor(songId, file)
-        const { size: masterBytes } = await uploadFile({
-          file,
-          key: masterKey,
-          contentType: contentTypeFor(file),
-          capabilities,
-          onProgress: (ratio) => setStatus((s) => ({ ...s, ratio })),
-        })
+          const masterKey = masterKeyFor(songId, file)
+          const { size: masterBytes } = await uploadFile({
+            file,
+            key: masterKey,
+            contentType: contentTypeFor(file),
+            capabilities,
+            onProgress: (ratio) => setStatus((s) => ({ ...s, ratio })),
+          })
 
-        await patch({ masterKey, masterBytes, masterMime: contentTypeFor(file) })
+          await patch({ masterKey, masterBytes, masterMime: contentTypeFor(file) })
+        }
 
         setStatus({
           phase: 'transcoding',

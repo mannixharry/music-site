@@ -19,17 +19,19 @@ function SnippetControls({ enabled, onChange, current }) {
       </label>
 
       <p className="mt-1 text-xs text-gray-600">
-        Upload the whole song either way — it is kept privately as the master, as always. With
-        this ticked you choose the cut on the next screen, and only that cut is uploaded to the
-        public bucket, so the full recording is never on the website to be found.
+        Only the cut goes to the public bucket, so the full recording is never on the website to
+        be found. Whatever the master is stays private and whole.
       </p>
 
       {enabled && (
-        <p className="mt-2 text-xs text-gray-600">
-          A preview is always re-encoded, even from an MP3, because there is no way to cut one
-          without it. Only the seconds you keep get encoded, though — a half-minute preview
-          takes a few seconds whether it came out of a three-minute song or a ten-minute one.
-        </p>
+        <>
+          <p className="mt-2 text-sm font-bold">Next: choose the audio to cut, below.</p>
+          <p className="mt-1 text-xs text-gray-600">
+            A preview is always re-encoded, because there is no way to cut one without it. Only
+            the seconds you keep get encoded, though — a half-minute preview takes a few seconds
+            whether it came out of a three-minute song or a ten-minute one.
+          </p>
+        </>
       )}
 
       {current && (

@@ -49,18 +49,49 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
   // song: a song that is already a preview is far likelier to be getting its
   // full version than the same crop a second time.
   const [cropping, setCropping] = useState(false)
-  // A file that has been chosen but not sent. Only previews wait here — an
-  // ordinary upload has nothing left to decide, so it goes straight up.
-  const [pendingFile, setPendingFile] = useState(null)
+  // A file chosen but not sent, and where it came from. Only previews wait
+  // here — an ordinary upload has nothing left to decide, so it goes straight
+  // up. `archiveMaster` is false for the site's own copy, which must not be
+  // filed as if it were Frank's original.
+  const [pending, setPending] = useState(null)
+  const [fetching, setFetching] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     setDraft(song ? { ...BLANK, ...song, musicalSlug: song.musicalSlug ?? '' } : BLANK)
     setCropping(false)
-    setPendingFile(null)
+    setPending(null)
     setError(null)
   }, [song])
+
+  // Loads the audio already published for this song into the trimmer, so a
+  // preview can be cut without hunting down the original file again — which is
+  // the usual case, since every song here already has audio on the site.
+  //
+  // Fetched from /api/media/, not from the media domain: that is same-origin in
+  // both environments, so no CORS rule has to exist for it, and it serves the
+  // same public bucket the site already reads.
+  async function trimWhatIsOnTheSite() {
+    setFetching(true)
+    setError(null)
+    try {
+      const key = song.webKey
+      const response = await fetch(key.startsWith('/') ? key : `/api/media/${key}`)
+      if (!response.ok) throw new Error(`Could not fetch the site's copy (${response.status})`)
+
+      const blob = await response.blob()
+      const name = key.split('/').pop() || 'audio.mp3'
+      setPending({
+        file: new File([blob], name, { type: blob.type || 'audio/mpeg' }),
+        archiveMaster: false,
+      })
+    } catch (fetchError) {
+      setError(fetchError.message)
+    } finally {
+      setFetching(false)
+    }
+  }
 
   const set = (fields) => setDraft((current) => ({ ...current, ...fields }))
 
@@ -260,7 +291,7 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
                   setCropping(next)
                   // Turning it off with a file waiting would otherwise leave
                   // that file stranded behind a trimmer nothing renders.
-                  setPendingFile(null)
+                  setPending(null)
                 }}
                 current={
                   song.isSnippet && song.snippetStart !== null
@@ -269,25 +300,61 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
                 }
               />
 
-              {pendingFile ? (
+              {pending ? (
                 <SnippetTrimmer
-                  file={pendingFile}
-                  onCancel={() => setPendingFile(null)}
+                  file={pending.file}
+                  onCancel={() => setPending(null)}
                   onConfirm={(range) => {
-                    setPendingFile(null)
-                    start(pendingFile, range)
+                    setPending(null)
+                    start(pending.file, range, { archiveMaster: pending.archiveMaster })
                   }}
                 />
               ) : (
-                <UploadDropzone
-                  status={status}
-                  // A preview stops here to be cut. Everything else is already
-                  // decided, so it goes straight up as it always has.
-                  onFile={(file) => (cropping ? setPendingFile(file) : start(file))}
-                  onReset={reset}
-                  currentBytes={song.webBytes}
-                  hasMaster={Boolean(song.masterKey)}
-                />
+                <>
+                  {/* The common case by a distance: the song already has audio,
+                      and re-cutting it should not mean finding the original
+                      file again. Offered first, because being sent to a
+                      dropzone for a file the site already holds is what made
+                      this look broken. */}
+                  {cropping && song.webKey && !song.isSnippet && (
+                    <div className="mb-3 border border-gray-400 bg-white p-3">
+                      <button
+                        type="button"
+                        onClick={trimWhatIsOnTheSite}
+                        disabled={fetching}
+                        className="border border-gray-500 bg-gray-200 px-3 py-1 text-sm font-bold disabled:opacity-50"
+                      >
+                        {fetching ? 'Fetching…' : 'Cut a preview from the audio already here'}
+                      </button>
+                      <p className="mt-2 text-xs text-gray-600">
+                        Uses the copy on the site, so there is nothing to find or re-upload. It
+                        gets encoded a second time, which costs a little quality — drop the
+                        master below instead if you want the best the preview can sound. The
+                        master on file is left exactly as it is either way.
+                      </p>
+                    </div>
+                  )}
+
+                  {cropping && song.isSnippet && (
+                    <p className="mb-3 border border-gray-400 bg-white p-3 text-xs">
+                      The site only holds the preview for this song, so there is nothing here to
+                      re-cut. Drop the full song below to choose a different preview from it.
+                    </p>
+                  )}
+
+                  <UploadDropzone
+                    // A preview stops at the trimmer. Everything else is
+                    // already decided, so it goes straight up as it always has.
+                    variant={cropping ? 'audio-preview' : 'audio'}
+                    status={status}
+                    onFile={(file) =>
+                      cropping ? setPending({ file, archiveMaster: true }) : start(file)
+                    }
+                    onReset={reset}
+                    currentBytes={song.webBytes}
+                    hasMaster={Boolean(song.masterKey)}
+                  />
+                </>
               )}
             </>
           ) : (

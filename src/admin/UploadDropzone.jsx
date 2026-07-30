@@ -30,6 +30,15 @@ const VARIANTS = {
     hint: 'MP3, M4A, WAV, AIFF, FLAC or OGG. Upload the best version you have — a smaller one is made for the website automatically.',
     describe: async (file) => (canUseDirectly(file) ? 'used as-is' : 'converted'),
   },
+  // Same file, different promise: this one goes to the trimmer rather than
+  // straight to the bucket, and saying so is the difference between the next
+  // step being obvious and the panel looking like it did nothing.
+  'audio-preview': {
+    accept: ACCEPTED,
+    prompt: 'Drop the whole song here to cut a preview from it',
+    hint: 'Nothing is uploaded yet — you choose the cut on the next screen, and only that cut is published.',
+    describe: async () => 'you choose the cut next',
+  },
   image: {
     accept: ACCEPTED_IMAGES,
     prompt: 'Drop the cover art here, or click to choose it',
