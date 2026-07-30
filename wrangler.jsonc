@@ -62,7 +62,13 @@
     // icloud one while the Access policy names the gmail one; whichever he
     // signs in with has to appear in both places or the request dies here,
     // after a login that looked like it worked.
-    "ADMIN_EMAILS": "mannixharry@gmail.com,harrymannix@icloud.com",
+    //
+    // TWO PLACES, and this is only one of them. An address here that the Access
+    // policy does not name gets no token and never reaches the Worker; an
+    // address the policy names that is missing here is refused with a 403 that
+    // says so. Frank's address has to be added to the Access policy in the Zero
+    // Trust dashboard as well as here.
+    "ADMIN_EMAILS": "mannixharry@gmail.com,harrymannix@icloud.com,frank@frankkirwan.com",
     "ACCESS_TEAM": "frankkirwan",
     // ONE Access application covers both frankkirwan.com/admin and
     // frankkirwan.com/api/admin, so there is one audience tag here.
