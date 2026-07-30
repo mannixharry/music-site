@@ -77,7 +77,13 @@ function Admin() {
 
   return (
     <PlaybackProvider>
-      <div className="mx-auto max-w-5xl px-4 py-6">
+      {/* The deep bottom padding is not decoration. The edit form grows as a
+          song gains things — a player, a cover preview, its own dropzone — and
+          past a certain point it runs off the bottom of a laptop screen with
+          Save and Delete pinned against the very edge. Nothing clips it, so the
+          page scrolls, but only to the last pixel of the form. This is the
+          slack that makes the end of it comfortable to reach. */}
+      <div className="mx-auto max-w-5xl px-4 pt-6 pb-40">
         <header className="flex flex-wrap items-baseline justify-between gap-2 border-b border-gray-300 pb-3">
           <h1 className="text-2xl font-bold">Songs</h1>
           <div className="flex items-center gap-4 text-xs">
