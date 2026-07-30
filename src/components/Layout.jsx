@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import AdminBar from './AdminBar'
 import Header from './Header'
 import Footer from './Footer'
+import NowPlaying from './NowPlaying'
 import PlaybackProvider from './PlaybackProvider'
 import RefreshOnNavigate from './RefreshOnNavigate'
 import ScrollToTop from './ScrollToTop'
@@ -40,6 +41,11 @@ function Layout() {
         </main>
 
         <Footer />
+
+        {/* Last in the flow so its spacer extends the footer rather than
+            interrupting the page. Inside the provider, which is what owns the
+            one <audio> element the whole site shares. */}
+        <NowPlaying />
       </div>
     </PlaybackProvider>
   )
