@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import BackToTop from '../components/BackToTop'
 import Placeholder from '../components/Placeholder'
@@ -20,11 +21,27 @@ const GROUPS = [
 
 function Songs() {
   const { songs } = useContent()
+  const [query, setQuery] = useState('')
+
+  // Title and description, like the admin's search — and `title` here is the
+  // composed one, so typing a musical's name finds all of its demos.
+  const matches = useMemo(() => {
+    const needle = query.trim().toLowerCase()
+    if (!needle) return songs
+
+    return songs.filter(
+      (song) =>
+        song.title.toLowerCase().includes(needle) ||
+        song.description.toLowerCase().includes(needle),
+    )
+  }, [songs, query])
 
   const groups = GROUPS.map((group) => ({
     ...group,
-    songs: songs.filter((song) => song.kind === group.kind),
+    songs: matches.filter((song) => song.kind === group.kind),
   })).filter((group) => group.songs.length > 0)
+
+  const searching = query.trim().length > 0
 
   return (
     <div id="top" className="scroll-mt-20 py-8">
@@ -34,8 +51,35 @@ function Songs() {
         everything else.
       </p>
 
-      {/* Only worth the row when there is more than one place to go. */}
-      {groups.length > 1 && (
+      {/* Only worth offering once there is enough here to lose something in. */}
+      {songs.length > 8 && (
+        <div className="mt-6">
+          <label htmlFor="song-search" className="sr-only">
+            Search the songs
+          </label>
+          <div className="flex items-center gap-3">
+            <input
+              id="song-search"
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.currentTarget.value)}
+              placeholder={`Search ${songs.length} songs…`}
+              className="w-full border border-gray-400 bg-white px-3 py-2 text-sm"
+            />
+            {/* type="search" gives a clear button in some browsers and not
+                others, and it is the one control here worth being sure of. */}
+            {searching && (
+              <button type="button" onClick={() => setQuery('')} className="shrink-0 text-sm underline">
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* The quick links are a way around a long page; while searching, the
+          page is short and the counts would be describing the search anyway. */}
+      {groups.length > 1 && !searching && (
         <nav aria-label="Jump to a group" className="mt-6 border-t border-gray-300 pt-3">
           <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
             {groups.map((group) => (
@@ -50,25 +94,35 @@ function Songs() {
         </nav>
       )}
 
-      {groups.length > 0 ? (
-        groups.map((group) => (
-          <section key={group.slug} id={group.slug} className={`${SECTION} scroll-mt-20`}>
-            <h2 className={HEADING}>{group.title}</h2>
-            <div className={`mt-2 ${LIST}`}>
-              {group.songs.map((song) => (
-                <div key={song.id} className={LIST_ITEM}>
-                  <SongItem song={song} />
-                </div>
-              ))}
-            </div>
-            {/* Singles alone runs past a screen, so each group ends with the
-                way back to the row of links at the top. */}
-            <BackToTop />
-          </section>
-        ))
-      ) : (
+      {/* Announced, so the count reaches someone who cannot see the list shrink. */}
+      {searching && (
+        <p aria-live="polite" className="mt-4 text-sm text-gray-600">
+          {matches.length === 0
+            ? `Nothing matches “${query.trim()}”.`
+            : `${matches.length} of ${songs.length} songs match “${query.trim()}”.`}
+        </p>
+      )}
+
+      {songs.length === 0 && (
         <Placeholder label="No songs added yet — add one from /admin" className="mt-8 h-32" />
       )}
+
+      {groups.map((group) => (
+        <section key={group.slug} id={group.slug} className={`${SECTION} scroll-mt-20`}>
+          <h2 className={HEADING}>{group.title}</h2>
+          <div className={`mt-2 ${LIST}`}>
+            {group.songs.map((song) => (
+              <div key={song.id} className={LIST_ITEM}>
+                <SongItem song={song} />
+              </div>
+            ))}
+          </div>
+          {/* Singles alone runs past a screen, so each group ends with the way
+              back to the top. Not while searching: the page is short, and the
+              row it points at is hidden anyway. */}
+          {!searching && <BackToTop />}
+        </section>
+      ))}
     </div>
   )
 }
