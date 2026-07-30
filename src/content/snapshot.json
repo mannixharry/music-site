@@ -1,5 +1,5 @@
 {
-  "version": "ms6uclao-aaf59fab",
+  "version": "ms7hbs3e-b1307ee8",
   "mediaBase": "https://media.frankkirwan.com",
   "songs": [
     {
@@ -12,8 +12,9 @@
       "webKey": "web/cherie-je-taime-trop/8491755c.m4a",
       "coverKey": null,
       "duration": 27.74784580498866,
+      "isSnippet": false,
       "links": [],
-      "sortOrder": 27,
+      "sortOrder": 14,
       "published": true
     },
     {
@@ -26,6 +27,7 @@
       "webKey": "web/caught-in-the-wire/b6d312d6.m4a",
       "coverKey": null,
       "duration": 40.379501133786846,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 28,
       "published": true
@@ -40,36 +42,9 @@
       "webKey": "web/halfway-back-to-my-dreams/f2081914.m4a",
       "coverKey": null,
       "duration": 34.43519274376417,
+      "isSnippet": false,
       "links": [],
-      "sortOrder": 30,
-      "published": true
-    },
-    {
-      "id": "leave-reality-behind",
-      "title": "Leave Reality Behind",
-      "description": "",
-      "kind": "single",
-      "musicalSlug": null,
-      "status": "released",
-      "webKey": "web/leave-reality-behind/7cf382c8.m4a",
-      "coverKey": null,
-      "duration": 34.43519274376417,
-      "links": [],
-      "sortOrder": 40,
-      "published": true
-    },
-    {
-      "id": "reasons",
-      "title": "Reasons",
-      "description": "",
-      "kind": "single",
-      "musicalSlug": null,
-      "status": "released",
-      "webKey": "web/reasons/cd5c140c.m4a",
-      "coverKey": null,
-      "duration": 32.20607709750567,
-      "links": [],
-      "sortOrder": 50,
+      "sortOrder": 36,
       "published": true
     },
     {
@@ -82,8 +57,9 @@
       "webKey": "web/pigs-snapshot/aac61a17.mp3",
       "coverKey": null,
       "duration": 131.13469387755103,
+      "isSnippet": false,
       "links": [],
-      "sortOrder": 60,
+      "sortOrder": 57,
       "published": true
     },
     {
@@ -96,6 +72,7 @@
       "webKey": "web/copperfield-and-co-snapshot/64dcf1ff.mp3",
       "coverKey": null,
       "duration": 286.014693877551,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 70,
       "published": true
@@ -110,8 +87,24 @@
       "webKey": "web/guyana-demo-1/e2b37c12.mp3",
       "coverKey": null,
       "duration": 193.51510204081632,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 80,
+      "published": true
+    },
+    {
+      "id": "leave-reality-behind",
+      "title": "Leave Reality Behind",
+      "description": "",
+      "kind": "single",
+      "musicalSlug": null,
+      "status": "released",
+      "webKey": "web/leave-reality-behind/7cf382c8.m4a",
+      "coverKey": null,
+      "duration": 34.43519274376417,
+      "isSnippet": false,
+      "links": [],
+      "sortOrder": 85,
       "published": true
     },
     {
@@ -124,6 +117,7 @@
       "webKey": "web/guyana-demo-2/9cb0bbb2.mp3",
       "coverKey": null,
       "duration": 218.25306122448978,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 90,
       "published": true
@@ -138,8 +132,24 @@
       "webKey": "web/pigs/6afba3cb.mp3",
       "coverKey": null,
       "duration": 318.231125,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 100,
+      "published": true
+    },
+    {
+      "id": "reasons",
+      "title": "Reasons",
+      "description": "",
+      "kind": "single",
+      "musicalSlug": null,
+      "status": "released",
+      "webKey": "web/reasons/cd5c140c.m4a",
+      "coverKey": null,
+      "duration": 32.20607709750567,
+      "isSnippet": false,
+      "links": [],
+      "sortOrder": 110,
       "published": true
     },
     {
@@ -152,8 +162,24 @@
       "webKey": "web/animals-rule/446b4181.mp3",
       "coverKey": null,
       "duration": 229.7991836734694,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 120,
+      "published": true
+    },
+    {
+      "id": "test",
+      "title": "test",
+      "description": "test",
+      "kind": "single",
+      "musicalSlug": null,
+      "status": "released",
+      "webKey": "web/test/0dde5a07.mp3",
+      "coverKey": "covers/test/49175915.webp",
+      "duration": 600.0036281179139,
+      "isSnippet": false,
+      "links": [],
+      "sortOrder": 125,
       "published": true
     },
     {
@@ -166,6 +192,7 @@
       "webKey": "web/where-is-the-rainbow/e0e7b942.mp3",
       "coverKey": null,
       "duration": 263.9673469387755,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 130,
       "published": true
@@ -180,6 +207,7 @@
       "webKey": "web/well-build-a-windmill/4a78d3e4.mp3",
       "coverKey": null,
       "duration": 216.68571428571428,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 140,
       "published": true
@@ -194,6 +222,7 @@
       "webKey": "web/bottle-boys/7a9eb56a.m4a",
       "coverKey": null,
       "duration": 113.87065759637188,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 150,
       "published": true
@@ -208,6 +237,7 @@
       "webKey": "web/im-umble/b37c05be.mp3",
       "coverKey": null,
       "duration": 224.33959183673468,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 160,
       "published": true
@@ -222,6 +252,7 @@
       "webKey": "web/all-alone-am-i/4ff0de4c.mp3",
       "coverKey": null,
       "duration": 203.96408163265306,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 170,
       "published": true
@@ -236,6 +267,7 @@
       "webKey": "web/this-boy/d33c23b9.mp3",
       "coverKey": null,
       "duration": 205.4530612244898,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 180,
       "published": true
@@ -250,6 +282,7 @@
       "webKey": "web/angel-in-the-morning/938fbbd5.m4a",
       "coverKey": null,
       "duration": 160.49632653061224,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 190,
       "published": true
@@ -264,6 +297,7 @@
       "webKey": "web/copperfield-and-co/288f1b53.mp3",
       "coverKey": null,
       "duration": 165.4334693877551,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 200,
       "published": true
@@ -278,6 +312,7 @@
       "webKey": "web/flying-in/2c6b18b2.mp3",
       "coverKey": null,
       "duration": 161.61959183673468,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 210,
       "published": true
@@ -292,6 +327,7 @@
       "webKey": "web/independence/6d63125d.mp3",
       "coverKey": null,
       "duration": 169.06448979591838,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 220,
       "published": true
@@ -306,6 +342,7 @@
       "webKey": "web/no-dream-come-true/45716e4d.mp3",
       "coverKey": null,
       "duration": 228.1534693877551,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 230,
       "published": true
@@ -320,6 +357,7 @@
       "webKey": "web/everyone-has-a-hope/4206a19c.mp3",
       "coverKey": null,
       "duration": 227.97061224489795,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 240,
       "published": true
@@ -334,6 +372,7 @@
       "webKey": "web/peckham-calypso/bff53410.mp3",
       "coverKey": null,
       "duration": 224.6791836734694,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 250,
       "published": true
@@ -348,6 +387,7 @@
       "webKey": "web/shirley/493802ab.mp3",
       "coverKey": null,
       "duration": 178.5469387755102,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 260,
       "published": true
@@ -362,6 +402,7 @@
       "webKey": "web/wrong-time-wrong-place/f9942e28.mp3",
       "coverKey": null,
       "duration": 176.82285714285715,
+      "isSnippet": false,
       "links": [],
       "sortOrder": 270,
       "published": true
