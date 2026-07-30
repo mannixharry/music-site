@@ -6,6 +6,32 @@ const GROUPS = [
   ['other', 'Other'],
 ]
 
+// The catalogue is one flat ordering, but both this list and /songs draw it in
+// these groups — and the kinds interleave freely, so a single's neighbour in
+// the flat order is very often a demo nobody can see between them.
+//
+// That is what made the arrows look broken. Moving a single "down" past its
+// flat neighbour left it in exactly the same place among the singles, and did
+// so for as many presses as there were demos in the way. Arrows therefore move
+// a song past its neighbour *in its own group*, which is the only movement
+// either this list or the site can show.
+function neighbourFor(songs, song, direction) {
+  const group = songs.filter((candidate) => candidate.kind === song.kind)
+  const index = group.findIndex((candidate) => candidate.id === song.id)
+  const target = index + direction
+  if (target < 0 || target >= group.length) return undefined
+
+  // Down: land straight after the next song in the group.
+  if (direction > 0) return group[target].id
+
+  // Up: land straight before the previous one — which means landing after
+  // whatever precedes *it* in the flat order, whatever kind that turns out to
+  // be, or first when there is nothing before it at all.
+  const previous = group[target]
+  const flatIndex = songs.findIndex((candidate) => candidate.id === previous.id)
+  return flatIndex > 0 ? songs[flatIndex - 1].id : null
+}
+
 function formatDuration(seconds) {
   if (!seconds) return '—'
   return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`
@@ -24,15 +50,19 @@ function SongList({ songs, selectedId, onSelect, onMove, busy }) {
     )
   }, [songs, query])
 
-  // Position is computed against the full ordering, not the filtered view —
-  // otherwise "move up" while searching would jump a song past everything
-  // hidden, which is not what the arrow appears to promise.
+  // Against the full catalogue, not the filtered view — otherwise "move up"
+  // while searching would jump a song past everything hidden, which is not what
+  // the arrow appears to promise.
   function move(song, direction) {
-    const index = songs.findIndex((candidate) => candidate.id === song.id)
-    const target = index + direction
-    if (target < 0 || target >= songs.length) return
-    onMove(song.id, direction < 0 ? (songs[index - 2]?.id ?? null) : songs[index + 1].id)
+    const after = neighbourFor(songs, song, direction)
+    if (after === undefined) return
+    onMove(song.id, after)
   }
+
+  // Whether an arrow can do anything, worked out the same way the move is, so
+  // the two cannot disagree. A song at the top of its group has nowhere up to
+  // go, and an arrow that does nothing should say so rather than be pressed.
+  const canMove = (song, direction) => neighbourFor(songs, song, direction) !== undefined
 
   return (
     <div>
@@ -94,7 +124,7 @@ function SongList({ songs, selectedId, onSelect, onMove, busy }) {
                     <button
                       type="button"
                       aria-label={`Move ${song.title} up`}
-                      disabled={busy}
+                      disabled={busy || !canMove(song, -1)}
                       onClick={() => move(song, -1)}
                       className="border border-gray-300 px-1 text-xs disabled:opacity-40"
                     >
@@ -103,7 +133,7 @@ function SongList({ songs, selectedId, onSelect, onMove, busy }) {
                     <button
                       type="button"
                       aria-label={`Move ${song.title} down`}
-                      disabled={busy}
+                      disabled={busy || !canMove(song, 1)}
                       onClick={() => move(song, 1)}
                       className="border border-l-0 border-gray-300 px-1 text-xs disabled:opacity-40"
                     >

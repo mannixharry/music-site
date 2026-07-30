@@ -24,14 +24,11 @@ function SnippetControls({ enabled, onChange, current }) {
       </p>
 
       {enabled && (
-        <>
-          <p className="mt-2 text-sm font-bold">Next: choose the audio to cut, below.</p>
-          <p className="mt-1 text-xs text-gray-600">
-            A preview is always re-encoded, because there is no way to cut one without it. Only
-            the seconds you keep get encoded, though — a half-minute preview takes a few seconds
-            whether it came out of a three-minute song or a ten-minute one.
-          </p>
-        </>
+        <p className="mt-2 text-xs text-gray-600">
+          A preview is always re-encoded, because there is no way to cut one without it. Only the
+          seconds you keep get encoded, though — a half-minute preview takes a few seconds
+          whether it came out of a three-minute song or a ten-minute one.
+        </p>
       )}
 
       {current && (
