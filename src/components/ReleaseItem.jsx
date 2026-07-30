@@ -1,14 +1,17 @@
 import Placeholder from './Placeholder'
 import AudioPlayer from './AudioPlayer'
 
-// The cover box keeps its size whether or not there is art in it, so a
-// catalogue where only some songs have one still lines up.
+// A song with no art renders nothing at all here rather than a placeholder box.
+// Most of the catalogue has no cover yet, and a column of dashed rectangles
+// reads as the page having failed to load rather than as work still to do. The
+// row simply takes the full width instead, so the two cases still line up as
+// long as neighbouring songs agree — which they do, art arriving per release.
 const COVER_CLASS = 'aspect-square w-24 shrink-0'
 
 function ReleaseItem({ release }) {
   return (
     <div className="flex gap-3">
-      {release.coverSrc ? (
+      {release.coverSrc && (
         <img
           src={release.coverSrc}
           // The title is already the heading beside it, so naming the song again
@@ -20,8 +23,6 @@ function ReleaseItem({ release }) {
           decoding="async"
           className={`${COVER_CLASS} border border-gray-300 object-cover`}
         />
-      ) : (
-        <Placeholder label="Cover art" dims="1000×1000px" className={COVER_CLASS} />
       )}
 
       <div className="min-w-0 flex-1">
