@@ -5,6 +5,7 @@ import { rememberAdminSession } from '../adminHint'
 import { musicals } from '../content/musicals'
 import { api } from '../admin/api'
 import SongForm from '../admin/SongForm'
+import DeletedSongs from '../admin/DeletedSongs'
 import SongList from '../admin/SongList'
 import StoragePanel from '../admin/StoragePanel'
 
@@ -160,6 +161,7 @@ function Admin() {
           </div>
         </div>
 
+        <DeletedSongs onRestored={refresh} />
         <StoragePanel />
       </div>
     </PlaybackProvider>

@@ -79,6 +79,59 @@ export async function listAllSongs(env) {
   }))
 }
 
+// The bin. Soft-deleted rows keep everything, including the keys of the objects
+// they used, so this can offer both a way back and a way to finish the job.
+//
+// The sizes travel with it because "permanently delete" is a storage decision as
+// much as a catalogue one, and it should be obvious what each row is costing.
+export async function listDeletedSongs(env) {
+  const { results } = await env.DB.prepare(
+    `SELECT id, title, kind, deleted_at,
+            web_bytes, master_bytes, cover_bytes, cover_master_bytes
+     FROM songs WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC`,
+  ).all()
+
+  return results.map((record) => ({
+    id: record.id,
+    title: record.title,
+    kind: record.kind,
+    deletedAt: record.deleted_at,
+    bytes:
+      (record.web_bytes ?? 0) +
+      (record.master_bytes ?? 0) +
+      (record.cover_bytes ?? 0) +
+      (record.cover_master_bytes ?? 0),
+  }))
+}
+
+// Back as a draft, never straight back onto the site. `deleteSong` cleared
+// `published` on the way out and this deliberately does not set it again: a song
+// reappearing in front of visitors because someone was browsing the bin would be
+// a much worse surprise than one that needs ticking again.
+export async function restoreSong(env, id) {
+  await env.DB.prepare(
+    `UPDATE songs SET deleted_at = NULL, updated_at = ? WHERE id = ? AND deleted_at IS NOT NULL`,
+  )
+    .bind(new Date().toISOString(), id)
+    .run()
+
+  await bumpVersion(env)
+  return getSong(env, id)
+}
+
+// The real thing: the row goes. Guarded on the row already being soft-deleted,
+// so this can never be reached for a live song by a mistyped id.
+export async function purgeSong(env, id) {
+  const { meta } = await env.DB.prepare(
+    `DELETE FROM songs WHERE id = ? AND deleted_at IS NOT NULL`,
+  )
+    .bind(id)
+    .run()
+
+  await bumpVersion(env)
+  return (meta?.changes ?? 0) > 0
+}
+
 export async function getSong(env, id) {
   const record = await env.DB.prepare(
     `SELECT ${PUBLIC_COLUMNS}, web_bytes, master_key, master_bytes, master_mime

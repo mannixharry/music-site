@@ -51,6 +51,9 @@ export const api = {
   remove: (id) => request(`/songs/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   move: (id, after) =>
     request(`/songs/${encodeURIComponent(id)}/position`, { method: 'POST', body: { after } }),
+  deleted: () => request('/deleted'),
+  restore: (id) => request(`/songs/${encodeURIComponent(id)}/restore`, { method: 'POST' }),
+  purge: (id) => request(`/songs/${encodeURIComponent(id)}/purge`, { method: 'DELETE' }),
   storage: () => request('/storage'),
   sweepStorage: () => request('/storage', { method: 'POST' }),
 }

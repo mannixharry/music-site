@@ -62,6 +62,25 @@ export async function deleteReplacedObjects(env, before, patch) {
   return removed
 }
 
+// Every object a row named, for when the row itself is going. Takes what
+// readObjectKeys returned, so the caller never has to know which bucket a key
+// belongs to — the prefix decides that, here as everywhere.
+export async function deleteObjects(env, keys) {
+  const removed = []
+
+  for (const key of Object.values(keys ?? {})) {
+    if (!key) continue
+
+    const rule = ruleForKey(key)
+    if (!rule) continue
+
+    await env[rule.bucket].delete(key)
+    removed.push(key)
+  }
+
+  return removed
+}
+
 async function listAll(bucket, prefix) {
   const keys = []
   let cursor

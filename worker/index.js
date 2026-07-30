@@ -5,11 +5,20 @@ import {
   deleteSong,
   getSong,
   listAllSongs,
+  listDeletedSongs,
   moveSong,
+  purgeSong,
+  restoreSong,
   updateSong,
 } from './db'
 import { fail, json } from './json'
-import { deleteOrphans, deleteReplacedObjects, readObjectKeys, readStorage } from './objects'
+import {
+  deleteObjects,
+  deleteOrphans,
+  deleteReplacedObjects,
+  readObjectKeys,
+  readStorage,
+} from './objects'
 import { presignPut } from './presign'
 import {
   slugify,
@@ -83,11 +92,13 @@ async function serveMedia(key, env) {
   return new Response(object.body, { headers })
 }
 
-// Matches "/api/admin/songs/:id" and "/api/admin/songs/:id/position".
+// Matches "/api/admin/songs/:id" and its three verbs — /position, /restore and
+// /purge. An unrecognised one falls through to a 404 rather than being treated
+// as part of the id, so a typo cannot quietly address a different song.
 function songRoute(pathname) {
-  const match = pathname.match(/^\/api\/admin\/songs\/([^/]+)(\/position)?$/)
+  const match = pathname.match(/^\/api\/admin\/songs\/([^/]+)(?:\/(position|restore|purge))?$/)
   if (!match) return null
-  return { id: decodeURIComponent(match[1]), position: Boolean(match[2]) }
+  return { id: decodeURIComponent(match[1]), action: match[2] ?? null }
 }
 
 async function handleAdmin(pathname, request, env, ctx, identity) {
@@ -136,12 +147,36 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
 
   const route = songRoute(pathname)
   if (route) {
-    if (route.position) {
+    if (route.action === 'position') {
       if (method !== 'POST') return fail(405, 'Method not allowed')
       const { after = null } = await request.json()
       await moveSong(env, route.id, after)
       purgeContent(request, ctx)
       return json({ songs: await listAllSongs(env) })
+    }
+
+    // Out of the bin, as a draft. Nothing a visitor can see changes, so there
+    // is no cache to purge — but the version moves, because the admin's own
+    // copy of the catalogue has.
+    if (route.action === 'restore') {
+      if (method !== 'POST') return fail(405, 'Method not allowed')
+      const song = await restoreSong(env, route.id)
+      if (!song) return fail(404, 'No such song in the bin')
+      return json({ song, songs: await listAllSongs(env), deleted: await listDeletedSongs(env) })
+    }
+
+    // The end of the line: the row goes, and so does everything in R2 it was
+    // the last thing naming. Keys are read first and the objects removed after
+    // the row — that way a failure between them leaves files nothing points at,
+    // which the storage sweep can find, rather than a row pointing at nothing.
+    if (route.action === 'purge') {
+      if (method !== 'DELETE') return fail(405, 'Method not allowed')
+
+      const keys = await readObjectKeys(env, route.id)
+      if (!(await purgeSong(env, route.id))) return fail(404, 'No such song in the bin')
+
+      ctx.waitUntil(deleteObjects(env, keys))
+      return json({ purged: route.id, deleted: await listDeletedSongs(env) })
     }
 
     if (method === 'PATCH') {
@@ -172,6 +207,13 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
     }
 
     return fail(405, 'Method not allowed')
+  }
+
+  // The bin. Soft-deleted songs, newest first, with what each is costing in R2
+  // — the number that makes "permanently delete" a decision rather than a guess.
+  if (pathname === '/api/admin/deleted') {
+    if (method !== 'GET') return fail(405, 'Method not allowed')
+    return json({ deleted: await listDeletedSongs(env) })
   }
 
   // What the site is using, and what it is using for nothing.
