@@ -5,6 +5,8 @@
 // alongside everything else, and MusicalSection pulls them by `slug`. Adding a
 // demo is done from /admin, not by editing this file.
 
+import { mailtoUrl } from './contact'
+
 export const musicals = [
   {
     slug: 'pigs',
@@ -64,6 +66,9 @@ export const musicals = [
     ],
     downloads: [],
     needsScriptwriter: true,
-    contactHref: 'mailto:frank@example.com',
+    // Not written out again here. This had been left as the placeholder address
+    // long after the real one was set, because a second copy of a fact is a
+    // second thing to remember — contact.js is the one place it lives.
+    contactHref: mailtoUrl,
   },
 ]
