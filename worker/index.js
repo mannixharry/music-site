@@ -9,6 +9,12 @@ import {
   updateSong,
 } from './db'
 import { fail, json } from './json'
+import {
+  deleteOrphans,
+  deleteReplacedObjects,
+  findOrphans,
+  readObjectKeys,
+} from './objects'
 import { presignPut } from './presign'
 import {
   slugify,
@@ -148,8 +154,17 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
       const problem = validateSong(patch, { partial: true })
       if (problem) return fail(400, problem)
 
+      // Read before the update, delete after it: an object is only unreferenced
+      // once the row has actually stopped naming it, and doing it in that order
+      // means a failed update cannot take the file with it.
+      const before = await readObjectKeys(env, route.id)
+
       const song = await updateSong(env, route.id, patch)
       if (!song) return fail(404, 'No such song')
+
+      // After the response, not before it. Tidying is not what the caller is
+      // waiting for, and an upload should not appear slower for doing it.
+      ctx.waitUntil(deleteReplacedObjects(env, before, patch))
       purgeContent(request, ctx)
       return json({ song })
     }
@@ -159,6 +174,27 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
       await deleteSong(env, route.id)
       purgeContent(request, ctx)
       return json({ deleted: route.id })
+    }
+
+    return fail(405, 'Method not allowed')
+  }
+
+  // The sweep. Every write already removes the object it replaced, so this is
+  // for what got away before that existed, and for the gap no bookkeeping can
+  // close: an upload that succeeds and then fails to record itself leaves an
+  // object nothing has ever named.
+  //
+  // GET reports, POST removes — separated so the count can be looked at before
+  // anything is destroyed.
+  if (pathname === '/api/admin/orphans') {
+    if (method === 'GET') {
+      const orphans = await findOrphans(env)
+      return json({ orphans, bytes: orphans.reduce((total, o) => total + o.size, 0) })
+    }
+
+    if (method === 'POST') {
+      const orphans = await findOrphans(env)
+      return json({ deleted: await deleteOrphans(env, orphans), orphans })
     }
 
     return fail(405, 'Method not allowed')

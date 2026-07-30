@@ -6,6 +6,7 @@ import { musicals } from '../content/musicals'
 import { api } from '../admin/api'
 import SongForm from '../admin/SongForm'
 import SongList from '../admin/SongList'
+import StorageTidy from '../admin/StorageTidy'
 
 // Deliberately outside <Layout>: no site header, no 42rem column. Cloudflare
 // Access stops anonymous requests before this page is served at all, and the
@@ -158,6 +159,8 @@ function Admin() {
             )}
           </div>
         </div>
+
+        <StorageTidy />
       </div>
     </PlaybackProvider>
   )

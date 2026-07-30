@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import Header from './Header'
 import Footer from './Footer'
 import PlaybackProvider from './PlaybackProvider'
+import RefreshOnNavigate from './RefreshOnNavigate'
 import ScrollToTop from './ScrollToTop'
 
 function Layout() {
@@ -10,6 +11,7 @@ function Layout() {
     // rule holds across every page that embeds a player.
     <PlaybackProvider>
       <ScrollToTop />
+      <RefreshOnNavigate />
 
       <div className="flex min-h-screen flex-col">
         {/* Hidden until it has focus, which is the whole design: the first tab

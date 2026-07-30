@@ -6,7 +6,13 @@ import { json } from './json'
 // to later: uncached, every visitor costs one D1 read per song in the
 // catalogue, and the free tier's 5M rows/day is only about 33k page views once
 // there are 150 songs. Cached, it is a handful of reads a minute.
-const CACHE_CONTROL = 'public, max-age=60, stale-while-revalidate=86400'
+// max-age is what does the quota work; the stale window only matters when a
+// revalidation cannot happen. It was a day, which meant that on the rare
+// occasion the post-write purge did not reach the colo serving Frank, his
+// change stayed invisible there until the next day — indistinguishable, from
+// where he was sitting, from the write having failed. Ten minutes still spares
+// D1 an outage's worth of traffic and bounds that at something survivable.
+const CACHE_CONTROL = 'public, max-age=60, stale-while-revalidate=600'
 
 // A fixed key, so the cache is not fragmented by query strings someone appends.
 function cacheKey(request) {
