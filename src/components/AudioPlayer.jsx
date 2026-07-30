@@ -40,6 +40,18 @@ function AudioPlayer({ id, src, title, duration: knownDuration = null }) {
   // scrubber has to wait for the element even though the length is on screen.
   const [hasMetadata, setHasMetadata] = useState(false)
 
+  // The track under a player can be swapped for a different one without the
+  // player being replaced — the admin does exactly that when a song is cut down
+  // to a preview or put back whole, and the id, and so the component, stays the
+  // same. Without this the readout kept the old length and the scrubber its old
+  // position until something forced the element to load, which with
+  // preload="none" meant pressing play.
+  useEffect(() => {
+    setDuration(knownDuration ?? NaN)
+    setCurrentTime(0)
+    setHasMetadata(false)
+  }, [src, knownDuration])
+
   const isActive = playingId === id
 
   // The provider decides who plays; this syncs the element to that decision.

@@ -202,7 +202,12 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
       const keys = await readObjectKeys(env, route.id)
       if (!(await purgeSong(env, route.id))) return fail(404, 'No such song in the bin')
 
-      ctx.waitUntil(deleteSongObjects(env, route.id, keys))
+      // Awaited, not deferred. The admin re-reads its storage figures the
+      // moment this returns, and objects still on their way out would arrive
+      // in that answer as files nothing points at — which is true for a
+      // fraction of a second and alarming to read. R2 takes the whole list in
+      // one call per bucket, so the wait is small.
+      await deleteSongObjects(env, route.id, keys)
       return json({ purged: route.id })
     }
 
@@ -219,9 +224,10 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
       const song = await updateSong(env, route.id, patch)
       if (!song) return fail(404, 'No such song')
 
-      // After the response, not before it. Tidying is not what the caller is
-      // waiting for, and an upload should not appear slower for doing it.
-      ctx.waitUntil(deleteReplacedObjects(env, before, patch))
+      // Awaited for the same reason as the purge below: the admin refreshes
+      // its figures on the back of this, and a displaced object still being
+      // deleted would show up there as an orphan.
+      await deleteReplacedObjects(env, before, patch)
       purgeContent(request, ctx)
       return json({ song })
     }

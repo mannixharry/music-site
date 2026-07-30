@@ -15,6 +15,27 @@
 import { listDeletedSongs } from './db'
 import { ruleForKey, PREFIXES } from './validate'
 
+// Deleting, in as few round trips as it takes. R2 takes a list, but each
+// bucket needs its own call, and a key's prefix is what says which bucket it
+// belongs to — so group first, then one call per bucket rather than one per
+// object. A key matching no rule is skipped rather than guessed at.
+async function deleteKeys(env, keys) {
+  const byBucket = new Map()
+
+  for (const key of keys) {
+    if (!key) continue
+    const rule = ruleForKey(key)
+    if (!rule) continue
+
+    const list = byBucket.get(rule.bucket) ?? []
+    list.push(key)
+    byBucket.set(rule.bucket, list)
+  }
+
+  for (const [bucket, list] of byBucket) await env[bucket].delete(list)
+  return [...byBucket.values()].flat()
+}
+
 // The four columns that name an object. A key's prefix decides which bucket it
 // lives in, so nothing here has to know — see PREFIX_RULES in validate.js.
 const OBJECT_KEY_FIELDS = ['webKey', 'masterKey', 'coverKey', 'coverMasterKey']
@@ -45,23 +66,22 @@ export async function readObjectKeys(env, id) {
 //
 // Soft-deleted songs keep their keys, so deleting a song still touches nothing.
 export async function deleteReplacedObjects(env, before, patch) {
-  const removed = []
+  const displaced = []
 
   for (const field of OBJECT_KEY_FIELDS) {
+    // Untouched by this patch, so not this patch's business.
     if (!(field in patch)) continue
 
     const old = before?.[field]
+    // Nothing there before, or the patch is setting it to what it already was.
     if (!old || old === patch[field]) continue
 
-    // A key from before the move to R2 names a file in public/, not an object.
-    const rule = ruleForKey(old)
-    if (!rule) continue
-
-    await env[rule.bucket].delete(old)
-    removed.push(old)
+    displaced.push(old)
   }
 
-  return removed
+  // deleteKeys skips anything whose prefix names no bucket — a key from before
+  // the move to R2 points at a file in public/, not an object.
+  return deleteKeys(env, displaced)
 }
 
 // Everything a song ever put in either bucket, for when the song itself is
@@ -93,16 +113,7 @@ export async function deleteSongObjects(env, songId, namedKeys) {
     if (key) targets.add(key)
   }
 
-  const removed = []
-  for (const key of targets) {
-    const rule = ruleForKey(key)
-    if (!rule) continue
-
-    await env[rule.bucket].delete(key)
-    removed.push(key)
-  }
-
-  return removed
+  return deleteKeys(env, targets)
 }
 
 // Hoisted above its callers by declaration; used by both the sweep and the
@@ -211,6 +222,6 @@ export async function readStorage(env) {
 }
 
 export async function deleteOrphans(env, orphans) {
-  for (const orphan of orphans) await env[orphan.bucket].delete(orphan.key)
-  return orphans.length
+  const removed = await deleteKeys(env, orphans.map((orphan) => orphan.key))
+  return removed.length
 }
