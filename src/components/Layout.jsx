@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import AdminBar from './AdminBar'
 import Header from './Header'
 import Footer from './Footer'
 import PlaybackProvider from './PlaybackProvider'
@@ -24,6 +25,7 @@ function Layout() {
           Skip to the content
         </a>
 
+        <AdminBar />
         <Header />
 
         {/* tabIndex so the skip link actually moves focus here rather than only

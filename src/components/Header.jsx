@@ -1,16 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { SIGN_OUT_URL, forgetAdminSession, hasAdminSession } from '../adminHint'
 import { navItems } from '../nav'
 
 // The active page gets weight as well as an underline. On a phone the menu is a
 // plain column of five links, and an underline on its own is easy to miss.
 const navLinkClass = ({ isActive }) =>
   isActive ? 'font-bold underline underline-offset-4' : 'hover:underline hover:underline-offset-4'
-
-// Deliberately not styled like the nav items beside it: it goes somewhere no
-// visitor can follow, and reading as a sixth page would be a small lie.
-const adminLinkClass = 'border border-gray-400 bg-white px-2 py-0.5 text-sm'
 
 // Drawn rather than typed, for the reason AudioPlayer's transport icons are:
 // the characters that would do this job have emoji presentations, so the system
@@ -36,12 +31,6 @@ function Header() {
   const closeMenu = () => setMenuOpen(false)
   const { key } = useLocation()
 
-  // Read once, at mount. The admin page writes the hint before Frank can click
-  // through to the site, and the site does not mount this component until he
-  // does — so there is nothing to subscribe to. It is only a shortcut back:
-  // Access still decides who may open /admin.
-  const [showAdminLink] = useState(hasAdminSession)
-
   // Every link in the menu closes it on the way out, but the back button does
   // not go through one — and a menu still covering the page you have just
   // returned to looks like the site has locked up.
@@ -63,16 +52,6 @@ function Header() {
               {item.label}
             </NavLink>
           ))}
-          {showAdminLink && (
-            <>
-              <Link to="/admin" className={adminLinkClass}>
-                Back to admin
-              </Link>
-              <a href={SIGN_OUT_URL} onClick={forgetAdminSession} className="text-sm underline">
-                Sign out
-              </a>
-            </>
-          )}
         </nav>
 
         <button
@@ -104,16 +83,6 @@ function Header() {
               {item.label}
             </NavLink>
           ))}
-          {showAdminLink && (
-            <>
-              <Link to="/admin" className={adminLinkClass} onClick={closeMenu}>
-                Back to admin
-              </Link>
-              <a href={SIGN_OUT_URL} onClick={forgetAdminSession} className="text-sm underline">
-                Sign out
-              </a>
-            </>
-          )}
         </nav>
       )}
     </header>
