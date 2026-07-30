@@ -1,3 +1,24 @@
+// Two pictures for the foot of the About page. `src` is a path under public/ —
+// set it once the file is in public/images and the placeholder gives way to the
+// photograph without anything else changing. `label` and `dims` are what the
+// placeholder says in the meantime, so they should describe the shot wanted.
+export const aboutImages = [
+  {
+    src: null,
+    alt: 'Frank Kirwan',
+    label: 'Headshot',
+    dims: '1000×1250px',
+    aspect: 'aspect-[4/5]',
+  },
+  {
+    src: null,
+    alt: 'Frank Kirwan',
+    label: 'Second picture',
+    dims: '1000×1250px',
+    aspect: 'aspect-[4/5]',
+  },
+]
+
 export const about = {
   paragraphs: [
     'Never happier than when composing with simply, to quote Paul Simon, a “guitar in hand”, Frank Kirwan writes songs that alternately transport you to another world or help you make sense (or nonsense) of this one. His influences are many and far between, ranging from sixties icons like Ray Davies of the Kinks, Lennon-McCartney and Goffin and King, through the filters of many artists from the proceeding decades. His aim is always to stress the togetherness of lyric and melody in the construction of a song.',

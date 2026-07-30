@@ -1,4 +1,5 @@
-import { about } from '../content/about'
+import PageImages from '../components/PageImages'
+import { about, aboutImages } from '../content/about'
 
 function About() {
   return (
@@ -9,6 +10,8 @@ function About() {
           <p key={i}>{paragraph}</p>
         ))}
       </div>
+
+      <PageImages images={aboutImages} />
     </div>
   )
 }

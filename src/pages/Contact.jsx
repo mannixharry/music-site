@@ -1,4 +1,5 @@
-import { contact, instagramUrl, mailtoUrl } from '../content/contact'
+import PageImages from '../components/PageImages'
+import { contact, contactImages, instagramUrl, mailtoUrl } from '../content/contact'
 
 function Contact() {
   return (
@@ -25,6 +26,8 @@ function Contact() {
           </dd>
         </div>
       </dl>
+
+      <PageImages images={contactImages} />
     </div>
   )
 }
