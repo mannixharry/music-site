@@ -89,6 +89,47 @@ export async function signOut(event) {
   window.location.assign('/')
 }
 
+// Signing in again, which only a navigation can do: Access answers a page
+// request with a 302 to its login screen, and a fetch cannot follow that across
+// origins. reload() rather than assign(), so this cannot be satisfied out of
+// the back/forward cache — the point is to reach Cloudflare.
+//
+// The marker is what stops it looping. If the refusal outlives the round trip
+// — Access content, this site not — a second bounce would land in exactly the
+// same place, and a page that reloads itself forever is worse than one that
+// explains itself. So it is attempted once per tab, and after that the page
+// says what is wrong instead.
+const REAUTH_KEY = 'admin-reauth'
+
+export function signInAgain() {
+  try {
+    sessionStorage.setItem(REAUTH_KEY, '1')
+  } catch {
+    // Storage unavailable. Losing the guard risks a loop, so do not navigate;
+    // the caller shows its message instead.
+    return
+  }
+  window.location.reload()
+}
+
+export function reauthAlreadyTried() {
+  try {
+    return sessionStorage.getItem(REAUTH_KEY) !== null
+  } catch {
+    return true
+  }
+}
+
+// Called once a session has actually loaded, so the next lapse is allowed its
+// own attempt rather than being refused by a marker left over from this one.
+export function clearReauthAttempt() {
+  try {
+    sessionStorage.removeItem(REAUTH_KEY)
+  } catch {
+    // Nothing to clear if it could not be set.
+  }
+}
+
 export function forgetAdminSession() {
   try {
     sessionStorage.removeItem(KEY)

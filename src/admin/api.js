@@ -10,12 +10,30 @@
 // <team>.cloudflareaccess.com, and a fetch that follows a redirect to another
 // origin is blocked by CORS — so it rejects with a bare TypeError reading
 // "Failed to fetch", which tells the user nothing. Only a navigation can
-// complete that handshake, which is why the remedy is always to reload rather
-// than to retry the request.
+// complete that handshake, which is why the remedy is always to navigate
+// rather than to retry the request.
+//
+// Every failure here carries a `code`, because the remedy differs and getting
+// it wrong is unfixable rather than merely unhelpful:
+//
+//   expired   — sign in again; a navigation will reach Access's login page.
+//   forbidden — signing in again changes nothing. Access already said yes; it
+//               is this site that says no. Only signing out as someone else,
+//               or an ADMIN_EMAILS edit, gets past it.
+//
+// This used to be one code and one message, reading "reload the page to sign
+// in again". On the forbidden path that was a lie, and following it reloaded
+// into the same refusal for as long as anyone was willing to keep trying.
 
 const BASE = '/api/admin'
 
-const EXPIRED = 'Your session has expired — reload the page to sign in again.'
+const EXPIRED = 'Your session has expired.'
+
+function authError(message, code) {
+  const error = new Error(message)
+  error.code = code
+  return error
+}
 
 async function request(path, { method = 'GET', body } = {}) {
   let response
@@ -29,16 +47,24 @@ async function request(path, { method = 'GET', body } = {}) {
     // Network-level failure. Being genuinely offline looks identical from here,
     // but the Access redirect is much the likelier cause on a page that only
     // loads from behind Access at all.
-    throw new Error(EXPIRED)
+    throw authError(EXPIRED, 'expired')
   }
 
   // Same-origin request that came back from somewhere else: Access bounced it
   // to a login page and CORS happened to permit the read. Same meaning.
   if (response.redirected || response.status === 401) {
-    throw new Error(EXPIRED)
+    throw authError(EXPIRED, 'expired')
   }
 
   const data = await response.json().catch(() => ({}))
+
+  // The Worker's own refusal, naming the address Access authenticated. Its
+  // message is better than anything that could be written here, so it is
+  // passed through whole.
+  if (response.status === 403) {
+    throw authError(data.error ?? 'This account may not edit the site.', 'forbidden')
+  }
+
   if (!response.ok) throw new Error(data.error ?? `Request failed (${response.status})`)
   return data
 }

@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import PlaybackProvider from '../components/PlaybackProvider'
-import { SIGN_OUT_URL, signOut, rememberAdminSession } from '../adminHint'
+import {
+  SIGN_OUT_URL,
+  signOut,
+  rememberAdminSession,
+  forgetAdminSession,
+  signInAgain,
+  reauthAlreadyTried,
+  clearReauthAttempt,
+} from '../adminHint'
 import { musicals } from '../content/musicals'
 import { api } from '../admin/api'
 import SongForm from '../admin/SongForm'
@@ -24,6 +32,9 @@ function Admin() {
   // it saved. Cleared the moment attention moves anywhere else.
   const [justCreatedId, setJustCreatedId] = useState(null)
   const [error, setError] = useState(null)
+  // Which kind of failure, when it was an authentication one — the message
+  // alone cannot say whether signing in again is the remedy or the trap.
+  const [errorCode, setErrorCode] = useState(null)
   const [busy, setBusy] = useState(false)
   // The bin and the storage figures come from one call, because they move
   // together: emptying the bin changes both. Loaded after the songs rather than
@@ -61,8 +72,28 @@ function Admin() {
         // is not a one-way trip through the URL bar. A hint only — Access is
         // still what decides whether following it works. See src/adminHint.js.
         rememberAdminSession(sessionData.email)
+        // A session loaded, so any earlier bounce through Access is spent and
+        // the next lapse gets its own.
+        clearReauthAttempt()
       })
-      .catch((loadError) => !cancelled && setError(loadError.message))
+      .catch((loadError) => {
+        if (cancelled) return
+
+        // Nothing has been typed yet — the page has not finished loading — so
+        // there is nothing to lose by going to Access, and being sent to the
+        // login screen is a better answer than being told to go there.
+        //
+        // Not on 'forbidden': Access would wave that straight back, and the
+        // loop this used to cause is the bug being fixed.
+        if (loadError.code === 'expired' && !reauthAlreadyTried()) {
+          forgetAdminSession()
+          signInAgain()
+          return
+        }
+
+        setError(loadError.message)
+        setErrorCode(loadError.code ?? null)
+      })
 
     return () => {
       cancelled = true
@@ -93,16 +124,45 @@ function Admin() {
       setSongs(list)
     } catch (moveError) {
       setError(moveError.message)
+      setErrorCode(moveError.code ?? null)
     } finally {
       setBusy(false)
     }
   }
 
+  // Nothing loaded. Whatever is said here is the only thing on the page, so it
+  // has to carry the way out rather than describe one.
   if (error && !session) {
     return (
       <div className="mx-auto max-w-2xl p-8">
         <h1 className="text-2xl font-bold">Admin</h1>
         <p className="mt-4 border border-gray-500 bg-gray-100 p-3 text-sm">{error}</p>
+
+        {errorCode === 'forbidden' && (
+          <p className="mt-3 text-sm">
+            {/* The only move that can change the answer. Signing in again would
+                come straight back here — Access is not the one refusing. */}
+            <a href={SIGN_OUT_URL} onClick={signOut} className="underline">
+              Sign out
+            </a>{' '}
+            and sign in with the other address.
+          </p>
+        )}
+
+        {errorCode === 'expired' && (
+          <p className="mt-3 text-sm">
+            {/* Reached only when a bounce through Access has already been spent
+                and came back refused, so this is offered rather than taken. */}
+            <button type="button" className="underline" onClick={signInAgain}>
+              Sign in again
+            </button>
+            . If that keeps returning here, sign in from{' '}
+            <a href="/" className="underline">
+              the site
+            </a>{' '}
+            in a new tab.
+          </p>
+        )}
       </div>
     )
   }
@@ -152,7 +212,25 @@ function Admin() {
         {error && (
           <p className="mt-3 border border-gray-500 bg-gray-100 p-2 text-sm">
             {error}{' '}
-            <button type="button" className="underline" onClick={() => setError(null)}>
+            {/* Not navigated automatically the way the initial load is: by now
+                there may be an unsaved edit in the form, and throwing that away
+                to fix a session is its own bug. Offered, so the choice is the
+                one making it. */}
+            {errorCode === 'expired' && (
+              <>
+                <button type="button" className="underline" onClick={signInAgain}>
+                  Sign in again
+                </button>{' '}
+              </>
+            )}
+            <button
+              type="button"
+              className="underline"
+              onClick={() => {
+                setError(null)
+                setErrorCode(null)
+              }}
+            >
               dismiss
             </button>
           </p>

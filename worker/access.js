@@ -5,8 +5,21 @@ import { createRemoteJWKSet, jwtVerify } from 'jose'
 // request really did come through Access, because "Access is in front of it" is
 // only true for the hostnames Access is actually configured on.
 //
-// Returns the caller's identity, or null. Never throws — callers treat null as
-// "no", and there is no third answer.
+// Returns { identity } when the caller may edit the site, and otherwise
+// { identity: null, reason } saying why not. Never throws.
+//
+// The reason is not decoration, and "no" being a single answer was a bug. Two
+// refusals look identical from here and could not be less alike to the person
+// reading them:
+//
+//   anonymous — no token, or one Access will not vouch for. Access answers the
+//     next NAVIGATION with a login page, so signing in again fixes it.
+//   forbidden — Access vouched for the token, and the address it names is not
+//     in ADMIN_EMAILS. Access is satisfied, so it will never show a login page:
+//     signing in again lands straight back here, forever.
+//
+// Collapsing those into one 401 is what made an unfixable state advertise
+// "reload the page to sign in again" and loop.
 
 // Module scope: the isolate reuses the fetched key set across requests instead
 // of hitting the certs endpoint on every call.
@@ -46,10 +59,10 @@ export async function verifyAccess(request, env) {
   // the day someone mistypes a variable name in production.
   const loopback = url.hostname === 'localhost' || url.hostname === '127.0.0.1'
   if (env.DEV_BYPASS_AUTH === 'true' && loopback) {
-    return { email: 'dev@localhost', bypass: true }
+    return { identity: { email: 'dev@localhost', bypass: true } }
   }
 
-  if (!env.ACCESS_TEAM || !env.ACCESS_AUD) return null
+  if (!env.ACCESS_TEAM || !env.ACCESS_AUD) return { identity: null, reason: 'anonymous' }
 
   // One Access application covers both the admin page and this API, so in
   // practice this is a single tag. It is still parsed as a comma-separated
@@ -60,13 +73,13 @@ export async function verifyAccess(request, env) {
     .map((tag) => tag.trim())
     .filter(Boolean)
 
-  if (audience.length === 0) return null
+  if (audience.length === 0) return { identity: null, reason: 'anonymous' }
 
   // Access sends the header; the cookie is the fallback for a browser hitting
   // the API directly, as the admin page's own fetches do.
   const token =
     request.headers.get('Cf-Access-Jwt-Assertion') ?? readCookie(request, 'CF_Authorization')
-  if (!token) return null
+  if (!token) return { identity: null, reason: 'anonymous' }
 
   try {
     const { payload } = await jwtVerify(token, getKeySet(env.ACCESS_TEAM), {
@@ -79,7 +92,7 @@ export async function verifyAccess(request, env) {
     })
 
     const email = typeof payload.email === 'string' ? payload.email.toLowerCase() : null
-    if (!email) return null
+    if (!email) return { identity: null, reason: 'anonymous' }
 
     // The Access policy already restricts who can get a token. This repeats it
     // in code so that a mis-edited policy is not the only thing standing here.
@@ -88,11 +101,18 @@ export async function verifyAccess(request, env) {
       .map((entry) => entry.trim().toLowerCase())
       .filter(Boolean)
 
-    if (allowed.length > 0 && !allowed.includes(email)) return null
+    // A real, current, correctly-signed token for someone this site does not
+    // let in. Reported as itself, with the address, because every remedy —
+    // sign in as the other one, or add this one to ADMIN_EMAILS — needs to
+    // know which address arrived.
+    if (allowed.length > 0 && !allowed.includes(email)) {
+      return { identity: null, reason: 'forbidden', email }
+    }
 
-    return { email, bypass: false }
+    return { identity: { email, bypass: false } }
   } catch {
-    // Expired, wrong audience, bad signature, malformed — all the same answer.
-    return null
+    // Expired, wrong audience, bad signature, malformed. All of these mean
+    // Access will not vouch for the token, so a fresh login is the answer.
+    return { identity: null, reason: 'anonymous' }
   }
 }

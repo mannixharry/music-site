@@ -78,8 +78,23 @@ export default {
     }
 
     if (pathname.startsWith('/api/admin/')) {
-      const identity = await verifyAccess(request, env)
-      if (!identity) return fail(401, 'Not authenticated')
+      const { identity, reason, email } = await verifyAccess(request, env)
+
+      // 403, not 401, when Access vouched for someone this site does not let
+      // in. The status is the whole message to the page: a 401 means "sign in
+      // again and this works", and saying that to someone whose login already
+      // succeeded sends them round a loop Access will never break, because
+      // Access is perfectly happy with them.
+      if (!identity) {
+        if (reason === 'forbidden') {
+          return fail(
+            403,
+            `Signed in as ${email}, which is not one of the addresses allowed to edit this site. ` +
+              `Sign out and sign in with the other one, or add this address to ADMIN_EMAILS.`,
+          )
+        }
+        return fail(401, 'Not authenticated')
+      }
 
       try {
         return await handleAdmin(pathname, request, env, ctx, identity)
