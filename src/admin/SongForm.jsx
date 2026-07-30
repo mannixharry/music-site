@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import AudioPlayer from '../components/AudioPlayer'
 import { toMediaSrc } from '../content/normalise'
 import { api } from './api'
+import SnippetControls from './SnippetControls'
+import { formatTime, toRange } from './snippet'
 import UploadDropzone from './UploadDropzone'
 import { useUpload } from './useUpload'
 import { useCoverUpload } from './useCoverUpload'
@@ -26,17 +28,42 @@ function Field({ label, hint, children }) {
   )
 }
 
+// Field's twin, as a <div>. For a block that carries its own labelled controls
+// — nesting a label inside a label is invalid, and leaves which one a click
+// activates up to the browser.
+function Block({ label, hint, children }) {
+  return (
+    <div>
+      <span className="text-sm font-bold">{label}</span>
+      {hint && <span className="ml-2 text-xs text-gray-600">{hint}</span>}
+      <div className="mt-1">{children}</div>
+    </div>
+  )
+}
+
 const inputClass = 'w-full border border-gray-400 bg-white px-2 py-1 text-sm'
+
+// Thirty seconds from the top, which is what a preview usually wants to be.
+// Deliberately not read back off the song: this describes the next upload, and
+// a song that is already a preview is far more likely to be getting its full
+// version than the same crop twice.
+const NO_SNIPPET = { enabled: false, start: '0:00', length: '0:30' }
 
 function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel }) {
   const [draft, setDraft] = useState(BLANK)
+  const [snippet, setSnippet] = useState(NO_SNIPPET)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     setDraft(song ? { ...BLANK, ...song, musicalSlug: song.musicalSlug ?? '' } : BLANK)
+    setSnippet(NO_SNIPPET)
     setError(null)
   }, [song])
+
+  // Memoised because useUpload holds it in a dependency list: rebuilding the
+  // object on every keystroke would rebuild the upload callback with it.
+  const range = useMemo(() => toRange(snippet), [snippet])
 
   const set = (fields) => setDraft((current) => ({ ...current, ...fields }))
 
@@ -50,7 +77,12 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
     [song, onChanged],
   )
 
-  const { status, start, reset } = useUpload({ songId: song?.id, capabilities, patch })
+  const { status, start, reset } = useUpload({
+    songId: song?.id,
+    capabilities,
+    patch,
+    snippet: range,
+  })
   const cover = useCoverUpload({ songId: song?.id, capabilities, patch })
 
   async function save() {
@@ -211,11 +243,16 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
           </div>
         </Field>
 
-        <Field label="Audio">
+        <Block label="Audio">
           {song ? (
             <>
               {song.webKey && (
-                <div className="mb-2">
+                <div className="mb-3">
+                  {song.isSnippet && (
+                    <p className="mb-1 text-xs text-gray-600">
+                      What is on the site is a preview. The master is whole.
+                    </p>
+                  )}
                   <AudioPlayer
                     id={`admin-${song.id}`}
                     src={toMediaSrc(song.webKey, mediaBase)}
@@ -224,13 +261,36 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
                   />
                 </div>
               )}
-              <UploadDropzone
-                status={status}
-                onFile={start}
-                onReset={reset}
-                currentBytes={song.webBytes}
-                hasMaster={Boolean(song.masterKey)}
+
+              <SnippetControls
+                snippet={snippet}
+                range={range}
+                onChange={setSnippet}
+                current={
+                  song.isSnippet && song.snippetStart !== null
+                    ? { start: song.snippetStart, end: song.snippetEnd }
+                    : null
+                }
               />
+
+              {/* Withheld rather than disabled while the times are unreadable.
+                  A dropzone that takes the file and then publishes the whole
+                  song because it could not work out where to cut would be the
+                  one failure this feature must not have. */}
+              {snippet.enabled && !range ? null : (
+                <UploadDropzone
+                  status={status}
+                  onFile={start}
+                  onReset={reset}
+                  currentBytes={song.webBytes}
+                  hasMaster={Boolean(song.masterKey)}
+                  describe={
+                    range
+                      ? async () => `cut to ${formatTime(range.start)}–${formatTime(range.end)}`
+                      : undefined
+                  }
+                />
+              )}
             </>
           ) : (
             <p className="border border-gray-300 bg-gray-100 p-3 text-xs">
@@ -238,7 +298,7 @@ function SongForm({ song, musicals, capabilities, mediaBase, onChanged, onCancel
               before there is anywhere to put it.
             </p>
           )}
-        </Field>
+        </Block>
 
         {/* Offered whatever the song's type is, and the hint says why: only the
             home page draws covers, but art uploaded now survives a song being

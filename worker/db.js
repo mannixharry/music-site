@@ -23,6 +23,10 @@ function toRow(record) {
     webKey: record.web_key,
     coverKey: record.cover_key,
     duration: record.duration_s,
+    // Whether web_key holds a cut of the song rather than the whole of it. The
+    // site needs this to label the player; where the cut was taken from is a
+    // fact about the master, so it stays out — see below.
+    isSnippet: record.is_snippet === 1,
     links: Array.isArray(links) ? links : [],
     sortOrder: record.sort_order,
     published: record.published === 1,
@@ -31,10 +35,12 @@ function toRow(record) {
 
 // No cover_master_* here, for the same reason there is no master_*: nothing in
 // the private bucket is reachable from the web, and naming it publicly would be
-// the first half of making it so.
+// the first half of making it so. snippet_start_s and snippet_end_s are absent
+// on the same principle — they are offsets into the master, and the public
+// object's own length is duration_s.
 const PUBLIC_COLUMNS = `
   id, title, description, kind, musical_slug, status,
-  web_key, cover_key, duration_s, links_json, sort_order, published
+  web_key, cover_key, duration_s, is_snippet, links_json, sort_order, published
 `
 
 export async function listPublishedSongs(env) {
@@ -53,7 +59,8 @@ export async function listPublishedSongs(env) {
 export async function listAllSongs(env) {
   const { results } = await env.DB.prepare(
     `SELECT ${PUBLIC_COLUMNS}, web_bytes, master_key, master_bytes, master_mime,
-            cover_bytes, cover_master_key, cover_master_bytes, updated_at
+            cover_bytes, cover_master_key, cover_master_bytes,
+            snippet_start_s, snippet_end_s, updated_at
      FROM songs WHERE deleted_at IS NULL ORDER BY sort_order`,
   ).all()
 
@@ -66,6 +73,8 @@ export async function listAllSongs(env) {
     coverBytes: record.cover_bytes,
     coverMasterKey: record.cover_master_key,
     coverMasterBytes: record.cover_master_bytes,
+    snippetStart: record.snippet_start_s,
+    snippetEnd: record.snippet_end_s,
     updatedAt: record.updated_at,
   }))
 }
@@ -121,11 +130,16 @@ const WRITABLE = {
   coverMasterBytes: 'cover_master_bytes',
   coverMasterMime: 'cover_master_mime',
   duration: 'duration_s',
+  isSnippet: 'is_snippet',
+  snippetStart: 'snippet_start_s',
+  snippetEnd: 'snippet_end_s',
   published: 'published',
 }
 
+const BOOLEAN_FIELDS = new Set(['published', 'isSnippet'])
+
 function serialise(field, value) {
-  if (field === 'published') return value ? 1 : 0
+  if (BOOLEAN_FIELDS.has(field)) return value ? 1 : 0
   return value
 }
 
@@ -143,16 +157,18 @@ export async function createSong(env, input) {
   // name is free, so using it works — and it cannot clobber a live song,
   // since the route rejects an id that is still in use before reaching here.
   // deleted_at is absent from the column list and so resets to NULL.
-  // Every nullable column is listed and bound, including the cover ones nothing
-  // supplies yet. That is what makes the OR REPLACE above a clean slate: reusing
-  // a deleted song's id must not inherit its artwork.
+  // Every nullable column is listed and bound, including the cover and snippet
+  // ones nothing supplies yet. That is what makes the OR REPLACE above a clean
+  // slate: reusing a deleted song's id must not inherit its artwork, and must
+  // not inherit a preview flag describing audio it no longer points at.
   await env.DB.prepare(
     `INSERT OR REPLACE INTO songs (
        id, title, description, kind, musical_slug, status,
        web_key, web_bytes, master_key, master_bytes, master_mime, duration_s,
        cover_key, cover_bytes, cover_master_key, cover_master_bytes, cover_master_mime,
+       is_snippet, snippet_start_s, snippet_end_s,
        links_json, sort_order, published, created_at, updated_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       input.id,
@@ -172,6 +188,9 @@ export async function createSong(env, input) {
       input.coverMasterKey ?? null,
       input.coverMasterBytes ?? null,
       input.coverMasterMime ?? null,
+      input.isSnippet ? 1 : 0,
+      input.snippetStart ?? null,
+      input.snippetEnd ?? null,
       JSON.stringify(input.links ?? []),
       sortOrder,
       input.published ? 1 : 0,

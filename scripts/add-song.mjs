@@ -314,6 +314,15 @@ async function main() {
     cover_master_key: quote(existing?.cover_master_key ?? null),
     cover_master_bytes: number(existing?.cover_master_bytes ?? null),
     cover_master_mime: quote(existing?.cover_master_mime ?? null),
+    // Previews are the one place where carrying the old value through would be
+    // wrong. This script cannot cut one — that needs the Web Audio API, same as
+    // transcoding does — so any audio it uploads is the whole song, and the row
+    // has to stop saying otherwise or the site keeps the "Preview" label on a
+    // complete recording. With no new audio they carry through untouched, like
+    // the cover columns above.
+    is_snippet: options.file ? '0' : String(existing?.is_snippet ?? 0),
+    snippet_start_s: number(options.file ? null : (existing?.snippet_start_s ?? null)),
+    snippet_end_s: number(options.file ? null : (existing?.snippet_end_s ?? null)),
     links_json: quote(JSON.stringify(links.length ? links : JSON.parse(existing?.links_json ?? '[]'))),
     sort_order: number(sortOrder),
     published: options.draft ? '0' : String(existing?.published ?? 1),

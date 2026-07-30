@@ -1,5 +1,6 @@
 import Placeholder from './Placeholder'
 import AudioPlayer from './AudioPlayer'
+import SnippetTag from './SnippetTag'
 
 // A song with no art renders nothing at all here rather than a placeholder box.
 // Most of the catalogue has no cover yet, and a column of dashed rectangles
@@ -26,7 +27,10 @@ function ReleaseItem({ release }) {
       )}
 
       <div className="min-w-0 flex-1">
-        <h3 className="truncate text-sm font-bold">{release.title}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="truncate text-sm font-bold">{release.title}</h3>
+          {release.isSnippet && <SnippetTag title={release.title} />}
+        </div>
 
         <div className="mt-2">
           <AudioPlayer

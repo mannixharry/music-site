@@ -39,6 +39,10 @@ export function toSong(row, mediaBase = '') {
     // asking for the file a second time.
     coverSrc: toMediaSrc(row.coverKey, mediaBase),
     duration: row.duration ?? null,
+    // Whether audioSrc is a cut of the song rather than the whole of it, which
+    // is the one thing the site says about it. A snapshot taken before previews
+    // existed simply has no such songs, so the default is the honest one.
+    isSnippet: row.isSnippet === true,
     links: row.links ?? [],
     status: row.status ?? 'released',
     kind: row.kind,

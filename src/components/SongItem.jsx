@@ -1,13 +1,17 @@
 import AudioPlayer from './AudioPlayer'
+import SnippetTag from './SnippetTag'
 
-// Everything below the title is optional, so a song can be a snippet, a set of
+// Everything below the title is optional, so a song can be a player, a set of
 // streaming links, a paragraph of text, or any combination of the three.
 function SongItem({ song }) {
   const links = song.links ?? []
 
   return (
     <article className="border-t border-gray-300 pt-6">
-      <h3 className="text-lg font-bold">{song.title}</h3>
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 className="text-lg font-bold">{song.title}</h3>
+        {song.isSnippet && <SnippetTag title={song.title} />}
+      </div>
 
       {song.description && <p className="mt-2 text-sm leading-relaxed">{song.description}</p>}
 

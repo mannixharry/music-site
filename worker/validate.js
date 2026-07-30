@@ -101,6 +101,24 @@ export function validateSong(input, { partial = false } = {}) {
     return 'duration must be a positive number of seconds'
   }
 
+  // The flag only describes what web_key already holds — nothing here cuts
+  // anything, and setting it by hand on a full track would mislabel it rather
+  // than shorten it. See migrations/0003_snippets.sql.
+  if (has('isSnippet') && typeof input.isSnippet !== 'boolean') {
+    return 'isSnippet must be true or false'
+  }
+
+  for (const field of ['snippetStart', 'snippetEnd']) {
+    if (has(field) && input[field] !== null && !(Number(input[field]) >= 0)) {
+      return `${field} must be a number of seconds`
+    }
+  }
+
+  const { snippetStart: from, snippetEnd: to } = input
+  if (has('snippetStart') && has('snippetEnd') && from !== null && to !== null) {
+    if (!(Number(to) > Number(from))) return 'the preview has to end after it starts'
+  }
+
   return null
 }
 

@@ -77,6 +77,14 @@ Two things about it are deliberate:
 
 No SVG in `IMAGE_TYPES`, and it should stay out: `media.frankkirwan.com` fronts a whole public bucket, and an SVG is a script container.
 
+**Previews.** Frank uploads a whole song and can publish only a cut of it. The cut is made in the browser before the upload (`src/admin/snippet.js`), and that is the feature rather than an implementation detail: the media domain fronts the entire public bucket, so a player told to stop at 1:15 would still be sitting on top of the complete recording. Cropping first means the full song only ever exists in `MASTERS`. Three things follow, and none of them are optional:
+
+- **A preview can never take the direct upload path.** `canUseDirectly` means "serve these bytes untouched", which is the opposite of publishing twenty seconds of them — so `useUpload` forces the decode-and-encode path whenever a range is set, even for an MP3 that would otherwise sail through.
+- **`is_snippet` describes what `web_key` already is.** Setting it on a full track mislabels the track; clearing it does not restore anything. So every path that publishes a whole track writes `isSnippet: false` explicitly rather than leaving the field alone — see `NOT_A_SNIPPET` in `useUpload.js`, and the same reasoning in `scripts/add-song.mjs`, which cannot crop and therefore always clears it when it uploads audio.
+- **`snippet_start_s` / `snippet_end_s` are not public.** They are offsets into the master and sit with the `master_*` columns; `/api/content` exposes `isSnippet` alone, because the site needs it to draw the label. `duration_s` is the cut's own length, so the player needs no special case.
+
+The range the form asks for is clamped to what the file turns out to contain, and what gets recorded is what was clamped to — asking for a minute from a 45-second recording is ordinary and should not fail. The cut is faded in and out (15 ms and 750 ms, the latter capped at a third of the preview) because a hard cut sounds like a file that failed to download.
+
 `worker/access.js` is the second lock, and three things in it must not be softened:
 
 - The JWT **signature** is verified, and `aud` is checked against this application's AUD tag. Skipping the audience check accepts a valid token minted for any other app in the same Zero Trust organisation.

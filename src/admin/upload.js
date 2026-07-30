@@ -1,6 +1,7 @@
 // The mechanics of getting a file into R2. No React here — useUpload drives it.
 
 import TranscodeWorker from './transcode.worker.js?worker'
+import { clipToSnippet } from './snippet'
 
 // Formats worth trying to transcode. The server checks this list again before
 // it will store anything; this copy is here to fail fast and say why.
@@ -110,8 +111,17 @@ async function decode(file) {
 
 // Resolves with an MP3 blob and the duration read while decoding, which is the
 // value the player trusts and shows before it has fetched a byte.
-export async function transcode(file, onProgress) {
-  const { left, right, channels, duration } = await decode(file)
+//
+// Given a `snippet` range, the decoded audio is cut down to it first and the
+// duration returned is the cut's, not the file's — so the object that reaches
+// the public bucket is the preview and nothing longer has ever left the
+// browser. `range` comes back as what was actually used, since clipToSnippet
+// clamps to what the file turned out to contain.
+export async function transcode(file, onProgress, snippet = null) {
+  const decoded = await decode(file)
+  const { left, right, channels, duration, range } = snippet
+    ? clipToSnippet(decoded, snippet, SAMPLE_RATE)
+    : { ...decoded, range: null }
 
   const blob = await new Promise((resolve, reject) => {
     const worker = new TranscodeWorker()
@@ -138,7 +148,7 @@ export async function transcode(file, onProgress) {
     ])
   })
 
-  return { blob, duration }
+  return { blob, duration, range }
 }
 
 // For the direct path, where nothing has decoded the audio and the length still

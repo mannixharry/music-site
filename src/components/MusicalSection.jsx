@@ -2,6 +2,7 @@ import BackToTop from './BackToTop'
 import Placeholder from './Placeholder'
 import AudioPlayer from './AudioPlayer'
 import ScriptwriterCallout from './ScriptwriterCallout'
+import SnippetTag from './SnippetTag'
 import { useContent } from '../context/contentContext'
 
 // Above this many characters, the resume is folded into a disclosure and the
@@ -60,7 +61,10 @@ function MusicalSection({ musical }) {
                 {/* The musical's name is the heading above, so the bare title
                     is enough here — but the player's screen-reader label wants
                     the full one, since it may be announced out of context. */}
-                <p className="text-sm">{demo.shortTitle}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-sm">{demo.shortTitle}</p>
+                  {demo.isSnippet && <SnippetTag title={demo.title} />}
+                </div>
                 <div className="mt-1">
                   <AudioPlayer
                     id={demo.id}

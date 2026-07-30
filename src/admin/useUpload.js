@@ -23,10 +23,18 @@ function masterKeyFor(songId, file) {
   return `masters/${songId}/${crypto.randomUUID().slice(0, 8)}.${extensionOf(file)}`
 }
 
+// Written on every path that publishes a whole track, not just left out.
+// Replacing a preview with the full song has to clear the flag, or the site
+// goes on calling a complete recording a preview.
+const NOT_A_SNIPPET = { isSnippet: false, snippetStart: null, snippetEnd: null }
+
 // Drives one file from "dropped" to "playing on the site". `patch` is called
 // twice on the slow path — once the master is safely stored and again once the
 // web version exists — because the gap between them is where things fail.
-export function useUpload({ songId, capabilities, patch }) {
+//
+// `snippet` is `{ start, end }` in seconds when only a preview should be
+// published, and null for the whole track.
+export function useUpload({ songId, capabilities, patch, snippet = null }) {
   const [status, setStatus] = useState(IDLE)
 
   const reset = useCallback(() => setStatus(IDLE), [])
@@ -37,13 +45,18 @@ export function useUpload({ songId, capabilities, patch }) {
         // The quick path: it is already something browsers stream, and small
         // enough to serve untouched. No decode, so nothing to go wrong.
         //
+        // A preview cannot come this way. "Serve the file untouched" and "put
+        // only twenty seconds of it on a public bucket" are the same sentence
+        // read two ways, and taking the shortcut here would upload the whole
+        // song under a row claiming it was a preview.
+        //
         // It still keeps the original. The same bytes go to both buckets, which
         // looks wasteful and is the point: whatever Frank uploaded is preserved
         // untouched and private, while the public copy is free to be replaced,
         // re-encoded or deleted later without that being a one-way door. Serving
         // it as-is rather than re-encoding avoids compressing already-compressed
         // audio a second time.
-        if (canUseDirectly(file)) {
+        if (canUseDirectly(file) && !snippet) {
           setStatus({ phase: 'uploading', ratio: 0, message: 'Uploading master…', error: null })
 
           // Master first, exactly as on the slow path below: if the second
@@ -71,7 +84,7 @@ export function useUpload({ songId, capabilities, patch }) {
           })
 
           const duration = await readDuration(file)
-          await patch({ webKey: key, webBytes: size, duration })
+          await patch({ webKey: key, webBytes: size, duration, ...NOT_A_SNIPPET })
 
           setStatus({ phase: 'done', ratio: 1, message: 'Uploaded.', error: null })
           return
@@ -94,9 +107,16 @@ export function useUpload({ songId, capabilities, patch }) {
 
         await patch({ masterKey, masterBytes, masterMime: contentTypeFor(file) })
 
-        setStatus({ phase: 'transcoding', ratio: 0, message: 'Converting…', error: null })
-        const { blob, duration } = await transcode(file, (ratio) =>
-          setStatus((s) => ({ ...s, ratio })),
+        setStatus({
+          phase: 'transcoding',
+          ratio: 0,
+          message: snippet ? 'Cutting the preview…' : 'Converting…',
+          error: null,
+        })
+        const { blob, duration, range } = await transcode(
+          file,
+          (ratio) => setStatus((s) => ({ ...s, ratio })),
+          snippet,
         )
 
         setStatus({ phase: 'uploading', ratio: 0, message: 'Uploading web version…', error: null })
@@ -109,13 +129,27 @@ export function useUpload({ songId, capabilities, patch }) {
           onProgress: (ratio) => setStatus((s) => ({ ...s, ratio })),
         })
 
-        await patch({ webKey, webBytes: blob.size, duration })
-        setStatus({ phase: 'done', ratio: 1, message: 'Uploaded and converted.', error: null })
+        // `range` rather than `snippet`: the crop is clamped to what the file
+        // turned out to hold, so what is recorded is what was published.
+        await patch({
+          webKey,
+          webBytes: blob.size,
+          duration,
+          ...(range
+            ? { isSnippet: true, snippetStart: range.start, snippetEnd: range.end }
+            : NOT_A_SNIPPET),
+        })
+        setStatus({
+          phase: 'done',
+          ratio: 1,
+          message: range ? 'Preview uploaded — the master is kept whole.' : 'Uploaded and converted.',
+          error: null,
+        })
       } catch (error) {
         setStatus({ phase: 'error', ratio: 0, message: '', error: error.message })
       }
     },
-    [songId, capabilities, patch],
+    [songId, capabilities, patch, snippet],
   )
 
   return { status, start, reset }
