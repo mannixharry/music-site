@@ -12,11 +12,13 @@ import {
 } from './db'
 import { fail, json } from './json'
 import {
+  databaseBytes,
   deleteOrphans,
   deleteReplacedObjects,
   deleteSongObjects,
   readObjectKeys,
   readStorage,
+  storedBytes,
 } from './objects'
 import { presignPut } from './presign'
 import {
@@ -28,6 +30,8 @@ import {
   IMAGE_TYPES,
   MAX_UPLOAD_BYTES,
   MAX_IMAGE_BYTES,
+  D1_LIMIT_BYTES,
+  R2_LIMIT_BYTES,
 } from './validate'
 
 // This Worker answers /api/* and nothing else. Every page, script, stylesheet
@@ -100,6 +104,30 @@ function songRoute(pathname) {
   return { id: decodeURIComponent(match[1]), action: match[2] ?? null }
 }
 
+// Whole gigabytes read as nothing at 300MB, so this drops to MB below 1GB.
+function size(bytes) {
+  const mb = bytes / 1024 / 1024
+  return mb < 1024 ? `${Math.round(mb)} MB` : `${(mb / 1024).toFixed(1)} GB`
+}
+
+// The hard stop. Refuses anything that would take the account past the free
+// allowance, and says how to make room — the answer is always to remove
+// something, and both ways of doing that are in the admin already.
+//
+// Checked here rather than trusted to the client: this is the copy that
+// decides, exactly like validateUpload. On the presigned path it runs before a
+// URL is signed, so a refused upload costs no bandwidth at all.
+async function refuseIfFull(env, incomingBytes) {
+  const used = await storedBytes(env)
+  if (used + incomingBytes <= R2_LIMIT_BYTES) return null
+
+  return (
+    `That would take the site past its ${size(R2_LIMIT_BYTES)} of storage — ` +
+    `${size(used)} is already in use. Delete a song for good from Recently deleted, ` +
+    `or clear any leftover files, and try again.`
+  )
+}
+
 async function handleAdmin(pathname, request, env, ctx, identity) {
   const method = request.method
   const presign = Boolean(env.R2_ACCESS_KEY_ID && env.R2_ACCOUNT_ID)
@@ -156,6 +184,13 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
       const input = await request.json()
       const problem = validateSong(input)
       if (problem) return fail(400, problem)
+
+      // The catalogue is titles and links, so this is a formality at the
+      // current few dozen kilobytes — but a formality that costs one cheap
+      // query and means neither allowance can be walked past.
+      if ((await databaseBytes(env)) >= D1_LIMIT_BYTES) {
+        return fail(507, `The catalogue has reached its ${size(D1_LIMIT_BYTES)} limit.`)
+      }
 
       const id = slugify(input.id || input.title)
       if (!id) return fail(400, 'could not make a slug from that title')
@@ -277,6 +312,9 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
     const problem = validateUpload({ key, contentType, size })
     if (problem) return fail(400, problem)
 
+    const full = await refuseIfFull(env, size)
+    if (full) return fail(507, full)
+
     // The key's prefix chooses the bucket, not the request — so a signature for
     // a public object can never be handed out for the private one, or the reverse.
     const rule = ruleForKey(key)
@@ -302,6 +340,9 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
 
     const problem = validateUpload({ key, contentType, size })
     if (problem) return fail(400, problem)
+
+    const full = await refuseIfFull(env, size)
+    if (full) return fail(507, full)
 
     // Same rule as the presigned path: the prefix decides the bucket.
     const { bucket } = ruleForKey(key)

@@ -13,7 +13,7 @@
 // existed, or after a failure between an upload and the row meant to name it.
 
 import { listDeletedSongs } from './db'
-import { ruleForKey, PREFIXES } from './validate'
+import { ruleForKey, D1_LIMIT_BYTES, PREFIXES, R2_LIMIT_BYTES } from './validate'
 
 // Deleting, in as few round trips as it takes. R2 takes a list, but each
 // bucket needs its own call, and a key's prefix is what says which bucket it
@@ -167,6 +167,27 @@ async function readDatabaseUsage(env) {
   return { ...results[0], bytes: meta?.size_after ?? null }
 }
 
+// Just the total, for the capacity check on the upload path. readStorage
+// answers this too, but also walks the bin and works out orphans — this runs on
+// every upload and should do no more than it has to.
+export async function storedBytes(env) {
+  let bytes = 0
+
+  for (const prefix of PREFIXES) {
+    const { bucket } = ruleForKey(prefix)
+    for (const object of await listAll(env[bucket], prefix)) bytes += object.size
+  }
+
+  return bytes
+}
+
+// D1 reports the whole database's size on the meta of any statement, so the
+// cheapest possible query answers this.
+export async function databaseBytes(env) {
+  const { meta } = await env.DB.prepare(`SELECT 1`).all()
+  return meta?.size_after ?? 0
+}
+
 // "web/<songId>/<file>" — the middle segment. Every key this app writes has
 // that shape; anything else belongs to no song in particular.
 function songIdFromKey(key) {
@@ -218,7 +239,15 @@ export async function readStorage(env) {
     ...(bySong.get(song.id) ?? { files: 0, bytes: 0 }),
   }))
 
-  return { database: await readDatabaseUsage(env), buckets, orphans, deleted }
+  return {
+    database: await readDatabaseUsage(env),
+    buckets,
+    orphans,
+    deleted,
+    // So the panel can draw usage against something rather than just reporting
+    // a number nobody can size up.
+    limits: { r2: R2_LIMIT_BYTES, d1: D1_LIMIT_BYTES },
+  }
 }
 
 export async function deleteOrphans(env, orphans) {

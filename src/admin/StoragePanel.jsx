@@ -12,14 +12,30 @@ const LABELS = {
   'cover-masters/': 'Your original artwork',
 }
 
-// Four numbers with no series, no trend and nothing to compare against each
-// other — so plain figures rather than any kind of chart, and no colour beyond
-// the greys the rest of the admin is built from.
-function Stat({ label, value, note }) {
+// Plain figures rather than any kind of chart — no series, no trend, nothing to
+// compare against each other — and no colour beyond the greys the rest of the
+// admin is built from.
+//
+// The one thing that does get drawn is the proportion of the allowance used,
+// because that is a magnitude and a bar answers "how close am I" faster than a
+// percentage does. It only appears where there is a limit to be a proportion of.
+function Stat({ label, value, note, used, limit }) {
+  const share = limit ? Math.min(1, used / limit) : null
+
   return (
     <div className="border border-gray-400 bg-white p-3">
       <p className="text-xs font-bold uppercase tracking-wide text-gray-600">{label}</p>
       <p className="mt-1 text-2xl font-bold tabular-nums">{value}</p>
+
+      {share !== null && (
+        <div className="mt-2 h-1.5 w-full border border-gray-400 bg-white">
+          <div
+            className="h-full bg-gray-700"
+            style={{ width: `${Math.max(share * 100, share > 0 ? 1 : 0)}%` }}
+          />
+        </div>
+      )}
+
       {note && <p className="mt-1 text-xs text-gray-600">{note}</p>}
     </div>
   )
@@ -27,13 +43,22 @@ function Stat({ label, value, note }) {
 
 const plural = (count, noun) => `${count} ${noun}${count === 1 ? '' : 's'}`
 
+// "of 10 GB", with the percentage only once there is one worth reading — at a
+// tenth of a percent it is noise, and "0%" beside a real number reads as broken.
+function share(used, limit) {
+  if (!limit) return ''
+  const gb = `${Math.round(limit / 1024 / 1024 / 1024)} GB`
+  const percent = Math.round((used / limit) * 100)
+  return percent >= 1 ? `${percent}% of ${gb}` : `under 1% of ${gb}`
+}
+
 // Presentational, like DeletedSongs: Admin owns the data, because emptying the
 // bin changes these figures and reading them apart let one go stale.
 function StoragePanel({ storage, onChanged }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
 
-  const { database, buckets, orphans } = storage
+  const { database, buckets, orphans, limits } = storage
   const files = buckets.reduce((total, group) => total + group.count, 0)
   const bytes = buckets.reduce((total, group) => total + group.bytes, 0)
 
@@ -66,12 +91,16 @@ function StoragePanel({ storage, onChanged }) {
         <Stat
           label="Audio &amp; artwork"
           value={formatBytes(bytes)}
-          note={`${plural(files, 'file')} · 10 GB included`}
+          used={bytes}
+          limit={limits?.r2}
+          note={`${plural(files, 'file')} · ${share(bytes, limits?.r2)}`}
         />
         <Stat
           label="Song details"
           value={database.bytes === null ? '—' : formatBytes(database.bytes)}
-          note="titles, links and ordering · 5 GB included"
+          used={database.bytes ?? 0}
+          limit={limits?.d1}
+          note={`titles and ordering · ${share(database.bytes ?? 0, limits?.d1)}`}
         />
       </div>
 
@@ -90,6 +119,12 @@ function StoragePanel({ storage, onChanged }) {
       </table>
 
       {error && <p className="mt-2 border border-gray-500 bg-gray-100 p-2 text-xs">{error}</p>}
+
+      <p className="mt-3 text-xs text-gray-600">
+        These are the free allowances, and the site will not let you past them — an upload that
+        would go over is refused rather than charged for. Songs in the bin above still count
+        towards it, since their files are kept so a delete can be undone.
+      </p>
 
       {orphans.length > 0 ? (
         <div className="mt-3 border border-gray-500 bg-gray-100 p-3 text-xs">

@@ -28,6 +28,19 @@ export const AUDIO_TYPES = [
 // domain that fronts a whole public bucket.
 export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif']
 
+// Cloudflare's forever-free allowances: 10 GB-month of R2 storage and 5 GB of
+// D1, both counted across the whole account rather than per bucket or database.
+// This account holds only this site, so capping the site's own usage is the
+// same thing in practice — if that ever stops being true, these become an
+// under-estimate of what is being used and want revisiting.
+//
+// Enforced as a hard stop rather than a warning: the point is that Frank cannot
+// walk into a bill by uploading one master too many. It guards against
+// accident, not against a determined client — the size checked at signing time
+// is the one the browser declared.
+export const R2_LIMIT_BYTES = 10 * 1024 * 1024 * 1024
+export const D1_LIMIT_BYTES = 5 * 1024 * 1024 * 1024
+
 export const MAX_UPLOAD_BYTES = 500 * 1024 * 1024
 
 // Artwork does not need the audio ceiling, and a limit that fits the job is one
