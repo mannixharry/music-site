@@ -47,22 +47,41 @@ export function rememberAdminSession(email) {
 export const SIGN_OUT_URL = '/cdn-cgi/access/logout'
 
 // Signing out, then coming back here rather than stopping on Cloudflare's own
-// "you have been logged out" page.
+// "you have been logged out" page. That page takes no redirect parameter, so
+// the way home is to ask for the logout ourselves and then navigate.
 //
-// That page has no redirect parameter, so the way home is to ask for the logout
-// ourselves and then navigate. A same-origin fetch applies the Set-Cookie that
-// clears the session exactly as a navigation would; the anchor keeps its href
-// so that without JavaScript, or if the fetch fails, the plain logout still
-// happens and simply ends up on Cloudflare's page.
+// `redirect: 'manual'` is the whole trick, and its absence is what made the
+// first attempt at this look like it did nothing. With a live session the
+// endpoint answers with a redirect to <team>.cloudflareaccess.com, to end the
+// session across the organisation — and a fetch that follows a redirect to
+// another origin is killed by CORS. That threw, the catch navigated to the
+// logout URL as a fallback, and you landed on the very page this exists to
+// avoid, now reporting no cookie because the fetch had already cleared it.
+// Manual redirect means the browser stops at the first response, which is the
+// one carrying the Set-Cookie that matters.
+//
+// Then it checks, rather than assuming. An admin route still answering means
+// the cookie survived, and quietly going home would leave you signed in while
+// the site said otherwise — so that case falls back to the plain logout, which
+// is unlovely and definitely works.
 export async function signOut(event) {
   event.preventDefault()
   forgetAdminSession()
 
   try {
-    await fetch(SIGN_OUT_URL, { credentials: 'include', cache: 'no-store' })
+    await fetch(SIGN_OUT_URL, { credentials: 'include', cache: 'no-store', redirect: 'manual' })
+
+    // Unauthenticated, this is answered by Access with a redirect to its login
+    // page — which `manual` turns into an opaque response, so `ok` is false.
+    // Still ok means the session outlived the logout.
+    const stillIn = await fetch('/api/admin/session', { cache: 'no-store', redirect: 'manual' })
+    if (stillIn.ok) {
+      window.location.assign(SIGN_OUT_URL)
+      return
+    }
   } catch {
-    // Offline, or something between here and Cloudflare. Fall through: the
-    // navigation below still goes to the logout endpoint in that case.
+    // Offline, or something else between here and Cloudflare. Signing out for
+    // real matters more than where it leaves you.
     window.location.assign(SIGN_OUT_URL)
     return
   }
@@ -70,8 +89,6 @@ export async function signOut(event) {
   window.location.assign('/')
 }
 
-// Paired with the link above rather than folded into it, so signing out is a
-// real anchor — the hint goes on the way past, and the browser does the rest.
 export function forgetAdminSession() {
   try {
     sessionStorage.removeItem(KEY)
