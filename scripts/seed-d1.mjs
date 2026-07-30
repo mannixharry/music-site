@@ -43,6 +43,7 @@ const statements = songs.map((song) => {
     quote(song.coverKey),
     number(song.coverBytes),
     song.isSnippet ? '1' : '0',
+    song.showSnippetTag ? '1' : '0',
     quote(JSON.stringify(song.links ?? [])),
     number(song.sortOrder),
     song.published === false ? '0' : '1',
@@ -59,7 +60,7 @@ const statements = songs.map((song) => {
   return `INSERT OR REPLACE INTO songs (
   id, title, description, kind, musical_slug, status,
   web_key, web_bytes, master_key, master_bytes, master_mime, duration_s,
-  cover_key, cover_bytes, is_snippet,
+  cover_key, cover_bytes, is_snippet, show_snippet_tag,
   links_json, sort_order, published, created_at, updated_at
 ) VALUES (${columns.join(', ')});`
 })

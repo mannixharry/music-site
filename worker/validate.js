@@ -117,8 +117,8 @@ export function validateSong(input, { partial = false } = {}) {
   // The flag only describes what web_key already holds — nothing here cuts
   // anything, and setting it by hand on a full track would mislabel it rather
   // than shorten it. See migrations/0003_snippets.sql.
-  if (has('isSnippet') && typeof input.isSnippet !== 'boolean') {
-    return 'isSnippet must be true or false'
+  for (const flag of ['isSnippet', 'showSnippetTag']) {
+    if (has(flag) && typeof input[flag] !== 'boolean') return `${flag} must be true or false`
   }
 
   for (const field of ['snippetStart', 'snippetEnd']) {

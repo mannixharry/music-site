@@ -93,7 +93,7 @@ function MusicalSection({ musical }) {
                     the full one, since it may be announced out of context. */}
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-sm">{demo.shortTitle}</p>
-                  {demo.isSnippet && <SnippetTag title={demo.title} />}
+                  {demo.isSnippet && demo.showSnippetTag && <SnippetTag title={demo.title} />}
                 </div>
                 <div className="mt-1">
                   <AudioPlayer

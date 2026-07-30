@@ -43,6 +43,9 @@ export function toSong(row, mediaBase = '') {
     // is the one thing the site says about it. A snapshot taken before previews
     // existed simply has no such songs, so the default is the honest one.
     isSnippet: row.isSnippet === true,
+    // Whether the site says so. Opt-in per song, so a snapshot from a musical
+    // is not labelled as an extract when everyone already knows it is one.
+    showSnippetTag: row.showSnippetTag === true,
     links: row.links ?? [],
     status: row.status ?? 'released',
     kind: row.kind,

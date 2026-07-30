@@ -10,7 +10,7 @@ function SongItem({ song }) {
     <article>
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="text-lg font-bold">{song.title}</h3>
-        {song.isSnippet && <SnippetTag title={song.title} />}
+        {song.isSnippet && song.showSnippetTag && <SnippetTag title={song.title} />}
       </div>
 
       {song.description && <p className="mt-2 text-sm leading-relaxed">{song.description}</p>}

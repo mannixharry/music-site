@@ -29,7 +29,7 @@ function ReleaseItem({ release }) {
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <h3 className="truncate text-sm font-bold">{release.title}</h3>
-          {release.isSnippet && <SnippetTag title={release.title} />}
+          {release.isSnippet && release.showSnippetTag && <SnippetTag title={release.title} />}
         </div>
 
         <div className="mt-2">

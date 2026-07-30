@@ -16,6 +16,7 @@ const BLANK = {
   status: 'released',
   links: [],
   published: false,
+  showSnippetTag: false,
 }
 
 function Field({ label, hint, children }) {
@@ -231,6 +232,7 @@ function SongForm({ song, justCreated, musicals, capabilities, mediaBase, onChan
         status: draft.status,
         links: draft.links.filter((link) => link.label && link.href),
         published: draft.published,
+        showSnippetTag: draft.showSnippetTag,
       }
 
       // Creating hands the form straight on to the song it just made, rather
@@ -513,6 +515,24 @@ function SongForm({ song, justCreated, musicals, capabilities, mediaBase, onChan
           <span className="font-bold">Published</span>
           <span className="text-xs text-gray-600">unticked, only you can see it</span>
         </label>
+
+        {/* Only for a song that is actually a preview — on anything else it
+            would be a switch with nothing behind it. Off by default, so a demo
+            everyone already understands to be an extract is not labelled as
+            one, and a single cut to thirty seconds can be. */}
+        {song?.isSnippet && (
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={draft.showSnippetTag}
+              onChange={(event) => set({ showSnippetTag: event.currentTarget.checked })}
+            />
+            <span className="font-bold">Mark it as a preview</span>
+            <span className="text-xs text-gray-600">
+              shows a small “Preview” label beside the title
+            </span>
+          </label>
+        )}
 
         {error && <p className="border border-gray-500 bg-gray-100 p-2 text-sm">{error}</p>}
 

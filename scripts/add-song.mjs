@@ -321,6 +321,7 @@ async function main() {
     // complete recording. With no new audio they carry through untouched, like
     // the cover columns above.
     is_snippet: options.file ? '0' : String(existing?.is_snippet ?? 0),
+    show_snippet_tag: String(existing?.show_snippet_tag ?? 0),
     snippet_start_s: number(options.file ? null : (existing?.snippet_start_s ?? null)),
     snippet_end_s: number(options.file ? null : (existing?.snippet_end_s ?? null)),
     links_json: quote(JSON.stringify(links.length ? links : JSON.parse(existing?.links_json ?? '[]'))),

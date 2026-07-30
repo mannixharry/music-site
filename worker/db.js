@@ -27,6 +27,8 @@ function toRow(record) {
     // site needs this to label the player; where the cut was taken from is a
     // fact about the master, so it stays out — see below.
     isSnippet: record.is_snippet === 1,
+    // Whether to say so. Separate from the fact itself — see 0004.
+    showSnippetTag: record.show_snippet_tag === 1,
     links: Array.isArray(links) ? links : [],
     sortOrder: record.sort_order,
     published: record.published === 1,
@@ -40,7 +42,8 @@ function toRow(record) {
 // object's own length is duration_s.
 const PUBLIC_COLUMNS = `
   id, title, description, kind, musical_slug, status,
-  web_key, cover_key, duration_s, is_snippet, links_json, sort_order, published
+  web_key, cover_key, duration_s, is_snippet, show_snippet_tag,
+  links_json, sort_order, published
 `
 
 export async function listPublishedSongs(env) {
@@ -184,12 +187,13 @@ const WRITABLE = {
   coverMasterMime: 'cover_master_mime',
   duration: 'duration_s',
   isSnippet: 'is_snippet',
+  showSnippetTag: 'show_snippet_tag',
   snippetStart: 'snippet_start_s',
   snippetEnd: 'snippet_end_s',
   published: 'published',
 }
 
-const BOOLEAN_FIELDS = new Set(['published', 'isSnippet'])
+const BOOLEAN_FIELDS = new Set(['published', 'isSnippet', 'showSnippetTag'])
 
 function serialise(field, value) {
   if (BOOLEAN_FIELDS.has(field)) return value ? 1 : 0
@@ -219,9 +223,9 @@ export async function createSong(env, input) {
        id, title, description, kind, musical_slug, status,
        web_key, web_bytes, master_key, master_bytes, master_mime, duration_s,
        cover_key, cover_bytes, cover_master_key, cover_master_bytes, cover_master_mime,
-       is_snippet, snippet_start_s, snippet_end_s,
+       is_snippet, show_snippet_tag, snippet_start_s, snippet_end_s,
        links_json, sort_order, published, created_at, updated_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       input.id,
@@ -242,6 +246,7 @@ export async function createSong(env, input) {
       input.coverMasterBytes ?? null,
       input.coverMasterMime ?? null,
       input.isSnippet ? 1 : 0,
+      input.showSnippetTag ? 1 : 0,
       input.snippetStart ?? null,
       input.snippetEnd ?? null,
       JSON.stringify(input.links ?? []),
