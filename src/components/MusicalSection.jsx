@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import BackToTop from './BackToTop'
 import Placeholder from './Placeholder'
 import AudioPlayer from './AudioPlayer'
@@ -5,20 +6,28 @@ import ScriptwriterCallout from './ScriptwriterCallout'
 import SnippetTag from './SnippetTag'
 import { useContent } from '../context/contentContext'
 
-// Above this many characters, the resume is folded into a disclosure and the
-// teaser stands in for it until it is opened. Two of the three shows carry
-// several screens of synopsis, and with all of it laid out flat the page was
-// mostly prose you had to scroll through to reach the demos and the downloads.
-// Guyana Skies' single short paragraph stays where it is: hiding two sentences
-// behind a click is worse than showing them.
+// Above this many characters the resume opens shortened, with the first few
+// lines showing and the rest a click away. Two of the three shows carry several
+// screens of synopsis, and laid out flat the page was mostly prose you had to
+// scroll past to reach the demos and the downloads. Guyana Skies' two sentences
+// stay whole: shortening those would cost a click and save nothing.
 const FOLD_ABOVE = 600
+
+// Lines of the opening paragraph to leave showing. Clamped by line rather than
+// by character count, deliberately — the two shortened shows are shaped quite
+// differently (Pigs runs to four paragraphs, Copperfield is one long one), and
+// clamping by line gives them the same height and the same trailing ellipsis
+// instead of one being cut mid-word and the other not at all.
+const PREVIEW_LINES = 'line-clamp-4'
 
 function MusicalSection({ musical }) {
   const { demosFor } = useContent()
   const demos = demosFor(musical.slug)
+  const [expanded, setExpanded] = useState(false)
 
-  const resume = musical.resume.map((paragraph, i) => <p key={i}>{paragraph}</p>)
-  const folded = musical.resume.join(' ').length > FOLD_ABOVE
+  const shortened = musical.resume.join(' ').length > FOLD_ABOVE
+  const showAll = expanded || !shortened
+  const bodyId = `${musical.slug}-resume`
 
   return (
     // scroll-mt keeps the heading clear of the sticky site header when the
@@ -38,16 +47,36 @@ function MusicalSection({ musical }) {
         className="mt-4"
       />
 
-      {folded ? (
-        <details className="mt-6">
-          <summary className="cursor-pointer font-bold">{musical.resumeLabel}</summary>
-          <div className="mt-2 space-y-3 text-sm leading-relaxed">{resume}</div>
-        </details>
-      ) : (
-        <>
-          <h3 className="mt-6 font-bold">{musical.resumeLabel}</h3>
-          <div className="mt-2 space-y-3 text-sm leading-relaxed">{resume}</div>
-        </>
+      <h3 className="mt-6 font-bold">{musical.resumeLabel}</h3>
+
+      {/* The heading stays visible either way — a reader should be able to see
+          that a synopsis exists without first working out that the heading was
+          a button. */}
+      <div id={bodyId} className="mt-2 text-sm leading-relaxed">
+        {showAll ? (
+          <div className="space-y-3">
+            {musical.resume.map((paragraph, i) => (
+              <p key={i}>{paragraph}</p>
+            ))}
+          </div>
+        ) : (
+          // The clamp goes on the paragraph itself rather than a wrapper: it
+          // works by turning the element into a -webkit-box, which does what is
+          // wanted to flowed text and not to a stack of block children.
+          <p className={PREVIEW_LINES}>{musical.resume[0]}</p>
+        )}
+      </div>
+
+      {shortened && (
+        <button
+          type="button"
+          onClick={() => setExpanded((open) => !open)}
+          aria-expanded={expanded}
+          aria-controls={bodyId}
+          className="mt-2 text-sm underline"
+        >
+          {expanded ? 'Show less' : `Read the full ${musical.resumeLabel.toLowerCase()}`}
+        </button>
       )}
 
       {/* A heading over an empty box reads like something failed to load, so a
