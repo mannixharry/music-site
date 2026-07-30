@@ -26,6 +26,10 @@ backup
 # this must never be committed.
 .dev.vars
 
+# `npm run shot` writes here. Screenshots taken to check a layout change; they
+# are regenerated on demand and go stale the moment the site changes.
+shots
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
