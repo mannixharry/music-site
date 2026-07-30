@@ -1,6 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { SIGN_OUT_URL, adminSessionEmail, signOut, hasAdminSession } from '../adminHint'
+import {
+  SIGN_OUT_URL,
+  adminSessionEmail,
+  forgetAdminSession,
+  signOut,
+  hasAdminSession,
+} from '../adminHint'
 
 // Frank's own strip, above the site's own header and only ever visible to him.
 //
@@ -16,8 +22,38 @@ import { SIGN_OUT_URL, adminSessionEmail, signOut, hasAdminSession } from '../ad
 function AdminBar() {
   // Read once, at mount, exactly as the header used to: the admin page writes
   // the hint before you can click through, and this does not mount until you do.
-  const [signedIn] = useState(hasAdminSession)
+  const [signedIn, setSignedIn] = useState(hasAdminSession)
   const [email] = useState(adminSessionEmail)
+
+  // ...and then checked, because the hint outlives what it describes. It is
+  // written when /admin loads and cleared when you sign out through the site —
+  // neither of which happens when an Access session simply lapses in a tab left
+  // open. The strip went on saying "Signed in as …" for a session that no
+  // longer existed, which is the site stating something untrue about the reader.
+  //
+  // Only ever for someone the hint is already set for, which is the reason it
+  // exists rather than a session probe on every visit (see adminHint.js): a
+  // visitor still costs the Worker nothing. `manual` so the Access redirect is
+  // not chased across origins into a CORS error, exactly as signOut does.
+  useEffect(() => {
+    if (!signedIn) return
+    let cancelled = false
+
+    fetch('/api/admin/session', { cache: 'no-store', redirect: 'manual' })
+      .then((response) => {
+        if (cancelled || response.ok) return
+        forgetAdminSession()
+        setSignedIn(false)
+      })
+      // Offline is not proof of anything. Leaving the strip alone is the
+      // forgiving way to be wrong here: its links work or send you to a login.
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
+    }
+  }, [signedIn])
+
   if (!signedIn) return null
 
   return (
