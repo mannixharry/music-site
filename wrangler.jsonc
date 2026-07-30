@@ -16,6 +16,13 @@
   "workers_dev": false,
   "preview_urls": false,
 
+  // Empties the bin: anything soft-deleted more than 30 days ago is removed for
+  // good, along with its files. Daily, at 04:00 UTC — nothing is waiting on it,
+  // and a quiet hour keeps it clear of anyone actually using the admin.
+  "triggers": {
+    "crons": ["0 4 * * *"]
+  },
+
   "assets": {
     "directory": "./dist",
     "not_found_handling": "single-page-application",

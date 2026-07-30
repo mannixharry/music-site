@@ -107,6 +107,19 @@ export async function listDeletedSongs(env) {
   }))
 }
 
+// Everything soft-deleted before `before`, which is an ISO timestamp. String
+// comparison is the right one here: every deleted_at is written by
+// toISOString(), so it is fixed-width UTC and sorts chronologically as text.
+export async function listExpiredSongs(env, before) {
+  const { results } = await env.DB.prepare(
+    `SELECT id FROM songs WHERE deleted_at IS NOT NULL AND deleted_at < ?`,
+  )
+    .bind(before)
+    .all()
+
+  return results.map((record) => record.id)
+}
+
 // Back as a draft, never straight back onto the site. `deleteSong` cleared
 // `published` on the way out and this deliberately does not set it again: a song
 // reappearing in front of visitors because someone was browsing the bin would be

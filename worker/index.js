@@ -13,6 +13,7 @@ import {
 import { fail, json } from './json'
 import {
   databaseBytes,
+  expireDeletedSongs,
   deleteOrphans,
   deleteReplacedObjects,
   deleteSongObjects,
@@ -42,6 +43,17 @@ import {
 // index.html and this code would never run.
 
 export default {
+  // Cron trigger, declared in wrangler.jsonc. The only thing on a schedule: it
+  // empties the bin of anything deleted more than BIN_DAYS ago, so storage
+  // cannot be held indefinitely by songs nobody meant to keep.
+  async scheduled(controller, env, ctx) {
+    ctx.waitUntil(
+      expireDeletedSongs(env).then((expired) => {
+        if (expired.length > 0) console.log(`expired ${expired.length} song(s) from the bin`)
+      }),
+    )
+  },
+
   async fetch(request, env, ctx) {
     const { pathname } = new URL(request.url)
 

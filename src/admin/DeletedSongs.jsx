@@ -2,15 +2,28 @@ import { useState } from 'react'
 import { formatBytes } from '../format'
 import { api } from './api'
 
-function when(iso) {
-  const at = new Date(iso)
-  if (Number.isNaN(at.getTime())) return ''
+const DAY = 86400000
 
-  const days = Math.floor((Date.now() - at.getTime()) / 86400000)
+function daysSince(iso) {
+  const at = new Date(iso)
+  return Number.isNaN(at.getTime()) ? null : Math.floor((Date.now() - at.getTime()) / DAY)
+}
+
+function when(days) {
+  if (days === null) return ''
   if (days === 0) return 'today'
   if (days === 1) return 'yesterday'
-  if (days < 30) return `${days} days ago`
-  return at.toLocaleDateString()
+  return `${days} days ago`
+}
+
+// The countdown, said the way a person would. Rounded down, so it never
+// promises a day that has already half gone.
+function remaining(days, binDays) {
+  if (days === null) return ''
+  const left = binDays - days
+  if (left <= 0) return 'going shortly'
+  if (left === 1) return 'goes tomorrow'
+  return `${left} days left`
 }
 
 // Deleting a song has always kept everything — the title, the links, the audio
@@ -19,7 +32,7 @@ function when(iso) {
 //
 // Presentational: Admin owns the data, because these rows and the storage
 // figures below them move together and reading them apart let one go stale.
-function DeletedSongs({ deleted, onChanged }) {
+function DeletedSongs({ deleted, binDays, onChanged }) {
   const [busyId, setBusyId] = useState(null)
   const [error, setError] = useState(null)
 
@@ -54,8 +67,10 @@ function DeletedSongs({ deleted, onChanged }) {
       <h2 className="text-xs font-bold uppercase tracking-wide text-gray-600">Recently deleted</h2>
       <p className="mt-2 text-xs text-gray-600">
         Already off the website. The files are still here, so you can put a song back — it comes
-        back as a draft, so you decide when it goes live again. Deleting one for good removes
-        everything stored for it: your recording, the website copy and any preview.
+        back as a draft, so you decide when it goes live again.
+        {binDays ? ` Anything left here is deleted for good after ${binDays} days, and its storage freed.` : ''}{' '}
+        Deleting one yourself does the same thing now: your recording, the website copy and any
+        preview all go.
       </p>
 
       {error && <p className="mt-2 border border-gray-500 bg-gray-100 p-2 text-xs">{error}</p>}
@@ -67,7 +82,10 @@ function DeletedSongs({ deleted, onChanged }) {
             className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-gray-200 py-2 text-sm"
           >
             <span className="min-w-0 flex-1 truncate">{song.title}</span>
-            <span className="shrink-0 text-xs text-gray-600">deleted {when(song.deletedAt)}</span>
+            <span className="shrink-0 text-xs text-gray-600">
+              deleted {when(daysSince(song.deletedAt))}
+              {binDays ? ` · ${remaining(daysSince(song.deletedAt), binDays)}` : ''}
+            </span>
             <span className="shrink-0 font-mono text-xs text-gray-600">
               {song.files} · {formatBytes(song.bytes)}
             </span>

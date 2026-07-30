@@ -207,6 +207,7 @@ function Admin() {
           <>
             <DeletedSongs
               deleted={storage.deleted}
+              binDays={storage.binDays}
               onChanged={refresh}
             />
             <StoragePanel storage={storage} onChanged={refreshStorage} />

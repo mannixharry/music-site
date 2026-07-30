@@ -12,7 +12,7 @@
 // names, and what is in the bin — for anything that got away before this
 // existed, or after a failure between an upload and the row meant to name it.
 
-import { listDeletedSongs } from './db'
+import { listDeletedSongs, listExpiredSongs, purgeSong } from './db'
 import { ruleForKey, D1_LIMIT_BYTES, PREFIXES, R2_LIMIT_BYTES } from './validate'
 
 // Deleting, in as few round trips as it takes. R2 takes a list, but each
@@ -188,6 +188,29 @@ export async function databaseBytes(env) {
   return meta?.size_after ?? 0
 }
 
+// How long a deleted song is kept before it goes for good. Long enough that
+// noticing a mistake a month later is still recoverable, short enough that the
+// bin cannot quietly become most of the storage allowance.
+export const BIN_DAYS = 30
+
+// The automatic half of the bin, run daily by the cron trigger in
+// wrangler.jsonc. Does exactly what "delete for good" does, and by the same
+// route — the row first, then everything the song ever put in either bucket —
+// so there is one behaviour to reason about rather than two.
+export async function expireDeletedSongs(env) {
+  const cutoff = new Date(Date.now() - BIN_DAYS * 24 * 60 * 60 * 1000).toISOString()
+  const expired = await listExpiredSongs(env, cutoff)
+
+  for (const id of expired) {
+    // Read before the row goes, delete after: the same order as the manual
+    // purge, and for the same reason.
+    const keys = await readObjectKeys(env, id)
+    if (await purgeSong(env, id)) await deleteSongObjects(env, id, keys)
+  }
+
+  return expired
+}
+
 // "web/<songId>/<file>" — the middle segment. Every key this app writes has
 // that shape; anything else belongs to no song in particular.
 function songIdFromKey(key) {
@@ -247,6 +270,8 @@ export async function readStorage(env) {
     // So the panel can draw usage against something rather than just reporting
     // a number nobody can size up.
     limits: { r2: R2_LIMIT_BYTES, d1: D1_LIMIT_BYTES },
+    // So the admin can say how long is left rather than restating the rule.
+    binDays: BIN_DAYS,
   }
 }
 
