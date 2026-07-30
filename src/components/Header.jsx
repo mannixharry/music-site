@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { hasAdminSession } from '../adminHint'
+import { SIGN_OUT_URL, forgetAdminSession, hasAdminSession } from '../adminHint'
 import { navItems } from '../nav'
 
 // The active page gets weight as well as an underline. On a phone the menu is a
@@ -64,9 +64,14 @@ function Header() {
             </NavLink>
           ))}
           {showAdminLink && (
-            <Link to="/admin" className={adminLinkClass}>
-              Back to admin
-            </Link>
+            <>
+              <Link to="/admin" className={adminLinkClass}>
+                Back to admin
+              </Link>
+              <a href={SIGN_OUT_URL} onClick={forgetAdminSession} className="text-sm underline">
+                Sign out
+              </a>
+            </>
           )}
         </nav>
 
@@ -100,9 +105,14 @@ function Header() {
             </NavLink>
           ))}
           {showAdminLink && (
-            <Link to="/admin" className={adminLinkClass} onClick={closeMenu}>
-              Back to admin
-            </Link>
+            <>
+              <Link to="/admin" className={adminLinkClass} onClick={closeMenu}>
+                Back to admin
+              </Link>
+              <a href={SIGN_OUT_URL} onClick={forgetAdminSession} className="text-sm underline">
+                Sign out
+              </a>
+            </>
           )}
         </nav>
       )}

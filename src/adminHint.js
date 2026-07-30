@@ -31,6 +31,28 @@ export function rememberAdminSession() {
   }
 }
 
+// Cloudflare Access's own logout endpoint, on this domain. Hitting it revokes
+// the session across every Access application in the organisation and clears
+// the cookie within half a minute. There is no redirect parameter, so the
+// browser lands on Cloudflare's own "you have been logged out" page rather than
+// back here — which is at least unambiguous about what just happened.
+//
+// It never reaches this Worker: Cloudflare answers /cdn-cgi/ itself, in front
+// of everything. Which also means it does not exist in local development, where
+// there is no Access to log out of.
+export const SIGN_OUT_URL = '/cdn-cgi/access/logout'
+
+// Paired with the link above rather than folded into it, so signing out is a
+// real anchor — the hint goes on the way past, and the browser does the rest.
+export function forgetAdminSession() {
+  try {
+    sessionStorage.removeItem(KEY)
+  } catch {
+    // Same as above: a hint that cannot be cleared is a stale shortcut to a
+    // login page, not a leak.
+  }
+}
+
 export function hasAdminSession() {
   try {
     return sessionStorage.getItem(KEY) === '1'

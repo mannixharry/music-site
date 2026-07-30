@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import PlaybackProvider from '../components/PlaybackProvider'
-import { rememberAdminSession } from '../adminHint'
+import { SIGN_OUT_URL, forgetAdminSession, rememberAdminSession } from '../adminHint'
 import { musicals } from '../content/musicals'
 import { api } from '../admin/api'
 import SongForm from '../admin/SongForm'
@@ -119,13 +119,21 @@ function Admin() {
             <Link to="/" className="underline">
               Preview the site
             </Link>
+            {/* Nothing to sign out of when the local bypass is what let you in;
+                the notice below says so. */}
+            {!session.bypass && (
+              <a href={SIGN_OUT_URL} onClick={forgetAdminSession} className="underline">
+                Sign out
+              </a>
+            )}
           </div>
         </header>
 
         {session.bypass && (
           <p className="mt-3 border border-gray-500 bg-gray-100 p-2 text-xs">
             <strong>Local development.</strong> Authentication is switched off because
-            DEV_BYPASS_AUTH is set in .dev.vars. This can never happen on frankkirwan.com.
+            DEV_BYPASS_AUTH is set in .dev.vars, so there is no session to sign out of. This can
+            never happen on frankkirwan.com.
           </p>
         )}
 
