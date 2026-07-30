@@ -1,5 +1,5 @@
 {
-  "version": "ms7ndwe4-7d50affc",
+  "version": "ms7pezjm-0409a002",
   "mediaBase": "https://media.frankkirwan.com",
   "songs": [
     {
@@ -13,6 +13,7 @@
       "coverKey": null,
       "duration": 27.74784580498866,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 14,
       "published": true
@@ -28,6 +29,7 @@
       "coverKey": null,
       "duration": 40.379501133786846,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 28,
       "published": true
@@ -43,6 +45,7 @@
       "coverKey": null,
       "duration": 34.43519274376417,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 36,
       "published": true
@@ -58,6 +61,7 @@
       "coverKey": null,
       "duration": 131.13469387755103,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 53,
       "published": true
@@ -73,6 +77,7 @@
       "coverKey": null,
       "duration": 286.014693877551,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 70,
       "published": true
@@ -88,6 +93,7 @@
       "coverKey": null,
       "duration": 193.51510204081632,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 80,
       "published": true
@@ -103,6 +109,7 @@
       "coverKey": null,
       "duration": 34.43519274376417,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 85,
       "published": true
@@ -118,6 +125,7 @@
       "coverKey": null,
       "duration": 32.20607709750567,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 87,
       "published": true
@@ -133,6 +141,7 @@
       "coverKey": null,
       "duration": 218.25306122448978,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 90,
       "published": true
@@ -148,6 +157,7 @@
       "coverKey": null,
       "duration": 318.231125,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 100,
       "published": true
@@ -163,6 +173,7 @@
       "coverKey": null,
       "duration": 229.7991836734694,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 120,
       "published": true
@@ -178,6 +189,7 @@
       "coverKey": null,
       "duration": 263.9673469387755,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 130,
       "published": true
@@ -193,6 +205,7 @@
       "coverKey": null,
       "duration": 216.68571428571428,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 140,
       "published": true
@@ -208,6 +221,7 @@
       "coverKey": null,
       "duration": 113.87065759637188,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 150,
       "published": true
@@ -223,6 +237,7 @@
       "coverKey": null,
       "duration": 224.33959183673468,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 160,
       "published": true
@@ -238,6 +253,7 @@
       "coverKey": null,
       "duration": 203.96408163265306,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 170,
       "published": true
@@ -253,6 +269,7 @@
       "coverKey": null,
       "duration": 205.4530612244898,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 180,
       "published": true
@@ -268,6 +285,7 @@
       "coverKey": null,
       "duration": 160.49632653061224,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 190,
       "published": true
@@ -283,6 +301,7 @@
       "coverKey": null,
       "duration": 165.4334693877551,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 200,
       "published": true
@@ -298,6 +317,7 @@
       "coverKey": null,
       "duration": 161.61959183673468,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 210,
       "published": true
@@ -313,6 +333,7 @@
       "coverKey": null,
       "duration": 169.06448979591838,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 220,
       "published": true
@@ -328,6 +349,7 @@
       "coverKey": null,
       "duration": 228.1534693877551,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 230,
       "published": true
@@ -343,6 +365,7 @@
       "coverKey": null,
       "duration": 227.97061224489795,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 240,
       "published": true
@@ -358,6 +381,7 @@
       "coverKey": null,
       "duration": 224.6791836734694,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 250,
       "published": true
@@ -373,6 +397,7 @@
       "coverKey": null,
       "duration": 178.5469387755102,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 260,
       "published": true
@@ -388,6 +413,7 @@
       "coverKey": null,
       "duration": 176.82285714285715,
       "isSnippet": false,
+      "showSnippetTag": false,
       "links": [],
       "sortOrder": 270,
       "published": true
