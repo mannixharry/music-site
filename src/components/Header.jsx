@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { navItems } from '../nav'
+import { profile } from '../content/profile'
 
 // The active page gets weight and colour as well as an underline. On a phone the
 // menu is a plain column of five links and an underline on its own is easy to
@@ -52,8 +53,12 @@ function Header() {
     // so the two cannot drift apart or need an offset guessed between them.
     <header className="border-b border-gray-300 bg-gray-100">
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-4 px-4 py-4">
+        {/* The one place the name is drawn on a page now that the home
+            page's heading says what he does instead — so it comes from
+            profile.js rather than being typed here, and there is one
+            definition of it rather than a copy per component. */}
         <Link to="/" className="text-xl font-bold" onClick={closeMenu}>
-          Frank Kirwan
+          {profile.name}
         </Link>
 
         <nav aria-label="Site" className="hidden items-center gap-4 md:flex">
