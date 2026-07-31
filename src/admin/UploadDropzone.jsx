@@ -1,7 +1,38 @@
 import { useRef, useState } from 'react'
 import { formatBytes } from '../format'
 import { ACCEPTED, canUseDirectly, isUploading } from './upload'
-import { ACCEPTED_IMAGES } from './cover'
+import { ACCEPTED_IMAGES, TARGET_SIZE } from './cover'
+
+// The dimensions of the picture that comes out the other end, read from the
+// resizer rather than typed here — asking for a size the code does not produce
+// is worse than saying nothing. It is a centre crop to a square, and it never
+// upscales, so anything shorter than this on its narrow edge ends up smaller
+// than the site is built to draw.
+const COVER_SPEC = `${TARGET_SIZE}×${TARGET_SIZE}px`
+
+// What a chosen image actually is, and whether that is enough. Answered by
+// decoding it, which is why `describe` is async.
+async function describeImage(file) {
+  try {
+    const bitmap = await createImageBitmap(file)
+    const { width, height } = bitmap
+    bitmap.close()
+
+    const edge = Math.min(width, height)
+    const note = `${width}×${height}`
+
+    // The one thing worth warning about. Cropping and shrinking are invisible;
+    // being handed a 400px picture to draw at 1000 is not, and it is the only
+    // case that cannot be fixed after the fact without the original file.
+    if (edge < TARGET_SIZE) {
+      return `${note} — smaller than ${COVER_SPEC}, so it will look soft`
+    }
+    return width === height ? `${note} — square already` : `${note} — will be cropped square`
+  } catch {
+    // Some AVIFs and progressive JPEGs refuse to decode here and upload fine.
+    return 'will be cropped square'
+  }
+}
 
 function Bar({ ratio }) {
   return (
@@ -28,8 +59,8 @@ const VARIANTS = {
   image: {
     accept: ACCEPTED_IMAGES,
     prompt: 'Drop the cover art here, or click to choose it',
-    hint: 'JPEG, PNG, WebP or AVIF. Upload it full size — it is cropped square for the website and your original is kept.',
-    describe: async () => 'will be cropped square',
+    hint: `Square, ${COVER_SPEC} or larger. JPEG, PNG, WebP or AVIF. A picture that is not square is cropped from the centre, and a larger one is scaled down — so bigger is safe and smaller is not. Your original is kept either way.`,
+    describe: describeImage,
   },
 }
 

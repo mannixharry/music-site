@@ -27,7 +27,7 @@ export function imageTypeFor(file) {
 // What the site is built to show. The home page draws covers at 96px, so 1000 is
 // already generous — it is the size the placeholder has always advertised, and
 // leaves room to show art larger later without going back to the originals.
-const TARGET_SIZE = 1000
+export const TARGET_SIZE = 1000
 
 // Under this and already a web format, the file is served untouched. Mirrors
 // canUseDirectly() for audio, and for the same reason: re-encoding something
