@@ -61,7 +61,8 @@ function NowPlaying() {
           type="range"
           min="0"
           max={scrubber.max}
-          step="0.01"
+          // A second per arrow key — see the note on the row players.
+          step="1"
           value={currentTime}
           disabled={!seekable}
           aria-label={`Seek within ${track.title}`}
@@ -78,7 +79,11 @@ function NowPlaying() {
           type="button"
           onClick={clear}
           aria-label="Stop and close"
-          className="shrink-0 border border-gray-400 bg-white px-1.5 text-xs leading-5"
+          // Measured at 25×22 before this, which is under the 24px square a
+          // touch target is meant to be — on the one control that is on screen
+          // at every scroll position, and the one whose neighbour is a play
+          // button you did not mean to press.
+          className="grid h-7 w-7 shrink-0 place-items-center border border-gray-400 bg-white text-xs"
         >
           ✕
         </button>

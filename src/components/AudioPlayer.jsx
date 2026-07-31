@@ -86,7 +86,16 @@ function AudioPlayer({ id, src, title, duration: knownDuration = null }) {
         type="range"
         min="0"
         max={track.max}
-        step="0.01"
+        // One second, not a hundredth of one.
+        //
+        // `step` is not only the precision of the value, it is how far one arrow
+        // key moves — so at 0.01 a keyboard user needed 2,775 presses to cross a
+        // twenty-seven second song, and Page Up advanced a tenth of a second. At
+        // 1 an arrow is a second and Page Up is ten, which is what a scrub bar is
+        // for. Nothing is lost while playing: the position is written from the
+        // audio element several times a second, and a second either way is far
+        // less than one pixel of thumb travel.
+        step="1"
         value={currentTime}
         disabled={!seekable}
         aria-label={`Seek within ${title}`}
