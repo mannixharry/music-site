@@ -29,7 +29,13 @@ function Home() {
           and framed instead: this reads as a repeat only while nothing says it
           is an opening. The link says it, and it is the same "go deeper" close
           the two sections below already have, which the bio was missing. */}
-      <section className="mt-10 text-sm leading-relaxed">
+      {/* A standfirst: one step above body copy, which is how a publication
+          marks an opening paragraph. It also takes the line length from 88
+          characters to 77, which is the better read of the two on its own
+          merits. Not italic — Literata's italic is a 47 kB file this site
+          otherwise never fetches, and italic at this length is slower to read
+          than it is worth. */}
+      <section className="mt-10 text-base leading-relaxed">
         <div className="space-y-3">
           {profile.paragraphs.map((paragraph, i) => (
             <p key={i}>{paragraph}</p>
