@@ -54,14 +54,6 @@ const MAX_LINKS = 20
 const MAX_LABEL_LENGTH = 80
 const MAX_HREF_LENGTH = 2000
 
-// A notice is a short box at the head of an album, not a second synopsis — the
-// resume it sits above runs to several screens and stays in the repo. The body
-// is given room for a paragraph or two and no more, so that distinction cannot
-// quietly erode into a page of prose in a text column.
-const MAX_NOTICE_BODY_LENGTH = 1000
-// Scripts and scores. A musical has three; twenty is a ceiling, not a target.
-const MAX_DOWNLOADS = 20
-
 // Artwork does not need the audio ceiling, and a limit that fits the job is one
 // less way for a mistaken drag to fill the bucket.
 export const MAX_IMAGE_BYTES = 25 * 1024 * 1024
@@ -117,43 +109,6 @@ function linkProblem(links) {
     }
     if (!isSafeHref(link.href)) {
       return `"${String(link.href).slice(0, 40)}" is not an address a link can point at`
-    }
-  }
-
-  return null
-}
-
-// A musical's scripts and scores. Same shape as a song's links and the same
-// scheme allow-list — these are rendered to every visitor too, so a stored
-// `javascript:` href would be a click away from running script on the site.
-//
-// An href is optional here, and that is the one difference from a link: a
-// download with a label and no address renders as a placeholder, which is how
-// the site says "the score is coming" without pointing at nothing. A link with
-// no address would just be broken.
-function downloadProblem(downloads) {
-  if (!Array.isArray(downloads)) {
-    return 'downloads must be a list of {label, href}'
-  }
-  if (downloads.length > MAX_DOWNLOADS) {
-    return `that is more than ${MAX_DOWNLOADS} downloads`
-  }
-
-  for (const item of downloads) {
-    if (!item || typeof item.label !== 'string' || item.label.trim().length === 0) {
-      return 'every download needs a label'
-    }
-    if (item.label.length > MAX_LABEL_LENGTH) {
-      return `a download label is longer than ${MAX_LABEL_LENGTH} characters`
-    }
-    // Empty means "not supplied yet", which is a placeholder rather than a fault.
-    if (item.href !== undefined && item.href !== null && item.href !== '') {
-      if (!isSafeHref(item.href)) {
-        return `"${String(item.href).slice(0, 40)}" is not an address a download can point at`
-      }
-    }
-    if ('download' in item && typeof item.download !== 'boolean') {
-      return 'a download’s "download" flag is true or false'
     }
   }
 
@@ -350,10 +305,7 @@ export function validateUpload({ key, contentType, size }) {
 // An album. `kind` is the whole of the difference between a musical and a
 // record: a musical picks up its synopsis and downloads from
 // src/content/musicals.js by matching this id, and an album simply has songs.
-// `existingKind` is the kind the album already has, which only the route can
-// know — a PATCH that sets downloads alone does not restate what it is filing
-// them against. Absent on a create, where the kind is always in the input.
-export function validateAlbum(input, { partial = false, existingKind = null } = {}) {
+export function validateAlbum(input, { partial = false } = {}) {
   const has = (field) => Object.prototype.hasOwnProperty.call(input ?? {}, field)
 
   if (!input || typeof input !== 'object') return 'no album given'
@@ -384,45 +336,6 @@ export function validateAlbum(input, { partial = false, existingKind = null } = 
     if (input.subtitle.length > MAX_TITLE_LENGTH) {
       return `the subtitle is longer than ${MAX_TITLE_LENGTH} characters`
     }
-  }
-
-  // The notice box. Both halves are optional and independent in the database —
-  // they are two columns — but a box with only one of them is not something
-  // anyone means: a title alone is a shout with no reason, and a body alone is
-  // an unheaded paragraph that reads like a mistake. So they are checked
-  // together, against the album as it will end up rather than as it arrived,
-  // which is the only way a PATCH that clears one of the two can be judged.
-  if (has('noticeTitle') || has('noticeBody')) {
-    if (has('noticeTitle') && typeof input.noticeTitle !== 'string') {
-      return 'the notice title must be text'
-    }
-    if (has('noticeBody') && typeof input.noticeBody !== 'string') {
-      return 'the notice must be text'
-    }
-    if (has('noticeTitle') && input.noticeTitle.length > MAX_TITLE_LENGTH) {
-      return `the notice title is longer than ${MAX_TITLE_LENGTH} characters`
-    }
-    if (has('noticeBody') && input.noticeBody.length > MAX_NOTICE_BODY_LENGTH) {
-      return `the notice is longer than ${MAX_NOTICE_BODY_LENGTH} characters`
-    }
-  }
-
-  if (has('downloads')) {
-    // Downloads are a musical's scripts and scores. An album is a set of
-    // recordings and has nothing to hand over, so this is refused rather than
-    // stored and hidden — a field that saves and never appears is worse than
-    // one that says why not.
-    //
-    // Read from the patch where it names a kind and from the caller otherwise,
-    // because a PATCH that only sets downloads does not restate what the album
-    // is. `existingKind` is supplied by the route, which has the row.
-    const kind = has('kind') ? input.kind : existingKind
-    if (kind && kind !== 'musical') {
-      return 'only a musical has downloads'
-    }
-
-    const problem = downloadProblem(input.downloads)
-    if (problem) return problem
   }
 
   return null

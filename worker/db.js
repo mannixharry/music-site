@@ -357,27 +357,12 @@ export async function moveSong(env, id, afterId) {
 // ---------------------------------------------------------------------------
 
 function toAlbumRow(record) {
-  let downloads = []
-  try {
-    downloads = JSON.parse(record.downloads_json ?? '[]')
-  } catch {
-    // Same reading as a song's links_json: malformed JSON costs this album its
-    // downloads, not the whole page.
-  }
-
   return {
     id: record.id,
     title: record.title,
     kind: record.kind,
     subtitle: record.subtitle,
     coverKey: record.cover_key,
-    // Two columns rather than one object, because that is what they are in the
-    // table — the client decides whether a box is worth drawing, and needs both
-    // halves to say so. Empty string rather than null throughout, as `subtitle`
-    // already is.
-    noticeTitle: record.notice_title ?? '',
-    noticeBody: record.notice_body ?? '',
-    downloads: Array.isArray(downloads) ? downloads : [],
     sortOrder: record.sort_order,
     published: record.published === 1,
   }
@@ -385,11 +370,7 @@ function toAlbumRow(record) {
 
 // No cover_master_* , for the reason songs have no master_*: nothing in the
 // private bucket is reachable from the web.
-// The notice and the downloads are public: the site draws both, so they travel
-// in /api/content like the title does.
-const ALBUM_PUBLIC_COLUMNS = `id, title, kind, subtitle, cover_key,
-       notice_title, notice_body, downloads_json,
-       sort_order, published`
+const ALBUM_PUBLIC_COLUMNS = `id, title, kind, subtitle, cover_key, sort_order, published`
 
 export async function listPublishedAlbums(env) {
   const { results } = await env.DB.prepare(
@@ -448,9 +429,8 @@ export async function createAlbum(env, input) {
     `INSERT OR REPLACE INTO albums (
        id, title, kind, subtitle,
        cover_key, cover_bytes, cover_master_key, cover_master_bytes, cover_master_mime,
-       notice_title, notice_body, downloads_json,
        sort_order, published, created_at, updated_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       input.id,
@@ -462,12 +442,6 @@ export async function createAlbum(env, input) {
       null,
       null,
       null,
-      // Bound rather than left to the column defaults, for the reason the cover
-      // columns above are: OR REPLACE means this may be taking over the id of a
-      // deleted album, and an unbound column would inherit that album's notice.
-      input.noticeTitle ?? '',
-      input.noticeBody ?? '',
-      JSON.stringify(input.downloads ?? []),
       (last?.max ?? 0) + 10,
       input.published ? 1 : 0,
       now,
@@ -488,8 +462,6 @@ const ALBUM_WRITABLE = {
   coverMasterKey: 'cover_master_key',
   coverMasterBytes: 'cover_master_bytes',
   coverMasterMime: 'cover_master_mime',
-  noticeTitle: 'notice_title',
-  noticeBody: 'notice_body',
   published: 'published',
 }
 
@@ -501,13 +473,6 @@ export async function updateAlbum(env, id, patch) {
     if (!(field in patch)) continue
     assignments.push(`${column} = ?`)
     values.push(field === 'published' ? (patch[field] ? 1 : 0) : patch[field])
-  }
-
-  // Stored as JSON in one column, so it does not fit the loop above — the same
-  // exception a song's `links` makes, for the same reason.
-  if ('downloads' in patch) {
-    assignments.push('downloads_json = ?')
-    values.push(JSON.stringify(patch.downloads ?? []))
   }
 
   if (assignments.length === 0) return getAlbum(env, id)

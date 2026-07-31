@@ -48,9 +48,6 @@ const statements = albums.map((album) => {
     quote(album.subtitle ?? ''),
     quote(album.coverKey),
     number(album.coverBytes),
-    quote(album.noticeTitle ?? ''),
-    quote(album.noticeBody ?? ''),
-    quote(JSON.stringify(album.downloads ?? [])),
     number(album.sortOrder),
     album.published === false ? '0' : '1',
     quote(now),
@@ -60,9 +57,12 @@ const statements = albums.map((album) => {
   // No cover_master_* here, for the reason the songs below have no master_*:
   // the snapshot comes from /api/content, which says nothing about the private
   // bucket, so seeding could only ever write NULL over them.
+  // notice_* and downloads_json are absent because nothing reads them any more
+  // — the editorial copy went back to src/content/musicals.js. The columns are
+  // still there, and OR REPLACE resets them to their defaults, which is the
+  // honest outcome for a column no code consults.
   return `INSERT OR REPLACE INTO albums (
   id, title, kind, subtitle, cover_key, cover_bytes,
-  notice_title, notice_body, downloads_json,
   sort_order, published, created_at, updated_at
 ) VALUES (${columns.join(', ')});`
 })

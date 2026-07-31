@@ -26,17 +26,9 @@ const FOLD_ABOVE = 600
 const PREVIEW_LINES = 'line-clamp-4'
 
 function MusicalSection({ musical }) {
-  const { albums, songsIn } = useContent()
+  const { songsIn } = useContent()
   const demos = songsIn(musical.slug)
   const [expanded, setExpanded] = useState(false)
-
-  // The album row this show's editorial copy belongs to, matched by id. It
-  // carries the two things that are now data rather than code — the notice and
-  // the downloads — while the resume and teaser stay in musicals.js.
-  //
-  // Undefined if the album has been unpublished or deleted, which is a state
-  // worth surviving rather than crashing on: the page still has the synopsis.
-  const album = albums.find((item) => item.id === musical.slug)
 
   // The show's own demos, in the order they are listed, which is the order they
   // are meant to be heard in.
@@ -152,23 +144,23 @@ function MusicalSection({ musical }) {
         </>
       )}
 
-      {/* Both of these are the album's now, not the repo's, so a musical made
-          from /admin can have either without a deploy. They are independent —
-          a show can want a notice and still have a script to hand out, which
-          the old either/or could not express. */}
-      {album?.notice && (
+      {/* Independent of each other, unlike the either/or this replaced: a show
+          can want a notice and still have a script to hand out. Guyana Skies is
+          the only one with a notice, and it is the only one with no downloads,
+          which is why the two never appeared together before. */}
+      {musical.notice && (
         <div className="mt-6">
-          <Notice notice={album.notice} />
+          <Notice notice={musical.notice} />
         </div>
       )}
 
       {/* A heading over an empty row reads as something that failed to load,
           the same reasoning as the demos block above. */}
-      {album?.downloads.length > 0 && (
+      {musical.downloads.length > 0 && (
         <>
           <h3 className="mt-6 font-bold">Downloads</h3>
           <div className="mt-2 flex flex-wrap gap-2">
-            {album.downloads.map((download) =>
+            {musical.downloads.map((download) =>
               download.href ? (
                 <a
                   key={download.label}

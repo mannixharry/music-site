@@ -2,11 +2,16 @@
 // catalogue itself cannot: that a show is looking for a scriptwriter, that a
 // record is out next month, that these demos are rough mixes.
 //
-// This was ScriptwriterCallout, which said exactly one sentence about exactly
-// one musical and was a component because there was nowhere else to put it.
-// Now that an album carries a notice of its own (migration 0006), the words are
-// data and this is only the box they sit in — so a new musical created from
-// /admin can have one without a deploy, which was the whole problem.
+// This was ScriptwriterCallout, which had one musical's sentence written into
+// its markup. The words are now the show's, in src/content/musicals.js, and
+// this is only the box they sit in — so a second show wanting a notice is a
+// line of copy rather than a second component.
+//
+// Guyana Skies is the only one that has one, and that is the point rather than
+// a limitation: this exists so the site can say something a catalogue cannot,
+// which is rare by nature. It briefly lived in the database so it could be
+// edited from /admin, and came back, because it is not something Frank edits —
+// if it needs to change he says so and it is a one-line commit.
 //
 // Heavy border and a grey fill: the same vocabulary as the players and download
 // buttons, turned up. It has to read as an aside about the section rather than
@@ -15,10 +20,10 @@
 
 // Addresses inside the body, made clickable.
 //
-// The body is a plain textarea in the admin — no markup, no editor, nothing to
-// learn — and the one thing that costs is a working link, which the
-// scriptwriter callout had. So bare email addresses and http(s) URLs are found
-// and turned into anchors, and nothing else is.
+// The body is plain text — no markup, nothing to learn — and the one thing that
+// costs is a working link, which the scriptwriter callout had. So bare email
+// addresses and http(s) URLs are found and turned into anchors, and nothing
+// else is.
 //
 // Safe by construction rather than by escaping: this builds React elements from
 // the matched substrings, so the body is never interpreted as markup. There is
@@ -47,9 +52,8 @@ function Notice({ notice }) {
   return (
     <div className="border-4 border-gray-400 bg-gray-200 p-4">
       <p className="font-bold">{notice.title}</p>
-      {/* Blank lines kept: someone typing two paragraphs into a textarea means
-          two paragraphs, and collapsing them silently is the kind of small
-          betrayal that makes a text box feel unreliable. */}
+      {/* Blank lines kept, so a notice can be two paragraphs without needing
+          markup or a second field to say so. */}
       {notice.body.split(/\n{2,}/).map((paragraph, i) => (
         <p key={i} className={`text-sm${i === 0 ? ' mt-1' : ' mt-2'}`}>
           {linkify(paragraph)}

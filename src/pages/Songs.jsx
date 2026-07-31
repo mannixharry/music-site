@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Placeholder from '../components/Placeholder'
-import Notice from '../components/Notice'
 import SongItem from '../components/SongItem'
 import AlbumCover from '../components/AlbumCover'
 import { useContent } from '../context/contentContext'
@@ -223,16 +222,6 @@ function Songs() {
               )}
             </div>
           </div>
-          {/* The album's own notice, under its heading and above its songs —
-              the one thing about a record the track listing cannot say. Drawn
-              here as well as on /musicals because this is where the songs are,
-              and a reader who never leaves this page should still see it. */}
-          {group.album?.notice && (
-            <div className="mt-4">
-              <Notice notice={group.album.notice} />
-            </div>
-          )}
-
           <div className={`mt-4 ${LIST}`}>
             {group.songs.map((song) => (
               <div key={song.id} className={LIST_ITEM}>
