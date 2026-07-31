@@ -1,1 +1,131 @@
 @import "tailwindcss";
+
+/* Literata, self-hosted from public/fonts rather than fetched from Google.
+   Two reasons: a webfont request to a third party tells them who is reading
+   this site, and a font that arrives from our own origin cannot be delayed by
+   someone else's outage.
+
+   Split by script, which is how the browser is able to download only what the
+   page needs — an English reader fetches the two `latin` files (~130 kB) and
+   never touches `latinext`, which exists for the accents in "Chérie je t'aime
+   trop" and the pound and euro signs.
+
+   `font-weight: 400 700` is one variable file covering the whole range, so bold
+   headings cost no extra request. Italic is a separate file because variable
+   fonts do not carry both slopes.
+
+   `font-display: swap` shows the fallback immediately and swaps when the real
+   face lands: the words are readable from the first paint, which matters more
+   here than avoiding a reflow. */
+
+@font-face {
+  font-family: 'Literata';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/literata-normal-400700-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Literata';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/literata-normal-400700-latinext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Literata';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/literata-italic-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Literata';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/literata-italic-400-latinext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@theme {
+  /* Named so it can be written as `text-accent` and `accent-accent` in the
+     markup like any other colour. Grey at this level on purpose: it resolves to
+     the real oxblood only inside the public theme below, which is what keeps it
+     out of /admin without either place needing to know about the other. */
+  --color-accent: var(--color-gray-700);
+}
+
+/* The public site's own look, and only the public site's.
+
+   Every one of these is a Tailwind theme variable being given a different
+   value, not a new class — so `bg-gray-100` and `text-sm` keep working exactly
+   as written throughout the components and simply resolve warmer here. That is
+   why this whole change touches no layout.
+
+   Scoped to html[data-site='public'], which Layout sets while it is mounted and
+   removes on the way out, because /admin is a separate route with no Layout
+   around it. The admin keeps the plain system-UI-on-white appearance it was
+   designed with, and nothing below can reach it.
+
+   Unlayered on purpose. Tailwind's own :root values live in @layer theme, and
+   an unlayered rule beats any layered one regardless of specificity, so this
+   wins without needing !important or a longer selector. */
+html[data-site='public'] {
+  /* Literata is drawn for reading at length on a screen, which is what this
+     site mostly asks of it: a bio, three synopses, and an about page.
+
+     Also the monospace, so a track length is set in the same face as everything
+     around it. `tabular-nums` is already on those spans, so the digits still
+     line up — the monospace was only ever there for the alignment. */
+  --font-sans: 'Literata', Georgia, 'Times New Roman', serif;
+  --font-mono: 'Literata', Georgia, serif;
+
+  /* Paper, not screen. `white` becomes a warm off-white and the grey ramp warms
+     with it, so the black-and-white photograph on the home page sits on
+     something closer to a print than to a form. `black` is a brown-black for
+     the same reason: true #000 next to warm paper reads as a hole in it. */
+  --color-white: #fbf9f4;
+  --color-gray-100: #f3efe5;
+  --color-gray-200: #e9e3d5;
+  --color-gray-300: #dad3c1;
+  --color-gray-400: #b6ad97;
+  --color-gray-500: #8b8270;
+  --color-gray-600: #6a6255;
+  --color-gray-700: #4d483e;
+  --color-gray-900: #221f1a;
+  --color-black: #221f1a;
+
+  /* One accent, oxblood, and it means one thing: this is the page you are on,
+     or this is the song that is playing. Anything more and it stops carrying
+     information. */
+  --color-accent: #8a3b32;
+
+  /* A serif at 14px sits smaller on the page than a sans at 14px, and most of
+     the body copy here is `text-sm`. Up a step, with more leading, because the
+     pages that matter are the ones read a paragraph at a time. */
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.7;
+  --text-base--line-height: 1.7;
+
+  /* On the element itself so the page behind the content — the overscroll band
+     at the top of iOS, the area below a short page — is paper too. */
+  background-color: var(--color-white);
+  color: var(--color-gray-900);
+  font-family: var(--font-sans);
+}
+
+/* Underlines sit tight under a serif and read as a line through the descenders
+   of g and y. Nudged clear, and taking the weight the face itself specifies
+   rather than the browser's flat default. */
+html[data-site='public'] a {
+  text-underline-offset: 0.16em;
+  text-decoration-thickness: from-font;
+}

@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
 import AdminBar from './AdminBar'
 import Header from './Header'
@@ -9,6 +10,21 @@ import ScrollToTop from './ScrollToTop'
 import { ANCHOR } from '../rules'
 
 function Layout() {
+  // Marks the document as the public site, which is what index.css hangs the
+  // whole visual theme off — the serif, the warm paper, the accent.
+  //
+  // On <html> rather than on the div below, so the band you see when a page is
+  // overscrolled or too short to fill the window is paper as well. Set here
+  // rather than in index.html because /admin renders outside this component and
+  // is meant to keep the plain look it was designed with; removing it on unmount
+  // is what makes a click from the site through to /admin change back.
+  useEffect(() => {
+    document.documentElement.dataset.site = 'public'
+    return () => {
+      delete document.documentElement.dataset.site
+    }
+  }, [])
+
   return (
     // The provider sits above the router outlet so the "one snippet at a time"
     // rule holds across every page that embeds a player.
