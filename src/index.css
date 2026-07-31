@@ -165,11 +165,16 @@ summary:focus-visible,
    markup for Tailwind to generate.
 
    Taking it over means every engine draws the same thing rather than its own
-   idea of a slider, and puts the most repeated element on the site — twenty-one
-   of them on the musicals page — in the site's own language: a hairline, a
-   small square, no gloss.
+   idea of a slider, and puts it in the site's own language: a hairline, a small
+   square, no gloss.
 
-   `--played` is set per element by scrubberTrack in AudioPlayer.jsx. */
+   There used to be one of these in every song row — twenty-one on the musicals
+   page — and that is what made this worth the trouble. There is now one on the
+   public side, in the now-playing strip, plus the admin's; the rows draw
+   TrackArt instead. Still hand-drawn, because two of them differing by engine
+   is exactly as obvious as twenty-one were.
+
+   `--played` is set per element by scrubberTrack in transport.js. */
 .scrubber {
   appearance: none;
   background: transparent;

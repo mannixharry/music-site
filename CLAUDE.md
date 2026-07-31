@@ -99,7 +99,7 @@ Locally there is no S3 endpoint to presign against, so `wrangler dev` uploads st
 
 Two things about it are deliberate:
 
-- **Any song may carry art; only the singles show it.** `cover_key` is on `songs` with no reference to `kind`, and `ReleaseItem` is the only component that draws it. So changing a song's type to `single` starts showing art that was already uploaded rather than asking for the file again — which is the whole point of not keying this off `kind`.
+- **Any song may carry art, and every song now shows it.** `cover_key` is on `songs` with no reference to `kind`, and since the row players became `TrackArt` the sleeve is what every listing draws — the home page's singles, `/songs`, a musical's demos, and the song's own page. Changing a song's type is therefore invisible to its artwork, which is the point of not keying this off `kind`. What a song without its own `cover_key` shows is its **album's** cover: `toSong` does that inheritance in `normalise.js`, which is what a record's cover is for. A song with neither gets a typographic tile — its title set small — rather than a dashed placeholder, because a column of dashed boxes reads as a page that failed to load. Note the corollary on `/musicals` and inside an album's group on `/songs`: the show's own artwork is already on screen above, so the same sleeve repeats down the list.
 - **Resizing happens in the browser, on the main thread, with no worker.** `src/admin/cover.js` centre-crops to a square and encodes WebP at up to 1000px via `createImageBitmap` and `canvas.toBlob` — both native and quick, unlike the MP3 encode, so there is no second worker and no growth in the admin chunk. It never upscales: a 1600×900 upload becomes 900×900. Images already JPEG/PNG/WebP, under 400 kB and no larger than 1000px are stored untouched, mirroring `canUseDirectly` for audio.
 
 No SVG in `IMAGE_TYPES`, and it should stay out: `media.frankkirwan.com` fronts a whole public bucket, and an SVG is a script container.
@@ -143,7 +143,14 @@ Everything else is typed and bounded — text has ceilings because `/api/content
 
 `workers_dev` and `preview_urls` are `false` in `wrangler.jsonc` for the same reason: Access is bound to `frankkirwan.com`, so a `workers.dev` URL would expose the admin API on a hostname nothing guards.
 
-`AudioPlayer` is `preload="none"` and takes a `duration` prop from the data, so a page of songs costs **zero** audio requests until someone presses play. Do not revert this to `preload="metadata"`; at 150 songs it is one request per track on load. Because the length is known before the media is, the scrubber is gated on a separate `hasMetadata` state — seeking a track the browser has not loaded throws `InvalidStateError`.
+**A song row is a sleeve, not a transport.** `TrackArt` is what every public listing draws: the cover art, which is also the play button, with the length beside it as text. It replaced the per-row `AudioPlayer` because a scrub bar in each row and a scrub bar in the now-playing strip are the same control twice on one screen — and with a dozen rows on a page it was a dozen times, which is how it was reported. Scrubbing now happens in one place. `AudioPlayer` still exists and is **the admin's**: auditioning a cut is exactly what a scrubber is for, and the admin has no strip (it is mounted outside `Layout`, with a provider of its own).
+
+Two consequences worth keeping:
+
+- **A page of songs still costs zero audio requests until someone presses play** — now because there is no `<audio>` element per row at all, rather than because each one was `preload="none"`. The length comes from `duration` in the data, as it always did. `AudioPlayer` keeps its `preload="none"`; do not revert that to `preload="metadata"`.
+- **The strip's scrubber is gated on `hasMetadata`**, separately from having a duration, because the length is known before the media is and seeking a track the browser has not loaded throws `InvalidStateError`.
+
+**The strip opens on hover** — the skip buttons are held back until then, because at a phone's width it has room for either three buttons or a legible title. The rules that undo `hidden` are all variants (`group-hover`, `group-focus-within`, `pointer-coarse`) so this never turns on which of two plain display utilities Tailwind happened to emit last. **`pointer-coarse` is load-bearing**: a phone has no hover, so without it skipping would be unreachable there. Its height does not change when it opens, and must not — `Layout` measures the pinned block into `--chrome`, and every `scroll-mt` on the site is derived from that. The scrubber is full-bleed along the bottom edge, in flow rather than absolutely positioned: overhanging the strip by even a few pixels puts an invisible slider over the top of the page scrolling underneath it.
 
 ## Notes
 

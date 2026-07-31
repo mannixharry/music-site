@@ -23,17 +23,24 @@ export function PauseIcon() {
   )
 }
 
-// A transport for one song. It owns no audio — the single element lives in
-// PlaybackProvider, so a song carries on playing when you leave the page this
-// row was on. What this draws is either live state, when it is the song
-// currently loaded, or the song's own recorded length when it is not.
+// A transport for one song: play, scrub, length.
+//
+// **This is the admin's player now.** The public side draws TrackArt instead —
+// a sleeve that starts a song and leaves the scrubbing to the now-playing
+// strip, because a bar in every row and a bar in the strip is the same control
+// twice on one screen. The admin has no strip (it is mounted outside Layout,
+// with a provider of its own) and auditioning a cut is exactly the job a
+// scrubber is for, so the two did not want the same thing.
+//
+// It owns no audio — the single element lives in PlaybackProvider. What this
+// draws is either live state, when it is the song currently loaded, or the
+// song's own recorded length when it is not.
 //
 // `duration` is that recorded length, and is what lets the whole thing stay
-// preload="none": every row shows how long its song is without a byte being
-// fetched, which on a page of a hundred songs is a hundred requests saved.
-// `queue` is the list this row belongs to — its group's songs, or its
-// musical's demos — which is what lets a show play through. A row without one
-// still plays; it simply has nothing after it.
+// preload="none": it shows how long a song is without a byte being fetched.
+// `queue` is the list this player belongs to, which is what lets one play on
+// into the next; the admin passes none, and a player without one simply has
+// nothing after it.
 function AudioPlayer({ id, src, title, duration: knownDuration = null, queue }) {
   const playback = usePlayback()
 

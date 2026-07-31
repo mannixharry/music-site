@@ -1,9 +1,10 @@
 import { useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import AudioPlayer from '../components/AudioPlayer'
+import TrackArt from '../components/TrackArt'
 import SnippetTag from '../components/SnippetTag'
 import NotFound from './NotFound'
 import { useContent } from '../context/contentContext'
+import { formatTime } from '../format'
 import { toQueue } from '../content/normalise'
 import { musicals } from '../content/musicals'
 import { ANCHOR, HEADING, SECTION_FIRST } from '../rules'
@@ -73,19 +74,19 @@ function Song() {
 
       {song.description && <p className="mt-4 text-sm leading-relaxed">{song.description}</p>}
 
-      {song.audioSrc ? (
-        <div className="mt-6">
-          <AudioPlayer
-            id={song.id}
-            src={song.audioSrc}
-            title={song.title}
-            duration={song.duration}
-            queue={queue}
-          />
-        </div>
-      ) : (
-        <p className="mt-6 text-sm text-gray-600">There is no recording of this one on the site yet.</p>
-      )}
+      {/* The sleeve at the size a page to itself allows, rather than the small
+          one a list gets. It is still the play button, and scrubbing is still
+          the strip's job — one song on screen is no reason for a second bar. */}
+      <div className="mt-6 flex items-end gap-4">
+        <TrackArt song={song} queue={queue} size="page" />
+        {song.audioSrc ? (
+          <p className="text-sm tabular-nums text-gray-600">{formatTime(song.duration)}</p>
+        ) : (
+          <p className="text-sm text-gray-600">
+            There is no recording of this one on the site yet.
+          </p>
+        )}
+      </div>
 
       {song.links.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-4 text-sm">

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import Placeholder from './Placeholder'
-import AudioPlayer from './AudioPlayer'
+import TrackArt from './TrackArt'
 import MusicalHero from './MusicalHero'
 import Notice from './Notice'
 import SnippetTag from './SnippetTag'
@@ -8,7 +8,7 @@ import { useContent } from '../context/contentContext'
 import { usePlayback } from '../context/playbackContext'
 import { toQueue } from '../content/normalise'
 import downloadSizes from '../content/downloadSizes.json'
-import { formatBytes } from '../format'
+import { formatBytes, formatTime } from '../format'
 import { PlayIcon } from './AudioPlayer'
 import { ANCHOR, SECTION } from '../rules'
 
@@ -109,31 +109,28 @@ function MusicalSection({ musical }) {
 
           <div className="mt-2 space-y-3">
             {demos.map((demo) => (
-              <div key={demo.id}>
-                {/* The musical's name is the heading above, so the bare title
-                    is enough — but the player's label wants the full one, which
-                    may be announced out of context. */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-sm">{demo.shortTitle}</p>
-                  {demo.isSnippet && demo.showSnippetTag && <SnippetTag title={demo.title} />}
-                </div>
-                {/* Same guard as everywhere else a player is drawn: a demo
-                    listed before its recording has been uploaded has nothing to
-                    play, and a transport pointed at nothing is a button that
-                    fetches index.html and fails without saying so. */}
-                {demo.audioSrc ? (
-                  <div className="mt-1">
-                    <AudioPlayer
-                      id={demo.id}
-                      src={demo.audioSrc}
-                      title={demo.title}
-                      duration={demo.duration}
-                      queue={queue}
-                    />
+              <div key={demo.id} className="flex gap-3">
+                {/* TrackArt draws the sleeve alone when there is no recording,
+                    so the guard that used to keep a transport from pointing at
+                    nothing now lives in there. */}
+                <TrackArt song={demo} queue={queue} />
+
+                <div className="min-w-0 flex-1">
+                  {/* The musical's name is the heading above, so the bare title
+                      is enough — but the sleeve's label wants the full one,
+                      which may be announced out of context. */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-bold">{demo.shortTitle}</p>
+                    {demo.isSnippet && demo.showSnippetTag && <SnippetTag title={demo.title} />}
                   </div>
-                ) : (
-                  <p className="mt-1 text-xs text-gray-600">No recording on the site yet.</p>
-                )}
+                  {demo.audioSrc ? (
+                    <p className="text-xs tabular-nums text-gray-600">
+                      {formatTime(demo.duration)}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-600">No recording on the site yet.</p>
+                  )}
+                </div>
               </div>
             ))}
           </div>

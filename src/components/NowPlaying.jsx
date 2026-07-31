@@ -25,9 +25,31 @@ function SkipIcon({ back = false }) {
 // over a window that overhangs the work area, and env(safe-area-inset-*)
 // describes iOS cutouts and reports zero there. Identical at every width, so
 // there is no second layout to keep working.
+//
+// Since the rows lost their transports this is the only scrubber on the site,
+// which changed what it has to be. It used to compete with the title for room
+// on one line and was hidden altogether on a phone, where forty pixels of bar
+// is not a control. Now it runs the full width of the viewport along the
+// bottom edge of the strip, where the strip's own border used to be — no
+// wider anywhere, and no shorter on a phone than on a desktop.
+//
 // Smaller than a row's: this bar rides with the header, and every pixel of it
 // is taken off every page.
 const BUTTON = `${TRANSPORT} h-7 w-7`
+
+// Skipping is what hovering reveals. Held back rather than dropped because a
+// strip this narrow has room for either three buttons or a legible title, and
+// the title is what tells you what you are hearing.
+//
+// `hidden` alone as the base, and every rule that undoes it a variant, so this
+// never depends on which of two plain display utilities Tailwind emits last.
+// `contents` rather than `block`, so the buttons stay children of the flex row.
+//
+// pointer-coarse is not a nicety: a phone has no hover, and without it these
+// would be permanently out of reach there. It is the same question asked the
+// other way round — show them unless there is a pointer that can reveal them.
+const ON_HOVER =
+  'hidden group-hover/strip:contents group-focus-within/strip:contents pointer-coarse:contents'
 
 function NowPlaying() {
   const {
@@ -57,20 +79,26 @@ function NowPlaying() {
       aria-label="Now playing"
       // A tone darker than the header above it, as the admin strip is: this is
       // a state the site is in rather than a part of the site.
-      className="border-b border-gray-300 bg-gray-200"
+      //
+      // Named group, because TrackArt has one of its own and a row can be
+      // inside neither, either or both.
+      className="group/strip bg-gray-200"
     >
-      <div className="mx-auto flex max-w-2xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-1.5">
-        {/* Back to the start of this track, or to the one before it if you are
-            barely into it. Never disabled: at the top of a list it restarts. */}
-        <button
-          type="button"
-          onClick={previous}
-          aria-label="Previous"
-          title="Previous"
-          className={`${BUTTON} ${TRANSPORT_IDLE}`}
-        >
-          <SkipIcon back />
-        </button>
+      <div className="mx-auto flex max-w-2xl items-center gap-x-3 px-4 pt-1.5 pb-1">
+        <span className={ON_HOVER}>
+          {/* Back to the start of this track, or to the one before it if you
+              are barely into it. Never disabled: at the top of a list it
+              restarts. */}
+          <button
+            type="button"
+            onClick={previous}
+            aria-label="Previous"
+            title="Previous"
+            className={`${BUTTON} ${TRANSPORT_IDLE}`}
+          >
+            <SkipIcon back />
+          </button>
+        </span>
 
         <button
           type="button"
@@ -81,45 +109,27 @@ function NowPlaying() {
           {playing ? <PauseIcon /> : <PlayIcon />}
         </button>
 
-        {/* Disabled rather than hidden at the end of a list, so the row does
-            not change width as you move through one. */}
-        <button
-          type="button"
-          onClick={next}
-          disabled={!hasNext}
-          aria-label="Next"
-          title="Next"
-          className={`${BUTTON} ${
-            hasNext ? TRANSPORT_IDLE : 'border-gray-400 bg-white text-gray-400'
-          }`}
-        >
-          <SkipIcon />
-        </button>
+        <span className={ON_HOVER}>
+          {/* Disabled rather than hidden at the end of a list, so the row does
+              not change width as you move through one. */}
+          <button
+            type="button"
+            onClick={next}
+            disabled={!hasNext}
+            aria-label="Next"
+            title="Next"
+            className={`${BUTTON} ${
+              hasNext ? TRANSPORT_IDLE : 'border-gray-400 bg-white text-gray-400'
+            }`}
+          >
+            <SkipIcon />
+          </button>
+        </span>
 
         <p className="min-w-0 flex-1 truncate text-xs">
           <span className="text-gray-600">Playing</span>{' '}
           <span className="font-bold">{track.title}</span>
         </p>
-
-        {/* Hidden altogether on a phone: the title is what this is for, and a
-            scrubber squeezed to forty pixels is not a control.
-            Above that it takes a share of the row rather than a fixed width —
-            it was sized when this bar ran the full width of the screen, and
-            left stranded in the middle of a narrower column. Capped so it
-            cannot crowd out the title, which is the more important half. */}
-        <input
-          type="range"
-          min="0"
-          max={scrubber.max}
-          // Exact value, proportional keyboard step — see the row players.
-          step="any"
-          value={currentTime}
-          disabled={!seekable}
-          aria-label={`Seek within ${track.title}`}
-          style={scrubber.style}
-          className="scrubber order-last h-4 w-full basis-full sm:order-none sm:w-auto sm:min-w-0 sm:flex-1 sm:basis-auto sm:max-w-xs"
-          onChange={(event) => seek(Number(event.currentTarget.value))}
-        />
 
         <span className="shrink-0 text-xs tabular-nums text-gray-600">
           {formatTime(currentTime)} / {formatTime(duration)}
@@ -137,6 +147,26 @@ function NowPlaying() {
           ✕
         </button>
       </div>
+
+      {/* Full-bleed rather than inside the column the rest of the strip keeps
+          to, because it is doing the job of the border that used to close the
+          strip off as well as its own — and a played line that stops short of
+          the edge reads as a bar that has finished rather than as a rule.
+          In flow, not absolute: overhanging the strip by even a few pixels put
+          an invisible slider over the top of the page scrolling underneath. */}
+      <input
+        type="range"
+        min="0"
+        max={scrubber.max}
+        // Exact value, proportional keyboard step — see transport.js.
+        step="any"
+        value={currentTime}
+        disabled={!seekable}
+        aria-label={`Seek within ${track.title}`}
+        style={scrubber.style}
+        className="scrubber block h-3 w-full"
+        onChange={(event) => seek(Number(event.currentTarget.value))}
+      />
     </div>
   )
 }

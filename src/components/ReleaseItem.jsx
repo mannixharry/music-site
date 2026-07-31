@@ -1,30 +1,19 @@
 import Placeholder from './Placeholder'
-import AudioPlayer from './AudioPlayer'
+import TrackArt from './TrackArt'
 import SnippetTag from './SnippetTag'
+import { formatTime } from '../format'
 
-// A song with no art renders nothing at all here rather than a placeholder box.
-// Most of the catalogue has no cover yet, and a column of dashed rectangles
-// reads as the page having failed to load rather than as work still to do. The
-// row simply takes the full width instead, so the two cases still line up as
-// long as neighbouring songs agree — which they do, art arriving per release.
-const COVER_CLASS = 'aspect-square w-24 shrink-0'
-
+// A single, on the home page. The sleeve is the play button and the only thing
+// on the left, which is what the row used to spend a full transport on.
+//
+// Every single draws a sleeve now, where before a song with no art rendered
+// nothing rather than an empty frame — a column of dashed rectangles read as a
+// page that had failed to load. What changed is that the fallback is no longer
+// an empty frame: see Sleeve in TrackArt.
 function ReleaseItem({ release, queue }) {
   return (
     <div className="flex gap-3">
-      {release.coverSrc && (
-        <img
-          src={release.coverSrc}
-          // The title is already the heading beside it, so naming the song again
-          // would just be read out twice. This says what the image is.
-          alt={`Cover art for ${release.title}`}
-          width={1000}
-          height={1000}
-          loading="lazy"
-          decoding="async"
-          className={`${COVER_CLASS} border border-gray-300 object-cover`}
-        />
-      )}
+      <TrackArt song={release} queue={queue} />
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
@@ -32,29 +21,16 @@ function ReleaseItem({ release, queue }) {
           {release.isSnippet && release.showSnippetTag && <SnippetTag title={release.title} />}
         </div>
 
-        {/* Guarded, as the other three players on the site are. A single whose
-            recording has not been uploaded yet — which is what `coming-soon`
-            below is for — was still given a transport, and pressing it set the
-            element's src to the string "null", which the asset server answers
-            with index.html. A play button that fetches the home page and fails
-            silently is worse than no play button. */}
-        {release.audioSrc && (
-          <div className="mt-2">
-            <AudioPlayer
-              id={release.id}
-              src={release.audioSrc}
-              title={release.title}
-              duration={release.duration}
-              queue={queue}
-            />
-          </div>
+        {/* The length, which the transport used to carry. Still taken from the
+            data rather than from the file, so nothing is fetched to show it. */}
+        {release.duration && (
+          <p className="text-xs tabular-nums text-gray-600">{formatTime(release.duration)}</p>
         )}
 
         {/* Only when there is something to put in it. This was a fixed-height
             row either way, to keep released and coming-soon songs level — but
             almost nothing carries streaming links yet, so in practice it was
-            32px of nothing under every song, which is what made a list of
-            coverless singles look so strung out. */}
+            32px of nothing under every song. */}
         {(release.status === 'coming-soon' || release.links.length > 0) && (
           <div className="mt-2 flex flex-wrap items-center gap-3 text-sm">
             {release.status === 'coming-soon' ? (
