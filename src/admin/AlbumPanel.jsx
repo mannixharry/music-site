@@ -203,7 +203,11 @@ function AlbumRow({
           type="button"
           onClick={onToggle}
           aria-expanded={open}
-          className="min-w-0 flex-1 text-left text-sm"
+          // Same hover as a song row in SongList. These two lists sit one above
+          // the other and behave identically — a row you click to open — so
+          // only one of them saying so was the sort of difference that reads as
+          // carelessness without being obvious enough to name.
+          className="min-w-0 flex-1 text-left text-sm hover:underline"
         >
           <span className="font-bold">{album.title}</span>{' '}
           <span className="text-gray-600">
