@@ -24,10 +24,20 @@ function Home() {
         </div>
       </section>
 
-      <section className="mt-10 space-y-3 text-sm leading-relaxed">
-        {profile.paragraphs.map((paragraph, i) => (
-          <p key={i}>{paragraph}</p>
-        ))}
+      {/* The About page opens with these same words — its first paragraph is
+          this one, minus the closing clause about the site. Left alone as copy
+          and framed instead: this reads as a repeat only while nothing says it
+          is an opening. The link says it, and it is the same "go deeper" close
+          the two sections below already have, which the bio was missing. */}
+      <section className="mt-10 text-sm leading-relaxed">
+        <div className="space-y-3">
+          {profile.paragraphs.map((paragraph, i) => (
+            <p key={i}>{paragraph}</p>
+          ))}
+        </div>
+        <Link to="/about" className="mt-3 inline-block underline">
+          Read more about Frank
+        </Link>
       </section>
 
       <div className={SECTION}>
