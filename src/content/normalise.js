@@ -21,11 +21,36 @@ export function toMediaSrc(key, mediaBase) {
   return `${mediaBase}/${key}`
 }
 
+// The address a song gets of its own.
+//
+// Built from the words rather than from the id, because a link Frank sends
+// somebody should say what it is: /songs/pigs-animals-rule, not a database key
+// nobody can read. A demo is prefixed with its musical, which is what makes it
+// unique — there are three songs called "Musical snapshot" and they would
+// otherwise all want the same address.
+//
+// The trade-off is that renaming a song changes its address and any link
+// already shared with it stops working. The route accepts a song's id as well
+// for exactly that reason, so there is always one address that cannot break.
+export function songSlug(row) {
+  const words = row.kind === 'demo' && row.musicalSlug ? `${row.musicalSlug} ${row.title}` : row.title
+
+  return words
+    .toLowerCase()
+    .normalize('NFD')
+    // Strip the accents rather than the letters, so "Chérie" becomes "cherie"
+    // and not "chrie".
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
 function toSong(row, mediaBase = '') {
   const musicalTitle = row.kind === 'demo' ? musicalTitles.get(row.musicalSlug) : null
 
   return {
     id: row.id,
+    slug: songSlug(row),
     // `title` carries the musical's name for demos, because /songs lists the
     // whole catalogue flat and "Musical snapshot" alone says nothing there.
     title: musicalTitle ? `${musicalTitle} — ${row.title}` : row.title,

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import AudioPlayer from './AudioPlayer'
 import SnippetTag from './SnippetTag'
 
@@ -9,7 +10,13 @@ function SongItem({ song, queue }) {
   return (
     <article>
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="text-lg font-bold">{song.title}</h3>
+        {/* The title is the way in to the song's own page. A heading that is
+            also a link is how a list of things becomes a set of addresses. */}
+        <h3 className="text-lg font-bold">
+          <Link to={`/songs/${song.slug}`} className="underline">
+            {song.title}
+          </Link>
+        </h3>
         {song.isSnippet && song.showSnippetTag && <SnippetTag title={song.title} />}
       </div>
 
