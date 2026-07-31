@@ -270,9 +270,32 @@ export function ruleForKey(key) {
   return PREFIX_RULES.find((rule) => String(key ?? '').startsWith(rule.prefix)) ?? null
 }
 
+// An object key is also a public URL under media.frankkirwan.com. R2 keys are
+// flat strings rather than paths, so ".." cannot climb out of a directory — but
+// a key carrying traversal, an empty segment or a control character is one that
+// the bucket, the CDN and the browser will not all agree about.
+const UNSAFE_SEGMENTS = /(^|\/)\.\.(\/|$)|\/\//
+const MAX_KEY_LENGTH = 512
+
+function hasControlCharacter(value) {
+  for (const character of value) {
+    const code = character.codePointAt(0)
+    if (code < 0x20 || code === 0x7f) return true
+  }
+  return false
+}
+
 export function validateUpload({ key, contentType, size }) {
   const rule = ruleForKey(key)
   if (!rule) return `key must start with one of ${PREFIXES.join(', ')}`
+  if (
+    typeof key !== 'string' ||
+    key.length > MAX_KEY_LENGTH ||
+    UNSAFE_SEGMENTS.test(key) ||
+    hasControlCharacter(key)
+  ) {
+    return 'key is not a shape this site stores'
+  }
 
   if (!rule.types.includes(contentType)) {
     return `unsupported ${rule.what} type: ${contentType}`

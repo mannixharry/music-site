@@ -23,7 +23,7 @@ function Footer() {
               href={instagramUrl}
               className="inline-block py-1 -my-1 underline"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
             >
               @{contact.instagramHandle}
             </a>

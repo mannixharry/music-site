@@ -1,4 +1,32 @@
-# Cache-Control for the static assets, read by Cloudflare Workers Assets.
+# Response headers, read by Cloudflare Workers Assets.
+
+# Security headers, on everything.
+#
+# Deliberately the set that cannot change how the site behaves:
+#
+#   nosniff          stops a browser second-guessing a Content-Type, which is
+#                    what turns an uploaded file into a script.
+#   frame-ancestors  the site is never framed, so nothing should be able to
+#                    frame it — that is clickjacking's whole prerequisite.
+#   base-uri         a <base> tag injected into the page could re-point every
+#                    relative URL on it; nothing here needs one.
+#   Referrer-Policy  an outbound link carries the origin, not the path. A
+#                    reader following a link off /songs/some-song should not
+#                    hand the other end their reading history.
+#   Permissions      none of these are used, so none of them are available.
+#
+# There is no full Content-Security-Policy, and that is a considered omission
+# rather than an oversight: the admin uploads straight to R2 through presigned
+# URLs on a Cloudflare host, so a `connect-src` would have to name it, and the
+# failure mode of getting that wrong is an upload that silently does nothing.
+# Worth adding, worth testing against a real upload first.
+/*
+  X-Content-Type-Options: nosniff
+  Content-Security-Policy: frame-ancestors 'none'; base-uri 'none'
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=(), usb=()
+
+# Cache-Control for the static assets.
 #
 # Everything was being served with `max-age=0, must-revalidate`, which is the
 # right default for a file whose name stays the same and whose contents might
