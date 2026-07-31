@@ -1,5 +1,5 @@
 {
-  "version": "albums-1785501526",
+  "version": "notices-1785514922",
   "mediaBase": "https://media.frankkirwan.com",
   "albums": [
     {
@@ -8,6 +8,14 @@
       "kind": "musical",
       "subtitle": "Previously published by Warner Chappell",
       "coverKey": null,
+      "noticeTitle": "",
+      "noticeBody": "",
+      "downloads": [
+        {
+          "label": "Script (PDF)",
+          "href": "/scripts/frank-kirwan-pigs-script.pdf"
+        }
+      ],
       "sortOrder": 10,
       "published": true
     },
@@ -17,6 +25,23 @@
       "kind": "musical",
       "subtitle": "Previously published by Warner Chappell",
       "coverKey": null,
+      "noticeTitle": "",
+      "noticeBody": "",
+      "downloads": [
+        {
+          "label": "Script (PDF)",
+          "href": "/scripts/frank-kirwan-copperfield-and-co-script.pdf"
+        },
+        {
+          "label": "Score (PDF)",
+          "href": "/scores/frank-kirwan-copperfield-and-co.pdf"
+        },
+        {
+          "label": "Sibelius score",
+          "href": "/scores/frank-kirwan-copperfield-and-co.sib",
+          "download": true
+        }
+      ],
       "sortOrder": 20,
       "published": true
     },
@@ -26,6 +51,9 @@
       "kind": "musical",
       "subtitle": "Windrush-inspired — in development",
       "coverKey": null,
+      "noticeTitle": "This musical needs a scriptwriter.",
+      "noticeBody": "Guyana Skies has demos and a prospective synopsis, but no script yet — if that's you, get in touch: frank@frankkirwan.com",
+      "downloads": [],
       "sortOrder": 30,
       "published": true
     }
