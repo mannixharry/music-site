@@ -1,16 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  The five public pages. /admin is not here and never should be.
-
-  No <lastmod>: it would be a date written by hand that quietly goes stale, and
-  a wrong one is worse than none. Five pages is small enough that a crawler will
-  reach everything from the header anyway — this exists to say plainly which
-  five they are, and which spelling of each URL is the real one.
--->
+<!-- Written by scripts/build-sitemap.mjs. Do not edit by hand. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://frankkirwan.com/</loc></url>
   <url><loc>https://frankkirwan.com/songs</loc></url>
   <url><loc>https://frankkirwan.com/musicals</loc></url>
   <url><loc>https://frankkirwan.com/about</loc></url>
   <url><loc>https://frankkirwan.com/contact</loc></url>
+  <url><loc>https://frankkirwan.com/songs/cherie-je-t-aime-trop</loc></url>
+  <url><loc>https://frankkirwan.com/songs/caught-in-the-wire</loc></url>
+  <url><loc>https://frankkirwan.com/songs/halfway-back-to-my-dreams</loc></url>
+  <url><loc>https://frankkirwan.com/songs/pigs-musical-snapshot</loc></url>
+  <url><loc>https://frankkirwan.com/songs/copperfield-co-musical-snapshot</loc></url>
+  <url><loc>https://frankkirwan.com/songs/guyana-skies-demo-track-one</loc></url>
+  <url><loc>https://frankkirwan.com/songs/leave-reality-behind</loc></url>
+  <url><loc>https://frankkirwan.com/songs/reasons</loc></url>
+  <url><loc>https://frankkirwan.com/songs/guyana-skies-coconut-water</loc></url>
+  <url><loc>https://frankkirwan.com/songs/pigs-pigs</loc></url>
+  <url><loc>https://frankkirwan.com/songs/pigs-animals-rule</loc></url>
+  <url><loc>https://frankkirwan.com/songs/pigs-where-is-the-rainbow</loc></url>
+  <url><loc>https://frankkirwan.com/songs/pigs-we-ll-build-a-windmill</loc></url>
+  <url><loc>https://frankkirwan.com/songs/copperfield-co-bottle-boys</loc></url>
+  <url><loc>https://frankkirwan.com/songs/copperfield-co-i-m-umble</loc></url>
+  <url><loc>https://frankkirwan.com/songs/copperfield-co-all-alone-am-i</loc></url>
+  <url><loc>https://frankkirwan.com/songs/copperfield-co-this-boy</loc></url>
+  <url><loc>https://frankkirwan.com/songs/copperfield-co-angel-in-the-morning</loc></url>
+  <url><loc>https://frankkirwan.com/songs/copperfield-co-copperfield-co</loc></url>
+  <url><loc>https://frankkirwan.com/songs/guyana-skies-flying-in</loc></url>
+  <url><loc>https://frankkirwan.com/songs/guyana-skies-independence</loc></url>
+  <url><loc>https://frankkirwan.com/songs/guyana-skies-no-dream-come-true</loc></url>
+  <url><loc>https://frankkirwan.com/songs/guyana-skies-everyone-has-a-hope</loc></url>
+  <url><loc>https://frankkirwan.com/songs/guyana-skies-peckham-calypso</loc></url>
+  <url><loc>https://frankkirwan.com/songs/guyana-skies-shirley</loc></url>
+  <url><loc>https://frankkirwan.com/songs/guyana-skies-wrong-time-wrong-place</loc></url>
 </urlset>

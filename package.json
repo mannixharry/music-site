@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:worker": "wrangler dev",
-    "prebuild": "node scripts/pull-snapshot.mjs && node scripts/stamp-download-sizes.mjs",
+    "prebuild": "node scripts/pull-snapshot.mjs && node scripts/stamp-download-sizes.mjs && node scripts/build-sitemap.mjs",
     "build": "vite build",
     "lint": "oxlint",
     "shot": "node scripts/shot.mjs",
