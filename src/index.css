@@ -129,6 +129,19 @@ a {
   --color-accent: #8a3b32;
 }
 
+/* Holds an anchor target clear of the pinned header, whatever the header
+   currently consists of. See ANCHOR in src/rules.js, which is what the
+   components import; this is only where the arithmetic lives.
+
+   The fallback matters: it is what applies between first paint and Layout's
+   first measurement, and on any browser without ResizeObserver. 7rem is the
+   fixed value this replaced, so the worst case is exactly the old behaviour.
+   The extra half-rem is so a heading has a little air above it rather than
+   sitting flush against the rule under the header. */
+.clears-chrome {
+  scroll-margin-top: calc(var(--chrome, 7rem) + 0.5rem);
+}
+
 /* The scrub bar, drawn here rather than left to the browser.
 
    Written as plain CSS, against the grain of the rest of this project, because

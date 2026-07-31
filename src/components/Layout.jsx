@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import AdminBar from './AdminBar'
 import BackToTop from './BackToTop'
@@ -7,9 +8,45 @@ import NowPlaying from './NowPlaying'
 import PlaybackProvider from './PlaybackProvider'
 import RefreshOnNavigate from './RefreshOnNavigate'
 import ScrollToTop from './ScrollToTop'
+import SectionNav from './SectionNav'
+import { SectionNavContext } from '../context/sectionNavContext'
 import { ANCHOR } from '../rules'
 
 function Layout() {
+  // Set by whichever page has sections worth listing; null on the ones that do
+  // not, which is most of them. The setter from useState is already stable, so
+  // it can go straight into the context without a useMemo around it.
+  const [sections, setSections] = useState(null)
+
+  // How tall the pinned block currently is, published as --chrome so that a
+  // heading jumped to by a hash link lands below it rather than under it.
+  //
+  // Measured rather than written down. It was a fixed 7rem, chosen to cover the
+  // header and the now-playing strip, which was already a little too much most
+  // of the time and became too little the moment a page added a row of section
+  // links. Every one of those pieces comes and goes independently — the strip
+  // when something plays, the section links per page, the header itself when
+  // the phone menu opens — so the only number that is right in all of those is
+  // the one taken from the block.
+  const chrome = useRef(null)
+
+  useEffect(() => {
+    const node = chrome.current
+    if (!node || typeof ResizeObserver === 'undefined') return
+
+    const publish = () =>
+      document.documentElement.style.setProperty('--chrome', `${node.offsetHeight}px`)
+
+    publish()
+    const observer = new ResizeObserver(publish)
+    observer.observe(node)
+
+    return () => {
+      observer.disconnect()
+      document.documentElement.style.removeProperty('--chrome')
+    }
+  }, [])
+
   return (
     // The provider sits above the router outlet so the "one snippet at a time"
     // rule holds across every page that embeds a player.
@@ -30,13 +67,19 @@ function Layout() {
 
         <AdminBar />
 
-        {/* Header and now-playing pinned as one unit. Sticky, because the pages
-            this serves are long — /songs runs to a few dozen entries and each
-            musical carries a synopsis — and reaching another page used to mean
-            scrolling back to the top first. */}
-        <div className="sticky top-0 z-20">
+        {/* Header, now-playing and the page's own section links pinned as one
+            unit. Sticky, because the pages this serves are long — /songs runs
+            to a few dozen entries and each musical carries a synopsis — and
+            reaching another page used to mean scrolling back to the top first.
+
+            All three in one block rather than three sticky elements: each one
+            after the first would otherwise need to know the height of the ones
+            above it, and the now-playing strip is only there some of the
+            time. */}
+        <div ref={chrome} className="sticky top-0 z-20">
           <Header />
           <NowPlaying />
+          {sections && <SectionNav items={sections} />}
         </div>
 
         {/* tabIndex so the skip link actually moves focus here rather than only
@@ -47,7 +90,9 @@ function Layout() {
           tabIndex={-1}
           className={`mx-auto w-full max-w-2xl flex-1 px-4 focus:outline-none ${ANCHOR}`}
         >
-          <Outlet />
+          <SectionNavContext.Provider value={setSections}>
+            <Outlet />
+          </SectionNavContext.Provider>
         </main>
 
         <Footer />

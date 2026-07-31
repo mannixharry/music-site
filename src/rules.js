@@ -34,8 +34,10 @@ export const HEADING = 'text-xl font-bold'
 // How far an in-page anchor holds off the top, so a hash jump does not land
 // with its heading under the sticky header.
 //
-// Sized for the header *and* the now-playing strip that appears beneath it,
-// because the alternative is a target that lands correctly only when nothing is
-// playing. The cost is a little extra headroom the rest of the time, which
-// reads as space rather than as a mistake.
-export const ANCHOR = 'scroll-mt-28'
+// This was `scroll-mt-28`, a fixed 7rem covering the header and the now-playing
+// strip — too much whenever nothing was playing, and not enough at all once a
+// page could also pin a row of section links. It is now whatever the pinned
+// block actually measures: Layout publishes that as --chrome and the class
+// below reads it. Defined in index.css because no Tailwind utility takes a
+// custom property without an arbitrary value, which this project does not use.
+export const ANCHOR = 'clears-chrome'
