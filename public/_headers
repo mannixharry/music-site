@@ -46,6 +46,10 @@
 # replacing frank-kirwan.jpg would leave the old one on screen until the cache
 # expired. A week is long enough to help a returning reader and short enough
 # that a correction is not stuck for long.
+#
+# public/images/ does not exist yet: the portrait is imported from src/ and so
+# comes out hashed under /assets/. This is here for the photographs still to
+# come on About and Contact, which are dropped in as files (see about.js).
 /images/*
   Cache-Control: public, max-age=604800
 
@@ -60,4 +64,26 @@
 
 # index.html is deliberately left alone. It is the file that names every hashed
 # asset above, so it is the one thing that must always be checked — cache it and
-# a deploy would never reach anyone.
+# a deploy would never reach anyone. Workers Assets already serves it
+# `max-age=0, must-revalidate`, which is exactly right, and it is left implicit
+# because `_headers` merges every matching rule: setting Cache-Control on `/*`
+# here would collide with the three rules above rather than defer to them.
+#
+# Which covers the browsers that follow that instruction. The one that does not
+# — and there is at least one iPhone in the wild that did not — is why the file
+# below exists.
+
+# The one file that must never be cached anywhere, by anyone.
+#
+# It holds the id of the deployed build, and the whole point of it is to be the
+# one answer a stale page cannot get from its own cache. src/components/
+# FreshBuild.jsx compares it against the id compiled into the running bundle and
+# reloads if they differ, which is the only way out for a browser that has
+# decided it already has index.html and need not ask again.
+#
+# no-store rather than no-cache: no-cache still permits a stored copy that is
+# revalidated, and a revalidation that a broken intermediary answers with a 304
+# is the same trap one level up. Nothing may keep this.
+/build.json
+  Cache-Control: no-store
+  Content-Type: application/json

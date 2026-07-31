@@ -58,6 +58,19 @@ network; the committed snapshot is then used as-is.
 Audio lives in R2 and is served from `media.frankkirwan.com`. Nothing is in
 `public/` any more.
 
+## Deploys and stale tabs
+
+Every build is stamped with an id, in the bundle (`virtual:build-id`) and in
+`/build.json` beside it. `/build.json` is served `no-store`, so it is the one
+thing a browser cannot answer from its own cache; `src/components/FreshBuild.jsx`
+compares the two and reloads the page if they differ.
+
+That exists because caching headers being right is not sufficient. A browser
+holding a copy of `index.html` it has stopped revalidating will keep serving a
+complete, coherent, months-old site through reloads, and nothing inside that
+page can tell — the old shell names the old hashed bundle, which is genuinely
+still valid. The check has to come from outside it.
+
 ## The admin
 
 `/admin` is behind Cloudflare Access — an allow-list of email addresses and a

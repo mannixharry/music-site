@@ -4,6 +4,7 @@ import AdminBar from './AdminBar'
 import BackToTop from './BackToTop'
 import Header from './Header'
 import Footer from './Footer'
+import FreshBuild from './FreshBuild'
 import NowPlaying from './NowPlaying'
 import PlaybackProvider from './PlaybackProvider'
 import RefreshOnNavigate from './RefreshOnNavigate'
@@ -50,6 +51,9 @@ function Layout() {
     <PlaybackProvider remember>
       <ScrollToTop />
       <RefreshOnNavigate />
+      {/* Inside the provider, so it can hold off while something is playing.
+          Renders nothing; it exists for the effect. */}
+      <FreshBuild />
 
       <div className="flex min-h-screen flex-col">
         {/* Hidden until it has focus, which is the whole design: the first tab
