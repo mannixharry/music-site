@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { formatTime } from '../format'
 import { usePlayback } from '../context/playbackContext'
 import { TRANSPORT, TRANSPORT_ACTIVE, TRANSPORT_IDLE, scrubberTrack } from './transport'
@@ -50,21 +50,33 @@ function AudioPlayer({ id, src, title, duration: knownDuration = null, queue }) 
   // What to hand the provider. Taken from the queue where there is one, so the
   // album and artwork a lock screen shows travel with the track. The fallback
   // is for a player with no list around it: today, the admin's preview.
-  const entry = queue?.find((item) => item.id === id) ?? {
-    id,
-    src,
-    title,
-    duration: knownDuration,
-  }
+  //
+  // Memoised because it is an effect dependency below, and a fresh object every
+  // render would run that effect every render.
+  const entry = useMemo(
+    () =>
+      queue?.find((item) => item.id === id) ?? {
+        id,
+        src,
+        title,
+        duration: knownDuration,
+      },
+    [queue, id, src, title, knownDuration],
+  )
 
   // A song's audio can be replaced while this row is the one loaded — making a
   // preview swaps the public file and leaves the id alone. The provider is
   // still describing the old file until something tells it, and the row is the
   // only thing that knows.
+  //
+  // `entry` rather than a fresh object built from the props: the entry carries
+  // the album and the artwork, and the replacement becomes the track the
+  // provider hands to the Media Session API. Built by hand it lost both, so
+  // making a preview blanked the lock screen down to a title.
   const { replaceLoaded } = playback
   useEffect(() => {
-    if (isActive) replaceLoaded({ id, src, title, duration: knownDuration })
-  }, [isActive, replaceLoaded, id, src, title, knownDuration])
+    if (isActive) replaceLoaded(entry)
+  }, [isActive, replaceLoaded, entry])
 
   return (
     <div className="flex h-14 items-center gap-3 border border-gray-300 bg-gray-100 px-3">

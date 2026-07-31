@@ -32,15 +32,23 @@ function ReleaseItem({ release, queue }) {
           {release.isSnippet && release.showSnippetTag && <SnippetTag title={release.title} />}
         </div>
 
-        <div className="mt-2">
-          <AudioPlayer
-            id={release.id}
-            src={release.audioSrc}
-            title={release.title}
-            duration={release.duration}
-            queue={queue}
-          />
-        </div>
+        {/* Guarded, as the other three players on the site are. A single whose
+            recording has not been uploaded yet — which is what `coming-soon`
+            below is for — was still given a transport, and pressing it set the
+            element's src to the string "null", which the asset server answers
+            with index.html. A play button that fetches the home page and fails
+            silently is worse than no play button. */}
+        {release.audioSrc && (
+          <div className="mt-2">
+            <AudioPlayer
+              id={release.id}
+              src={release.audioSrc}
+              title={release.title}
+              duration={release.duration}
+              queue={queue}
+            />
+          </div>
+        )}
 
         {/* Only when there is something to put in it. This was a fixed-height
             row either way, to keep released and coming-soon songs level — but
