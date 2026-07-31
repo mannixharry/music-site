@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import BackToTop from './BackToTop'
 import Placeholder from './Placeholder'
 import AudioPlayer from './AudioPlayer'
 import ScriptwriterCallout from './ScriptwriterCallout'
@@ -135,9 +134,6 @@ function MusicalSection({ musical, first = false }) {
         </>
       )}
 
-      {/* Opening a synopsis makes the section long again, so the way back to
-          the quick links has to be at the bottom as well as the top. */}
-      <BackToTop />
     </section>
   )
 }

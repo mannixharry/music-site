@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
 import AdminBar from './AdminBar'
+import BackToTop from './BackToTop'
 import Header from './Header'
 import Footer from './Footer'
 import NowPlaying from './NowPlaying'
@@ -66,6 +67,11 @@ function Layout() {
         </main>
 
         <Footer />
+
+        {/* Last in the document so it is the last thing tabbed to, not
+            something between the content and the footer links. It shows itself
+            only once there is somewhere to go back to. */}
+        <BackToTop />
       </div>
     </PlaybackProvider>
   )

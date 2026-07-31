@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import BackToTop from '../components/BackToTop'
 import Placeholder from '../components/Placeholder'
 import SongItem from '../components/SongItem'
 import { useContent } from '../context/contentContext'
@@ -44,7 +43,7 @@ function Songs() {
   const searching = query.trim().length > 0
 
   return (
-    <div id="top" className={`${ANCHOR} py-8`}>
+    <div className={`${ANCHOR} py-8`}>
       <h1 className="text-4xl font-bold">Songs</h1>
       <p className="mt-2 text-sm leading-relaxed">
         The whole catalogue in one place — the singles, the snapshots from the musicals, and
@@ -121,10 +120,6 @@ function Songs() {
               </div>
             ))}
           </div>
-          {/* Singles alone runs past a screen, so each group ends with the way
-              back to the top. Not while searching: the page is short, and the
-              row it points at is hidden anyway. */}
-          {!searching && <BackToTop />}
         </section>
       ))}
     </div>

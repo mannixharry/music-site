@@ -5,10 +5,7 @@ import { ANCHOR } from '../rules'
 
 function Musicals() {
   return (
-    // `#top` is what the "back to the top" link at the foot of each section
-    // aims at. ScrollToTop resolves the hash after render, so it works from
-    // anywhere on the page.
-    <div id="top" className={`${ANCHOR} py-8`}>
+    <div className={`${ANCHOR} py-8`}>
       <h1 className="text-4xl font-bold">Musicals</h1>
       <p className="mt-2 text-sm leading-relaxed">
         Two of these were published by Warner Chappell and are no longer tied to it, so their
