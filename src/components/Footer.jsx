@@ -32,7 +32,12 @@ function Footer() {
                 <NavLink
                   to={item.to}
                   end={item.to === '/'}
-                  className={({ isActive }) => (isActive ? 'font-bold underline' : 'underline')}
+                  // Marked the same way the header marks it. An accent that
+                  // means "the page you are on" in one nav and nothing in the
+                  // other means less than no accent at all.
+                  className={({ isActive }) =>
+                    isActive ? 'font-bold text-accent underline' : 'underline'
+                  }
                 >
                   {item.label}
                 </NavLink>
