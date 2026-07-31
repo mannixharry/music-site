@@ -61,8 +61,9 @@ function NowPlaying() {
           type="range"
           min="0"
           max={scrubber.max}
-          // A second per arrow key — see the note on the row players.
-          step="1"
+          // Exact value, proportional keyboard step — see the note on the row
+          // players, which explains why this is not a number.
+          step="any"
           value={currentTime}
           disabled={!seekable}
           aria-label={`Seek within ${track.title}`}

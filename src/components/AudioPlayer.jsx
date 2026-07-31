@@ -86,16 +86,24 @@ function AudioPlayer({ id, src, title, duration: knownDuration = null }) {
         type="range"
         min="0"
         max={track.max}
-        // One second, not a hundredth of one.
+        // `any`, which is doing two jobs.
         //
-        // `step` is not only the precision of the value, it is how far one arrow
-        // key moves — so at 0.01 a keyboard user needed 2,775 presses to cross a
-        // twenty-seven second song, and Page Up advanced a tenth of a second. At
-        // 1 an arrow is a second and Page Up is ten, which is what a scrub bar is
-        // for. Nothing is lost while playing: the position is written from the
-        // audio element several times a second, and a second either way is far
-        // less than one pixel of thumb travel.
-        step="1"
+        // `step` is not only the precision of the value, it is also how far one
+        // arrow key moves. It was 0.01, which meant a keyboard user needed 2,775
+        // presses to cross a twenty-seven second song and Page Up advanced a
+        // tenth of a second — the control was unusable without a mouse. Setting
+        // it to 1 fixed that and broke something else: a range snaps its value
+        // to its step, so the thumb began jumping a whole second at a time,
+        // about eleven pixels, while the filled part of the track (which is
+        // drawn from the real time, not the snapped one) slid smoothly under it.
+        //
+        // `any` has neither problem. The value stays exact, so the thumb moves
+        // as smoothly as the fill; and browsers size a keyboard step for it from
+        // the range itself — measured at 1% of the track per arrow and 10% per
+        // Page Up. That is better than any fixed number could be, because it is
+        // the same ten presses to cross a 27-second snippet and a five-minute
+        // demo.
+        step="any"
         value={currentTime}
         disabled={!seekable}
         aria-label={`Seek within ${title}`}
