@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { formatTime } from '../format'
 import { usePlayback } from '../context/playbackContext'
 import { TRANSPORT, TRANSPORT_ACTIVE, TRANSPORT_IDLE, scrubberTrack } from './transport'
@@ -55,6 +56,15 @@ function AudioPlayer({ id, src, title, duration: knownDuration = null, queue }) 
     title,
     duration: knownDuration,
   }
+
+  // A song's audio can be replaced while this row is the one loaded — making a
+  // preview swaps the public file and leaves the id alone. The provider is
+  // still describing the old file until something tells it, and the row is the
+  // only thing that knows.
+  const { replaceLoaded } = playback
+  useEffect(() => {
+    if (isActive) replaceLoaded({ id, src, title, duration: knownDuration })
+  }, [isActive, replaceLoaded, id, src, title, knownDuration])
 
   return (
     <div className="flex h-14 items-center gap-3 border border-gray-300 bg-gray-100 px-3">

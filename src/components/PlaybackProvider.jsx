@@ -18,9 +18,11 @@ function PlaybackProvider({ children, remember = false }) {
   // The displayed track, in a ref as well as in state: handlers need the answer
   // now, not on the next render.
   const trackRef = useRef(null)
-  // Which track the element is pointed at, which is not always the displayed
-  // one — a restored session shows a track before anything has been loaded.
-  const loadedIdRef = useRef(null)
+  // What the element is pointed at: the id AND the address. Not always the
+  // displayed track — a restored session shows one before anything is loaded —
+  // and not identified by id alone, because a song's audio can be replaced
+  // underneath a stable id. Making a preview does exactly that.
+  const loadedRef = useRef({ id: null, src: null })
   // A restored position, applied once the file can accept a seek. Seeking an
   // element that has not loaded throws.
   const pendingSeekRef = useRef(null)
@@ -93,8 +95,8 @@ function PlaybackProvider({ children, remember = false }) {
     // Compared against what is loaded, not what is displayed: after a reload
     // the strip shows a track the element has never seen, and comparing against
     // the displayed one would skip the load and play silence.
-    if (loadedIdRef.current !== next.id) {
-      loadedIdRef.current = next.id
+    if (loadedRef.current.id !== next.id || loadedRef.current.src !== next.src) {
+      loadedRef.current = { id: next.id, src: next.src }
       trackRef.current = next
       element.src = next.src
       // Tells the element to pick the new source up now rather than at some
@@ -114,6 +116,34 @@ function PlaybackProvider({ children, remember = false }) {
 
   const pause = useCallback(() => audioRef.current?.pause(), [])
 
+  // The same song, at a new address. Making a preview replaces a song's public
+  // audio while its id stays put, so what is on screen — the length, the scrub
+  // bar's range — is describing a file that no longer exists.
+  //
+  // Called by a row that finds itself displayed with an address the element is
+  // not pointed at. It carries on playing if it was playing, because the thing
+  // it was playing has just been replaced by the thing it should be playing.
+  const replaceLoaded = useCallback(
+    (next) => {
+      if (trackRef.current?.id !== next.id || trackRef.current.src === next.src) return
+
+      const element = audioRef.current
+      const wasPlaying = element ? !element.paused : false
+
+      trackRef.current = next
+      loadedRef.current = { id: null, src: null }
+      pendingSeekRef.current = null
+      setTrack(next)
+      setDuration(next.duration ?? NaN)
+      setCurrentTime(0)
+      setHasMetadata(false)
+
+      if (wasPlaying) play(next)
+      else element?.pause()
+    },
+    [play],
+  )
+
   // Only whoever owns the slot may give it up, so a stale call from a row that
   // has already lost it cannot stop the song that took it. Reads the ref for
   // the same reason play() does: the answer is needed now, not next render.
@@ -132,7 +162,7 @@ function PlaybackProvider({ children, remember = false }) {
       element.load()
     }
     trackRef.current = null
-    loadedIdRef.current = null
+    loadedRef.current = { id: null, src: null }
     pendingSeekRef.current = null
     queueRef.current = []
     setQueue([])
@@ -414,6 +444,7 @@ function PlaybackProvider({ children, remember = false }) {
       seek,
       next,
       previous,
+      replaceLoaded,
     }),
     [
       track,
@@ -429,6 +460,7 @@ function PlaybackProvider({ children, remember = false }) {
       seek,
       next,
       previous,
+      replaceLoaded,
     ],
   )
 
