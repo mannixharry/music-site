@@ -10,10 +10,15 @@
 // Runs from `prebuild`, beside the snapshot pull.
 import { readdir, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const ROOTS = ['scripts', 'scores']
-const PUBLIC = new URL('../public/', import.meta.url).pathname
-const OUT = new URL('../src/content/downloadSizes.json', import.meta.url).pathname
+// fileURLToPath rather than URL#pathname: a pathname is percent-encoded, so a
+// checkout under a directory with a space in its name resolved to "%20" and
+// every readdir below failed — silently, because a missing directory is a
+// legitimate state here and is caught and skipped.
+const PUBLIC = fileURLToPath(new URL('../public/', import.meta.url))
+const OUT = fileURLToPath(new URL('../src/content/downloadSizes.json', import.meta.url))
 
 const sizes = {}
 
