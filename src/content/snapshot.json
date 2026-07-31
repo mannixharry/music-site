@@ -1,5 +1,5 @@
 {
-  "version": "ms97d9cp-f018b107",
+  "version": "ms9864qd-6fb125fd",
   "mediaBase": "https://media.frankkirwan.com",
   "albums": [
     {
@@ -7,7 +7,7 @@
       "title": "Pigs",
       "kind": "musical",
       "subtitle": "Previously published by Warner Chappell",
-      "coverKey": "covers/album-pigs/9986f694.webp",
+      "coverKey": "covers/album-pigs/4cf5ad46.webp",
       "sortOrder": 10,
       "published": true
     },
@@ -16,7 +16,7 @@
       "title": "Copperfield & Co.",
       "kind": "musical",
       "subtitle": "Previously published by Warner Chappell",
-      "coverKey": "covers/album-copperfield-co/bc149e7d.webp",
+      "coverKey": "covers/album-copperfield-co/6255c712.webp",
       "sortOrder": 20,
       "published": true
     },
@@ -25,7 +25,7 @@
       "title": "Guyana Skies",
       "kind": "musical",
       "subtitle": "Windrush-inspired — in development",
-      "coverKey": "covers/album-guyana-skies/8d825f2c.webp",
+      "coverKey": "covers/album-guyana-skies/6f67aef3.webp",
       "sortOrder": 30,
       "published": true
     }
