@@ -54,38 +54,31 @@
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
-@theme {
-  /* Named so it can be written as `text-accent` and `accent-accent` in the
-     markup like any other colour. Grey at this level on purpose: it resolves to
-     the real oxblood only inside the public theme below, which is what keeps it
-     out of /admin without either place needing to know about the other. */
-  --color-accent: var(--color-gray-700);
-}
-
-/* The public site's own look, and only the public site's.
+/* The whole site's look — the admin included.
 
    Every one of these is a Tailwind theme variable being given a different
-   value, not a new class — so `bg-gray-100` and `text-sm` keep working exactly
-   as written throughout the components and simply resolve warmer here. That is
-   why this whole change touches no layout.
+   value, not a new class, so `bg-gray-100` and `text-sm` keep working exactly
+   as written throughout the components and simply resolve warmer. That is why
+   this changes no layout anywhere.
 
-   Scoped to html[data-site='public'], which Layout sets while it is mounted and
-   removes on the way out, because /admin is a separate route with no Layout
-   around it. The admin keeps the plain system-UI-on-white appearance it was
-   designed with, and nothing below can reach it.
+   This was briefly scoped to the public pages, on the assumption that the admin
+   should keep the plain look it was built with. It reads better in the same
+   face as the site it edits: a description typed here is read there, and seeing
+   it in the typeface it will be published in is the point of an editor.
 
    Unlayered on purpose. Tailwind's own :root values live in @layer theme, and
    an unlayered rule beats any layered one regardless of specificity, so this
    wins without needing !important or a longer selector. */
-html[data-site='public'] {
+html {
   /* Literata is drawn for reading at length on a screen, which is what this
      site mostly asks of it: a bio, three synopses, and an about page.
 
-     Also the monospace, so a track length is set in the same face as everything
-     around it. `tabular-nums` is already on those spans, so the digits still
-     line up — the monospace was only ever there for the alignment. */
+     `--font-mono` is deliberately left alone. The admin uses it for the things
+     that genuinely are machine text — song ids, storage keys, byte counts — and
+     a serif would make those harder to read, not easier. The two places where
+     it was doing nothing but line digits up are the players, and those say
+     `tabular-nums` instead now. */
   --font-sans: 'Literata', Georgia, 'Times New Roman', serif;
-  --font-mono: 'Literata', Georgia, serif;
 
   /* Paper, not screen. `white` becomes a warm off-white and the grey ramp warms
      with it, so the black-and-white photograph on the home page sits on
@@ -101,11 +94,6 @@ html[data-site='public'] {
   --color-gray-700: #4d483e;
   --color-gray-900: #221f1a;
   --color-black: #221f1a;
-
-  /* One accent, oxblood, and it means one thing: this is the page you are on,
-     or this is the song that is playing. Anything more and it stops carrying
-     information. */
-  --color-accent: #8a3b32;
 
   /* A serif at 14px sits smaller on the page than a sans at 14px, and most of
      the body copy here is `text-sm`. Up a step, with more leading, because the
@@ -125,7 +113,18 @@ html[data-site='public'] {
 /* Underlines sit tight under a serif and read as a line through the descenders
    of g and y. Nudged clear, and taking the weight the face itself specifies
    rather than the browser's flat default. */
-html[data-site='public'] a {
+a {
   text-underline-offset: 0.16em;
   text-decoration-thickness: from-font;
+}
+
+@theme {
+  /* The site's one accent, oxblood, and it means one thing: this is the page
+     you are on, or this is the song that is playing. Anything more and it stops
+     carrying information.
+
+     In @theme rather than in the block above because that is what generates the
+     `text-accent` utility the components are written with; the values above only
+     redefine names Tailwind already knows. */
+  --color-accent: #8a3b32;
 }

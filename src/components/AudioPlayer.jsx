@@ -74,7 +74,7 @@ function AudioPlayer({ id, src, title, duration: knownDuration = null }) {
 
       {/* Total length, not elapsed — the scrub bar already shows position, and
           swapping to a counter on play reads like the track reset itself. */}
-      <span className="shrink-0 font-mono text-xs tabular-nums">{formatTime(duration)}</span>
+      <span className="shrink-0 text-xs tabular-nums">{formatTime(duration)}</span>
     </div>
   )
 }

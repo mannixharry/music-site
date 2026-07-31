@@ -68,7 +68,7 @@ function NowPlaying() {
           onChange={(event) => seek(Number(event.currentTarget.value))}
         />
 
-        <span className="shrink-0 font-mono text-xs tabular-nums text-gray-600">
+        <span className="shrink-0 text-xs tabular-nums text-gray-600">
           {formatTime(currentTime)} / {formatTime(duration)}
         </span>
 
