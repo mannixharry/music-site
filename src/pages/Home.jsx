@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import MusicSection from '../components/MusicSection'
+import Portrait from '../components/Portrait'
 import { profile } from '../content/profile'
 import { musicals } from '../content/musicals'
 import { instagramUrl } from '../content/contact'
@@ -13,13 +14,7 @@ function Home() {
   return (
     <div className="py-8">
       <section className="flex flex-col gap-4 md:flex-row md:items-center">
-        <img
-          src="/images/frank-kirwan.jpg"
-          alt="Frank Kirwan with his guitar"
-          width={1000}
-          height={1250}
-          className="w-full md:w-1/2"
-        />
+        <Portrait className="w-full md:w-1/2" />
         <div>
           <h1 className="text-4xl font-bold">{profile.name}</h1>
           <p className="mt-2 text-lg">{profile.descriptor}</p>
