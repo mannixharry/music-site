@@ -230,11 +230,20 @@ function SongForm({ song, justCreated, musicals, capabilities, mediaBase, onChan
 
   const cover = useCoverUpload({ songId: song?.id, capabilities, patch })
 
-  // Deleting a song mid-upload is the one combination that actually loses
-  // something: the bytes are already in R2, and the patch that was going to
-  // record them fails on a row that is no longer there, leaving a file nothing
-  // points at. Saving is safe — it writes different columns — and cancelling is
-  // too, since the upload carries on and records itself either way.
+  // Neither Save nor Delete while bytes are still moving.
+  //
+  // Deleting is the one that loses something: the bytes are already in R2, and
+  // the patch that was going to record them fails on a row that is no longer
+  // there, leaving a file nothing points at.
+  //
+  // Saving writes different columns, so it cannot corrupt the row — but an
+  // upload finishing patches the song and refetches it, and a Save landing in
+  // the middle of that says "Saved ✓" over a song whose file has not arrived.
+  // The confirmation is the thing at stake: it should mean the song is as it
+  // appears, and while a file is in flight it does not.
+  //
+  // Cancelling stays available throughout: the upload carries on and records
+  // itself either way.
   const transferring = isUploading(status) || isUploading(cover.status)
 
   async function save() {
@@ -559,14 +568,20 @@ function SongForm({ song, justCreated, musicals, capabilities, mediaBase, onChan
           <button
             type="button"
             onClick={save}
-            disabled={saveState === 'saving' || !draft.title.trim()}
+            disabled={saveState === 'saving' || transferring || !draft.title.trim()}
+            // Said on the button rather than left to a hover: a control that
+            // has gone grey with no reason given reads as broken, and this one
+            // goes grey exactly when someone has just done something.
+            title={transferring ? 'Wait for the upload to finish first' : undefined}
             className={`border px-3 py-1 text-sm disabled:opacity-50 ${
               saveState === 'saved'
                 ? 'border-gray-700 bg-gray-700 text-white'
                 : 'border-gray-500 bg-gray-200'
             }`}
           >
-            {{ saving: 'Saving…', saved: 'Saved ✓' }[saveState] ?? 'Save'}
+            {transferring
+              ? 'Waiting for the upload…'
+              : ({ saving: 'Saving…', saved: 'Saved ✓' }[saveState] ?? 'Save')}
           </button>
           <button type="button" onClick={onCancel} className="text-sm underline">
             Cancel
