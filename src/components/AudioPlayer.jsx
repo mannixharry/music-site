@@ -69,7 +69,7 @@ function AudioPlayer({ id, src, title, duration: knownDuration = null }) {
         disabled={!seekable}
         aria-label={`Seek within ${title}`}
         onChange={(event) => playback.seek(Number(event.currentTarget.value))}
-        className="h-6 min-w-0 flex-1 accent-gray-700"
+        className="h-6 min-w-0 flex-1 accent-accent"
       />
 
       {/* Total length, not elapsed — the scrub bar already shows position, and

@@ -64,7 +64,7 @@ function NowPlaying() {
           value={currentTime}
           disabled={!seekable}
           aria-label={`Seek within ${track.title}`}
-          className="hidden h-4 min-w-0 flex-1 accent-gray-700 sm:block sm:max-w-xs"
+          className="hidden h-4 min-w-0 flex-1 accent-accent sm:block sm:max-w-xs"
           onChange={(event) => seek(Number(event.currentTarget.value))}
         />
 

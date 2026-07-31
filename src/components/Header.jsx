@@ -2,10 +2,14 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { navItems } from '../nav'
 
-// The active page gets weight as well as an underline. On a phone the menu is a
-// plain column of five links, and an underline on its own is easy to miss.
+// The active page gets weight and colour as well as an underline. On a phone the
+// menu is a plain column of five links and an underline on its own is easy to
+// miss — and the colour is deliberately the third signal rather than the only
+// one, because it is no use at all to a reader who cannot see it.
 const navLinkClass = ({ isActive }) =>
-  isActive ? 'font-bold underline underline-offset-4' : 'hover:underline hover:underline-offset-4'
+  isActive
+    ? 'font-bold text-accent underline underline-offset-4'
+    : 'hover:underline hover:underline-offset-4'
 
 // Drawn rather than typed, for the reason AudioPlayer's transport icons are:
 // the characters that would do this job have emoji presentations, so the system
