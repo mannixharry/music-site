@@ -13,22 +13,56 @@ function SectionNav({ items }) {
   const nav = useRef(null)
 
   useEffect(() => {
-    const onScroll = () => {
-      const node = nav.current
-      if (!node) return
+    const node = nav.current
+    if (!node) return
 
-      // Measured off this row rather than from a number: whatever is pinned
-      // above it, its own bottom edge is where the readable page begins.
-      const line = node.getBoundingClientRect().bottom + 8
+    const onScroll = () => {
+      const sections = items.map((item) => ({
+        slug: item.slug,
+        node: document.getElementById(item.slug),
+      }))
+
+      // Where a section actually comes to rest when it is jumped to, asked of
+      // the engine rather than worked out a second time here.
+      //
+      // This used to be measured off this row — `getBoundingClientRect().bottom
+      // + 8` — which is the same number by a different route, and the two
+      // disagreed by less than a pixel in a way that broke the whole thing.
+      // `--chrome` is published from offsetHeight, which is an INTEGER: a
+      // pinned block 103.5px tall publishes 104, so `scroll-margin-top` puts
+      // the section at 112 while this row's fractional bottom edge put the line
+      // at 111.5. Every jumped-to section landed just below the line that was
+      // looking for it, so nothing was ever marked as reached — but only at the
+      // widths where that height happened to land on a half pixel, which is why
+      // it looked arbitrary and why the phone layout was fine.
+      //
+      // Read from a section rather than from --chrome so the 0.5rem in the
+      // `clears-chrome` rule is not written down twice; they all carry it.
+      const anchored = sections.find((section) => section.node)
+      const line = anchored
+        ? // Sub-pixel slack. A scroll can land a fraction of a pixel out, and
+          // this comparison is exactly on the boundary by construction.
+          parseFloat(getComputedStyle(anchored.node).scrollMarginTop) + 2
+        : node.getBoundingClientRect().bottom + 8
 
       // The last section past that edge is the one being read; the first stays
       // marked until the second reaches it, so the top of the page belongs to
       // the first section rather than to nothing.
       let current = items[0]?.slug ?? null
-      for (const item of items) {
-        const section = document.getElementById(item.slug)
-        if (section && section.getBoundingClientRect().top <= line) current = item.slug
+      for (const section of sections) {
+        if (section.node && section.node.getBoundingClientRect().top <= line) {
+          current = section.slug
+        }
       }
+
+      // At the bottom of the page the last section is the one being read, even
+      // if it is too short to have reached the line — which a section with one
+      // song in it is, and which no amount of scrolling can fix, because there
+      // is no page left to scroll. Without this, clicking the last link scrolls
+      // there and marks the one above it, for good.
+      const remaining =
+        document.documentElement.scrollHeight - window.scrollY - window.innerHeight
+      if (remaining <= 2) current = items[items.length - 1]?.slug ?? current
 
       setActive(current)
     }
@@ -39,7 +73,15 @@ function SectionNav({ items }) {
     // section after it without any scrolling having happened.
     window.addEventListener('resize', onScroll)
 
+    // The pinned block this row sits in changes height on its own — the strip
+    // appears when something plays, the header wraps — and `--chrome` moves
+    // with it, so the line moves with it. None of that fires scroll or resize.
+    const observer =
+      typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(onScroll)
+    if (observer && node.parentElement) observer.observe(node.parentElement)
+
     return () => {
+      observer?.disconnect()
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
     }
