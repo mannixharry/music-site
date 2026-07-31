@@ -1,0 +1,35 @@
+# Cache-Control for the static assets, read by Cloudflare Workers Assets.
+#
+# Everything was being served with `max-age=0, must-revalidate`, which is the
+# right default for a file whose name stays the same and whose contents might
+# not — the browser has to ask every time. Measured on the live site, that meant
+# a conditional request for the stylesheet, the script and the font on every
+# single page load, forever, for a returning reader.
+#
+# Everything under /assets/ carries a content hash in its filename, put there by
+# Vite: index-D7WlL58T.js, literata-normal-400700-latin-Cedbco83.woff2. A new
+# build produces a new name, so a cached copy can never be the wrong one, and
+# there is no reason to ask about it again. `immutable` says exactly that: do
+# not revalidate, not even on a reload.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# These do NOT have hashed names, so a year would be a promise we cannot keep —
+# replacing frank-kirwan.jpg would leave the old one on screen until the cache
+# expired. A week is long enough to help a returning reader and short enough
+# that a correction is not stuck for long.
+/images/*
+  Cache-Control: public, max-age=604800
+
+# Scores and scripts are downloads, and they are versioned by being replaced
+# rather than renamed. Same reasoning, shorter: these are the files most likely
+# to be corrected after someone points out a mistake in one.
+/scores/*
+  Cache-Control: public, max-age=86400
+
+/scripts/*
+  Cache-Control: public, max-age=86400
+
+# index.html is deliberately left alone. It is the file that names every hashed
+# asset above, so it is the one thing that must always be checked — cache it and
+# a deploy would never reach anyone.

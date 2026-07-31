@@ -1,14 +1,20 @@
 @import "tailwindcss";
 
-/* Literata, self-hosted from public/fonts rather than fetched from Google.
-   Two reasons: a webfont request to a third party tells them who is reading
-   this site, and a font that arrives from our own origin cannot be delayed by
-   someone else's outage.
+/* Literata, self-hosted rather than fetched from Google. Two reasons: a webfont
+   request to a third party tells them who is reading this site, and a font that
+   arrives from our own origin cannot be delayed by someone else's outage.
 
-   Split by script, which is how the browser is able to download only what the
-   page needs — an English reader fetches the two `latin` files (~130 kB) and
-   never touches `latinext`, which exists for the accents in "Chérie je t'aime
-   trop" and the pound and euro signs.
+   Imported from src/ rather than sat in public/, so Vite puts a content hash in
+   each filename. That is what lets these be cached for a year and never
+   revalidated: the name changes if the file does, so a stale copy is not
+   reachable. A fixed name under public/ could not be cached that way safely.
+
+   Split by script, so the browser downloads only what the page needs. Measured
+   against the real site: a page is one request, `normal-latin`, 85 kB. Nothing
+   fetches `latinext` — the é in "Chérie je t'aime trop" is U+00E9, inside the
+   latin range — and nothing fetches the italics, because no page sets any type
+   in italic. Both are kept for the words Frank has not written yet; they cost
+   deployment space and no bandwidth at all until something needs them.
 
    `font-weight: 400 700` is one variable file covering the whole range, so bold
    headings cost no extra request. Italic is a separate file because variable
@@ -23,7 +29,7 @@
   font-style: normal;
   font-weight: 400 700;
   font-display: swap;
-  src: url('/fonts/literata-normal-400700-latin.woff2') format('woff2');
+  src: url('./fonts/literata-normal-400700-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
@@ -32,7 +38,7 @@
   font-style: normal;
   font-weight: 400 700;
   font-display: swap;
-  src: url('/fonts/literata-normal-400700-latinext.woff2') format('woff2');
+  src: url('./fonts/literata-normal-400700-latinext.woff2') format('woff2');
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
@@ -41,7 +47,7 @@
   font-style: italic;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/literata-italic-400-latin.woff2') format('woff2');
+  src: url('./fonts/literata-italic-400-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
@@ -50,7 +56,7 @@
   font-style: italic;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/literata-italic-400-latinext.woff2') format('woff2');
+  src: url('./fonts/literata-italic-400-latinext.woff2') format('woff2');
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
