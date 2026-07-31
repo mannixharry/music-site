@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import Placeholder from './Placeholder'
 import AudioPlayer from './AudioPlayer'
-import ScriptwriterCallout from './ScriptwriterCallout'
+import Notice from './Notice'
 import SnippetTag from './SnippetTag'
 import { useContent } from '../context/contentContext'
 import { usePlayback } from '../context/playbackContext'
@@ -26,9 +26,17 @@ const FOLD_ABOVE = 600
 const PREVIEW_LINES = 'line-clamp-4'
 
 function MusicalSection({ musical }) {
-  const { songsIn } = useContent()
+  const { albums, songsIn } = useContent()
   const demos = songsIn(musical.slug)
   const [expanded, setExpanded] = useState(false)
+
+  // The album row this show's editorial copy belongs to, matched by id. It
+  // carries the two things that are now data rather than code — the notice and
+  // the downloads — while the resume and teaser stay in musicals.js.
+  //
+  // Undefined if the album has been unpublished or deleted, which is a state
+  // worth surviving rather than crashing on: the page still has the synopsis.
+  const album = albums.find((item) => item.id === musical.slug)
 
   // The show's own demos, in the order they are listed, which is the order they
   // are meant to be heard in.
@@ -121,30 +129,46 @@ function MusicalSection({ musical }) {
                   <p className="text-sm">{demo.shortTitle}</p>
                   {demo.isSnippet && demo.showSnippetTag && <SnippetTag title={demo.title} />}
                 </div>
-                <div className="mt-1">
-                  <AudioPlayer
-                    id={demo.id}
-                    src={demo.audioSrc}
-                    title={demo.title}
-                    duration={demo.duration}
-                    queue={queue}
-                  />
-                </div>
+                {/* Same guard as everywhere else a player is drawn: a demo
+                    listed before its recording has been uploaded has nothing to
+                    play, and a transport pointed at nothing is a button that
+                    fetches index.html and fails without saying so. */}
+                {demo.audioSrc ? (
+                  <div className="mt-1">
+                    <AudioPlayer
+                      id={demo.id}
+                      src={demo.audioSrc}
+                      title={demo.title}
+                      duration={demo.duration}
+                      queue={queue}
+                    />
+                  </div>
+                ) : (
+                  <p className="mt-1 text-xs text-gray-600">No recording on the site yet.</p>
+                )}
               </div>
             ))}
           </div>
         </>
       )}
 
-      {musical.needsScriptwriter ? (
+      {/* Both of these are the album's now, not the repo's, so a musical made
+          from /admin can have either without a deploy. They are independent —
+          a show can want a notice and still have a script to hand out, which
+          the old either/or could not express. */}
+      {album?.notice && (
         <div className="mt-6">
-          <ScriptwriterCallout contactHref={musical.contactHref} />
+          <Notice notice={album.notice} />
         </div>
-      ) : (
+      )}
+
+      {/* A heading over an empty row reads as something that failed to load,
+          the same reasoning as the demos block above. */}
+      {album?.downloads.length > 0 && (
         <>
           <h3 className="mt-6 font-bold">Downloads</h3>
           <div className="mt-2 flex flex-wrap gap-2">
-            {musical.downloads.map((download) =>
+            {album.downloads.map((download) =>
               download.href ? (
                 <a
                   key={download.label}
@@ -154,7 +178,8 @@ function MusicalSection({ musical }) {
                 >
                   <span className="underline">{download.label}</span>
                   {/* Measured at build time, so it cannot describe a file that
-                      has since been replaced. */}
+                      has since been replaced. Only files in public/ have a size
+                      here; an off-site URL simply shows none. */}
                   {downloadSizes[download.href] && (
                     <span className="text-xs text-gray-600">
                       {formatBytes(downloadSizes[download.href])}
@@ -162,6 +187,8 @@ function MusicalSection({ musical }) {
                   )}
                 </a>
               ) : (
+                // A label with no address yet: the score is coming, and saying
+                // so is better than listing nothing.
                 <Placeholder key={download.label} label={download.label} className="w-40" />
               ),
             )}

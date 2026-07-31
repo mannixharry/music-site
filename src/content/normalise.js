@@ -64,13 +64,28 @@ function toSong(row, mediaBase = '', albums = new Map()) {
 // An album as the site renders it. `isMusical` rather than passing `kind`
 // around: every caller wants the question, not the string.
 export function toAlbum(row, mediaBase = '') {
+  const isMusical = row.kind === 'musical'
+
   return {
     id: row.id,
     title: row.title,
     kind: row.kind,
-    isMusical: row.kind === 'musical',
+    isMusical,
     subtitle: row.subtitle ?? '',
     coverSrc: toMediaSrc(row.coverKey, mediaBase),
+    // One object or null, rather than two strings the callers have to test in
+    // pairs. Both halves are required: a heading with nothing under it and a
+    // paragraph with nothing over it are each a box drawn by accident, and the
+    // components should be asking "is there a notice" rather than reassembling
+    // that judgement in three places.
+    notice:
+      row.noticeTitle && row.noticeBody
+        ? { title: row.noticeTitle, body: row.noticeBody }
+        : null,
+    // Musicals only. Enforced in worker/validate.js on the way in, and again
+    // here on the way out — a row that predates that rule, or one written by
+    // something other than the admin, should not put a script under a record.
+    downloads: isMusical ? (row.downloads ?? []) : [],
     sortOrder: row.sortOrder,
   }
 }

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Placeholder from '../components/Placeholder'
+import Notice from '../components/Notice'
 import SongItem from '../components/SongItem'
 import AlbumCover from '../components/AlbumCover'
 import { useContent } from '../context/contentContext'
@@ -77,7 +78,21 @@ function Songs() {
     )
   }, [songs, query, show])
 
-  const groups = groupSongs(matches, albums)
+  // The queue is built here rather than in the map below, and memoised with the
+  // grouping it belongs to. Built inline it was a new array of new objects on
+  // every render — every keystroke in the search box — which every player in
+  // the group then took as a new list. Harmless, and a lot of garbage for a
+  // page that can hold the whole catalogue.
+  //
+  // Once per group, not once per row. The group is also the list that plays on:
+  // reaching the end of the singles does not carry the listener into the
+  // musicals' demos.
+  const groups = useMemo(
+    () =>
+      groupSongs(matches, albums).map((group) => ({ ...group, queue: toQueue(group.songs) })),
+    [matches, albums],
+  )
+
   const searching = query.trim().length > 0 || show !== null
 
   // Handed to Layout, which pins it under the header — the same row the musicals
@@ -190,40 +205,43 @@ function Songs() {
         <Placeholder label="No songs added yet — add one from /admin" className="mt-8 h-32" />
       )}
 
-      {groups.map((group) => {
-        // Once per group, not once per row. The group is also the list that
-        // plays on: reaching the end of the singles does not carry the listener
-        // into the musicals' demos.
-        const queue = toQueue(group.songs)
+      {groups.map((group) => (
+        <section key={group.id} id={group.id} className={`${SECTION} ${ANCHOR}`}>
+          <div className="flex items-start gap-4">
+            {/* The record's own picture, at the head of its songs. Singles
+                have no album and so no cover of their own here. */}
+            {group.album && <AlbumCover album={group.album} />}
+            <div className="min-w-0">
+              <h2 className={HEADING}>{group.title}</h2>
+              {group.album?.subtitle && (
+                <p className="mt-1 text-sm text-gray-600">{group.album.subtitle}</p>
+              )}
+              {group.album?.isMusical && (
+                <Link to={`/musicals#${group.album.id}`} className="mt-1 inline-block text-sm underline">
+                  About this musical
+                </Link>
+              )}
+            </div>
+          </div>
+          {/* The album's own notice, under its heading and above its songs —
+              the one thing about a record the track listing cannot say. Drawn
+              here as well as on /musicals because this is where the songs are,
+              and a reader who never leaves this page should still see it. */}
+          {group.album?.notice && (
+            <div className="mt-4">
+              <Notice notice={group.album.notice} />
+            </div>
+          )}
 
-        return (
-          <section key={group.id} id={group.id} className={`${SECTION} ${ANCHOR}`}>
-            <div className="flex items-start gap-4">
-              {/* The record's own picture, at the head of its songs. Singles
-                  have no album and so no cover of their own here. */}
-              {group.album && <AlbumCover album={group.album} />}
-              <div className="min-w-0">
-                <h2 className={HEADING}>{group.title}</h2>
-                {group.album?.subtitle && (
-                  <p className="mt-1 text-sm text-gray-600">{group.album.subtitle}</p>
-                )}
-                {group.album?.isMusical && (
-                  <Link to={`/musicals#${group.album.id}`} className="mt-1 inline-block text-sm underline">
-                    About this musical
-                  </Link>
-                )}
+          <div className={`mt-4 ${LIST}`}>
+            {group.songs.map((song) => (
+              <div key={song.id} className={LIST_ITEM}>
+                <SongItem song={song} queue={group.queue} />
               </div>
-            </div>
-            <div className={`mt-4 ${LIST}`}>
-              {group.songs.map((song) => (
-                <div key={song.id} className={LIST_ITEM}>
-                  <SongItem song={song} queue={queue} />
-                </div>
-              ))}
-            </div>
-          </section>
-        )
-      })}
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   )
 }

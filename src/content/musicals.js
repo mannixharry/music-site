@@ -1,11 +1,21 @@
-// The three musicals themselves — long-lived editorial copy that changes about
-// once a year, so it stays in the repo and is edited here.
+// The three musicals' long-form copy — the synopsis and the words around it.
+// Several screens of prose per show, changing about once a year, which is the
+// one thing a textarea in a browser is a bad place to keep. So it stays in the
+// repo and is edited here.
 //
-// Their demo tracks are NOT here: those are songs, they live in the catalogue
-// alongside everything else, and MusicalSection pulls them by `slug`. Adding a
-// demo is done from /admin, not by editing this file.
-
-import { mailtoUrl } from './contact'
+// What is NOT here, and why:
+//
+//   demos       songs like any other, in the catalogue, pulled by `slug`
+//   notice      the album's, since 0006 — a box any album may carry
+//   downloads   the album's, since 0006 — scripts and scores, musicals only
+//
+// The last two used to be here and were moved because they are the things
+// Frank changes, and changing them meant a deploy. A musical created from
+// /admin can now have both without anyone opening an editor; only the synopsis
+// still needs a line adding to this file, which is the trade being made.
+//
+// `slug` must equal the album's id in the database. That is the join, and it is
+// how a show's copy finds its demos, its notice and its downloads.
 
 export const musicals = [
   {
@@ -23,8 +33,6 @@ export const musicals = [
       'After the dream sequence Cedric vows to make the pigs’ revolution positive and as peaceful as possible, and, via his negotiations with Mr Trustworthy, his trusty human solicitor, he prepares the grounds for a successful seizure of the farm, with much fun to be had in the ultimate demise of the evil Farmer Giles. The musical begins with a newscast about the foot and mouth outbreak and subsequent slaughtering of farm animals, and finishes with a sobering comment from Cerebrus about the fate of mankind. In between we have much fun, but it is fun that comes with the message that man must take more care with his environment and learn that the benefits of life are to be shared by all in a better and more equal world.',
       'Musically “Pigs” is a compendium of styles, with rock ‘n’ roll nestling alongside music inspired by, amongst many others, Sousa, Gilbert and Sullivan, Cockney music hall and American bluegrass. For children, in particular, it is an introduction to the many facets of musical appreciation.',
     ],
-    downloads: [{ label: 'Script (PDF)', href: '/scripts/frank-kirwan-pigs-script.pdf' }],
-    needsScriptwriter: false,
   },
   {
     slug: 'copperfield-co',
@@ -39,19 +47,6 @@ export const musicals = [
     resume: [
       '“Copperfield and Co.” is a quick paced two hour musical based loosely on Dickens’ “David Copperfield” and following the path of David from his early, troubled childhood through to the tribulations of adulthood, where we also chart the villainous path of Uriah Heep. In the course of this journey we encounter many classic Dickens characters. The bullying Murdstones haunt David’s early life, sending him first to the fearsome Mr Creakle’s school and then to their bottle factory, from where he lodges with the inimitable Micawber family. From them, he passes into the care of the eccentric Aunt Betsy and Mr Dick, who chase away the returning Murdstones, to the audience’s great delight. In adulthood, David then comes under the tutelage of Mr Wickfield, who employs the “greasy, oily rogue” Uriah. In the second act, we see Uriah, via much interaction with the audience, wielding more and more power, before his ultimate demise. Mr Micawber, employed by Uriah, also becomes increasingly involved in the drama and collaborates with David and Mr Wickfield to bring about Uriah’s downfall. David, in the meanwhile, suffers the loss of his wife, Dora, through illness, but in a popular denouement gains the love of Agnes Wickfield. Uriah, as the show comes to a close, repents in song for his evil ways. “Copperfield and Co.” is narrated in old age by David Copperfield and, unusually, a now benevolent Uriah Heep.',
     ],
-    // A download with no `href` still renders as a placeholder, for anything not
-    // supplied yet. `download: true` forces a save rather than letting the
-    // browser try to render the file.
-    downloads: [
-      { label: 'Script (PDF)', href: '/scripts/frank-kirwan-copperfield-and-co-script.pdf' },
-      { label: 'Score (PDF)', href: '/scores/frank-kirwan-copperfield-and-co.pdf' },
-      {
-        label: 'Sibelius score',
-        href: '/scores/frank-kirwan-copperfield-and-co.sib',
-        download: true,
-      },
-    ],
-    needsScriptwriter: false,
   },
   {
     slug: 'guyana-skies',
@@ -64,10 +59,5 @@ export const musicals = [
     resume: [
       'An on-going project in the musical field, a Windrush-inspired show charting the development of the principal character from his early days in Guyana, through his departure after independence, to his early struggles — eventually overcome — on arrival in the U.K.',
     ],
-    downloads: [],
-    needsScriptwriter: true,
-    // Not written out again here: a second copy of a fact is a second thing to
-    // remember, and contact.js is the one place it lives.
-    contactHref: mailtoUrl,
   },
 ]

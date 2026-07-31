@@ -9,10 +9,11 @@ const inputClass = 'w-full border border-gray-400 bg-white px-2 py-1 text-sm'
 
 // Managing albums: the records and musicals songs are filed under.
 //
-// A grouping with a cover, and little else — the long editorial copy for the
-// three musicals lives in src/content/musicals.js, matched to an album by id,
-// because it is prose that belongs in the repo. So there is nothing here to
-// write a synopsis in, and that is deliberate rather than missing.
+// A grouping with a cover, a notice and — for a musical — its downloads. The
+// long synopsis is the one thing still in the repo, in src/content/musicals.js,
+// matched to an album by id, because it runs to several screens of prose per
+// show and changes about once a year. So there is nothing here to write a
+// synopsis in, and that is deliberate rather than missing.
 //
 // It sits under the song list rather than in a page of its own: albums are
 // created rarely and read constantly, and having them on screen while editing a
@@ -146,17 +147,151 @@ function NewAlbum({ onCreate, onCancel }) {
         </button>
       </div>
 
-      {/* Said before it is chosen rather than after: a musical picks its
-          synopsis and downloads out of the repo by matching this album's id, so
-          the two have to be set up together and it is not something the admin
-          can finish on its own. */}
+      {/* Said before it is chosen rather than after. Its downloads and its
+          notice can be filled in here the moment it exists; the synopsis is the
+          one part that still needs a deploy, and knowing that up front is the
+          difference between planning it and discovering it. */}
       {kind === 'musical' && (
         <p className="mt-2 text-sm text-gray-600">
-          A musical also needs its synopsis and downloads adding to
-          <span className="font-mono"> src/content/musicals.js</span>, matched to this album&apos;s
-          id. Without that it behaves like an ordinary album.
+          You can add its downloads and a notice here straight away. Its synopsis and the copy
+          around it still go in <span className="font-mono">src/content/musicals.js</span>, matched
+          to this album&apos;s id — until then it appears on the songs page but not on{' '}
+          <span className="font-mono">/musicals</span>.
         </p>
       )}
+    </div>
+  )
+}
+
+// The box that appears at the head of this album on the site: a heading and a
+// paragraph or two. Any album may have one — it is what the Guyana Skies
+// "needs a scriptwriter" callout used to be, before it was a component with one
+// musical's words hard-coded into it.
+//
+// Both halves or neither, and said out loud rather than only enforced: the API
+// refuses a half-filled notice, and a Save that fails with a validation error
+// is a worse way to learn this than a line of text.
+function NoticeFields({ album, onPatch }) {
+  const half = Boolean(album.noticeTitle) !== Boolean(album.noticeBody)
+
+  return (
+    <div>
+      <span className="block text-xs uppercase tracking-wide text-gray-600">
+        Notice <span className="normal-case">— optional, shown in a box above the songs</span>
+      </span>
+
+      <input
+        className={`${inputClass} mt-1`}
+        placeholder="Heading — e.g. “This musical needs a scriptwriter.”"
+        defaultValue={album.noticeTitle}
+        onBlur={(event) => {
+          const noticeTitle = event.currentTarget.value.trim()
+          if (noticeTitle !== album.noticeTitle) onPatch({ noticeTitle })
+        }}
+      />
+
+      <textarea
+        rows={3}
+        className={`${inputClass} mt-2`}
+        placeholder="What it says. Email addresses and links are made clickable."
+        defaultValue={album.noticeBody}
+        onBlur={(event) => {
+          const noticeBody = event.currentTarget.value.trim()
+          if (noticeBody !== album.noticeBody) onPatch({ noticeBody })
+        }}
+      />
+
+      {half && (
+        <p className="mt-1 text-xs text-gray-600">
+          A notice needs both a heading and some text — nothing is shown until it has both. Clear
+          both to remove it.
+        </p>
+      )}
+    </div>
+  )
+}
+
+// A musical's scripts and scores.
+//
+// These name files that are already in the repo under public/ — this is the
+// list, not an upload. Which is why the href is typed rather than dropped: the
+// PDFs are large, they change about never, and putting them through R2 would
+// spend the storage allowance on files a deploy already carries for free.
+//
+// A row with a label and no address renders on the site as a placeholder, which
+// is how a show says "the score is coming" without pointing at nothing.
+function DownloadFields({ album, onPatch, busy }) {
+  const downloads = album.downloads ?? []
+
+  // Whole-list writes, because that is what the column is — one JSON value.
+  // Editing one row and saving the list is simpler to reason about than a
+  // per-row endpoint, and there are never more than a handful of rows.
+  const write = (next) => onPatch({ downloads: next })
+  const replace = (index, changes) =>
+    write(downloads.map((item, i) => (i === index ? { ...item, ...changes } : item)))
+
+  return (
+    <div>
+      <span className="block text-xs uppercase tracking-wide text-gray-600">
+        Downloads <span className="normal-case">— scripts and scores, for musicals only</span>
+      </span>
+
+      <p className="mt-1 text-xs text-gray-600">
+        The address is a path to a file in <span className="font-mono">public/</span> — e.g.{' '}
+        <span className="font-mono">/scripts/frank-kirwan-pigs-script.pdf</span> — or a full
+        https:// URL. Leave it empty to show the label as “coming soon”.
+      </p>
+
+      {downloads.map((item, index) => (
+        // Index as key: these rows have no id, and reordering is done by the
+        // buttons rather than by dragging, so a row's position is stable for as
+        // long as it is on screen.
+        <div key={index} className="mt-2 flex flex-wrap items-center gap-2">
+          <input
+            className={`${inputClass} min-w-32 flex-1`}
+            placeholder="Label — e.g. Script (PDF)"
+            defaultValue={item.label}
+            onBlur={(event) => {
+              const label = event.currentTarget.value.trim()
+              if (label && label !== item.label) replace(index, { label })
+            }}
+          />
+          <input
+            className={`${inputClass} min-w-48 flex-[2]`}
+            placeholder="/scores/something.pdf"
+            defaultValue={item.href ?? ''}
+            onBlur={(event) => {
+              const href = event.currentTarget.value.trim()
+              if (href !== (item.href ?? '')) replace(index, { href })
+            }}
+          />
+          <label className="flex shrink-0 items-center gap-1 text-xs" title="Force a save rather than letting the browser try to open it — wanted for a Sibelius file, not for a PDF">
+            <input
+              type="checkbox"
+              checked={Boolean(item.download)}
+              onChange={(event) => replace(index, { download: event.currentTarget.checked })}
+            />
+            save
+          </label>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => write(downloads.filter((_, i) => i !== index))}
+            className="shrink-0 text-xs underline disabled:opacity-50"
+          >
+            Remove
+          </button>
+        </div>
+      ))}
+
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => write([...downloads, { label: 'Script (PDF)', href: '' }])}
+        className="mt-2 border border-gray-400 bg-white px-2 py-1 text-xs disabled:opacity-50"
+      >
+        Add a download
+      </button>
     </div>
   )
 }
@@ -269,6 +404,15 @@ function AlbumRow({
             />
             On the website
           </label>
+
+          <NoticeFields album={album} onPatch={onPatch} />
+
+          {/* Musicals only, and refused by the API for anything else — a record
+              is a set of recordings and has nothing to hand over. Hidden rather
+              than disabled, because there is no version of this an album wants. */}
+          {album.kind === 'musical' && (
+            <DownloadFields album={album} onPatch={onPatch} busy={busy} />
+          )}
 
           <div>
             <span className="block text-xs uppercase tracking-wide text-gray-600">Artwork</span>

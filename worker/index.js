@@ -383,7 +383,14 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
 
       if (route.action === null && method === 'PATCH') {
         const patch = await request.json()
-        const problem = validateAlbum(patch, { partial: true })
+
+        // Read first, because "only a musical has downloads" cannot be judged
+        // from a patch that sets downloads and nothing else. A missing album is
+        // a 404 either way, so nothing is lost by finding out here.
+        const existing = await getAlbum(env, route.id)
+        if (!existing) return fail(404, 'No such album')
+
+        const problem = validateAlbum(patch, { partial: true, existingKind: existing.kind })
         if (problem) return fail(400, problem)
 
         const before = await readAlbumObjectKeys(env, route.id)
