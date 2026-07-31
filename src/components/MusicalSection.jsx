@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import Placeholder from './Placeholder'
 import AudioPlayer from './AudioPlayer'
+import MusicalHero from './MusicalHero'
 import Notice from './Notice'
 import SnippetTag from './SnippetTag'
 import { useContent } from '../context/contentContext'
@@ -50,12 +51,7 @@ function MusicalSection({ musical }) {
           now that the synopsis below it may be closed. */}
       <p className="mt-3 text-sm leading-relaxed">{musical.teaser}</p>
 
-      <Placeholder
-        label={musical.heroLabel}
-        dims={musical.heroDims}
-        aspect="aspect-video"
-        className="mt-4"
-      />
+      <MusicalHero musical={musical} className="mt-4" />
 
       <h3 className="mt-6 font-bold">{musical.resumeLabel}</h3>
 
