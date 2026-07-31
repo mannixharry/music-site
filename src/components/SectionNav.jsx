@@ -68,7 +68,7 @@ function SectionNav({ items }) {
                 // because it means the same thing one level down. Weight and an
                 // underline carry it; the colour is the third signal, not the
                 // only one.
-                className={current ? 'font-bold text-accent underline' : 'underline'}
+                className={`inline-block py-1 -my-1 underline${current ? ' font-bold text-accent' : ''}`}
                 // Announced, not just drawn. This is the in-page equivalent of
                 // the header's current page, and a screen reader gets that from
                 // aria-current or not at all.

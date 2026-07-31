@@ -6,10 +6,17 @@ import { navItems } from '../nav'
 // menu is a plain column of five links and an underline on its own is easy to
 // miss — and the colour is deliberately the third signal rather than the only
 // one, because it is no use at all to a reader who cannot see it.
+//
+// `inline-block py-1 -my-1` is the hit area, not the look. A line of text is 23
+// pixels tall here, one under the 24 a touch target is meant to be; the padding
+// makes the box big enough to hit and the equal negative margin takes the extra
+// height back out of the layout, so nothing moves.
+const NAV_TARGET = 'inline-block py-1 -my-1'
+
 const navLinkClass = ({ isActive }) =>
   isActive
-    ? 'font-bold text-accent underline underline-offset-4'
-    : 'hover:underline hover:underline-offset-4'
+    ? `${NAV_TARGET} font-bold text-accent underline underline-offset-4`
+    : `${NAV_TARGET} hover:underline hover:underline-offset-4`
 
 // Drawn rather than typed, for the reason AudioPlayer's transport icons are:
 // the characters that would do this job have emoji presentations, so the system

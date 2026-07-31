@@ -14,12 +14,17 @@ function Footer() {
         <div>
           <p className="font-bold">Frank Kirwan</p>
           <p className="mt-1">
-            <a href={mailtoUrl} className="underline">
+            <a href={mailtoUrl} className="inline-block py-1 -my-1 underline">
               {contact.email}
             </a>
           </p>
           <p>
-            <a href={instagramUrl} className="underline" target="_blank" rel="noreferrer">
+            <a
+              href={instagramUrl}
+              className="inline-block py-1 -my-1 underline"
+              target="_blank"
+              rel="noreferrer"
+            >
               @{contact.instagramHandle}
             </a>
           </p>
@@ -38,8 +43,10 @@ function Footer() {
                   // Marked the same way the header marks it. An accent that
                   // means "the page you are on" in one nav and nothing in the
                   // other means less than no accent at all.
+                  // See NAV_TARGET in Header.jsx for the padding: a big
+                  // enough tap target, taken back out of the layout.
                   className={({ isActive }) =>
-                    isActive ? 'font-bold text-accent underline' : 'underline'
+                    `inline-block py-1 -my-1 underline${isActive ? ' font-bold text-accent' : ''}`
                   }
                 >
                   {item.label}

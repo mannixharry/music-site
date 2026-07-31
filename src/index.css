@@ -124,6 +124,27 @@ a {
   text-decoration-thickness: from-font;
 }
 
+/* One focus ring for the whole site.
+
+   The scrub bar drew its own, in the accent, because removing the native
+   control removed the native ring with it — and the play button two centimetres
+   away kept the browser's default. Two different answers to the same question,
+   side by side. This is the same ring the scrubber already used, applied to
+   everything that takes focus.
+
+   :focus-visible rather than :focus, so it appears for a keyboard and not for a
+   mouse click, which is the distinction the pseudo-class exists to draw. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:not([tabindex='-1']):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
 @theme {
   /* The site's one accent, oxblood, and it means one thing: this is the page
      you are on, or this is the song that is playing. Anything more and it stops
@@ -235,4 +256,88 @@ a {
 
 .scrubber:disabled::-moz-range-thumb {
   background: var(--color-gray-400);
+}
+
+/* What comes out of a printer.
+   
+   A two-hour musical's synopsis is exactly the kind of thing a director prints,
+   and until now they would have got the pinned header, the grey player boxes,
+   the placeholder outlines and the paper colour, in ink. This is the page
+   rearranged for a medium with no scrolling, no colour worth spending, and
+   nothing to press.
+   
+   Screen colours are dropped rather than translated: warm paper printed on
+   white paper is a grey wash over every page, and the greys the site uses for
+   hairlines vanish at 300dpi anyway. */
+@media print {
+  html {
+    background: #fff;
+    color: #000;
+    /* Points, not pixels: a printer has no idea what a CSS pixel is. */
+    font-size: 11pt;
+  }
+
+  /* The furniture. Everything here is a way of getting somewhere, and paper
+     goes nowhere: the pinned header and its section links, the playing strip,
+     the admin bar, the back-to-top control, and every audio player — a scrub
+     bar is a photograph of a control that cannot be used. */
+  header,
+  footer,
+  nav,
+  .scrubber,
+  [aria-label='Now playing'],
+  [aria-label='Back to the top'],
+  [aria-label='Sections of this page'] {
+    display: none !important;
+  }
+
+  /* The pinned block is no longer pinned, and nothing needs to be held clear
+     of it. */
+  .sticky {
+    position: static !important;
+  }
+
+  .clears-chrome {
+    scroll-margin-top: 0;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  /* A heading should not be the last line on a page, and a synopsis should not
+     be split down the middle if it can be helped. */
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+
+  p,
+  li {
+    orphans: 3;
+    widows: 3;
+  }
+
+  section,
+  article {
+    break-inside: avoid-page;
+  }
+
+  /* A link is a colour and an underline on screen and neither on paper, so the
+     address goes inline — but only for links that leave the site. Printing
+     "(/songs)" after every internal link is noise; printing where a script
+     actually lives is the thing someone wants when they pick the page up. */
+  a[href^='http']::after,
+  a[href^='mailto:']::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.85em;
+    word-break: break-all;
+  }
+
+  /* Empty boxes with "1600×900px" written in them are a note to ourselves. */
+  .border-dashed {
+    display: none !important;
+  }
 }
