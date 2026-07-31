@@ -21,9 +21,6 @@
 //               is this site that says no. Only signing out as someone else,
 //               or an ADMIN_EMAILS edit, gets past it.
 //
-// This used to be one code and one message, reading "reload the page to sign
-// in again". On the forbidden path that was a lie, and following it reloaded
-// into the same refusal for as long as anyone was willing to keep trying.
 
 const BASE = '/api/admin'
 

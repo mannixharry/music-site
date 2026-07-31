@@ -8,9 +8,8 @@ import { createRemoteJWKSet, jwtVerify } from 'jose'
 // Returns { identity } when the caller may edit the site, and otherwise
 // { identity: null, reason } saying why not. Never throws.
 //
-// The reason is not decoration, and "no" being a single answer was a bug. Two
-// refusals look identical from here and could not be less alike to the person
-// reading them:
+// The reason is not decoration. Two refusals look identical from here and
+// could not be less alike to the person reading them:
 //
 //   anonymous — no token, or one Access will not vouch for. Access answers the
 //     next NAVIGATION with a login page, so signing in again fixes it.

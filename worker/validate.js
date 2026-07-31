@@ -136,8 +136,8 @@ const KEY_PREFIXES = {
   coverMasterKey: ['cover-masters/'],
 }
 
-// Numbers, or null. A string here used to be stored as-is and then added into
-// the storage figures.
+// Numbers, or null. A string stored as-is here would end up added into the
+// storage figures.
 const NUMBER_FIELDS = [
   'webBytes',
   'masterBytes',
@@ -180,9 +180,8 @@ export function validateSong(input, { partial = false } = {}) {
   }
 
   // A demo belongs to a musical; nothing else does. Letting these drift apart
-  // means a demo MusicalSection can never find — which is what an unrecognised
-  // slug used to produce: a song filed under a show that does not exist, and so
-  // shown nowhere at all.
+  // files a song under a show that does not exist, so MusicalSection never
+  // finds it and it appears nowhere at all.
   const kind = input.kind
   if (kind === 'demo' && has('musicalSlug') && !input.musicalSlug) {
     return 'a demo needs a musical'

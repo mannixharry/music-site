@@ -11,36 +11,25 @@ function ArrowUpIcon() {
   )
 }
 
-// The way back to the top of a long page.
+// The way back to the top of a long page: one control pinned to the corner,
+// present wherever you are and belonging to the page rather than to the
+// writing.
 //
-// This used to be a text link at the foot of each section — one under every
-// musical and one under every group of songs — which meant it existed only
-// where a section happened to end. Halfway down Copperfield's synopsis there
-// was no way back at all except scrolling, and four copies of the same sentence
-// were four interruptions in the reading column.
-//
-// One control instead, pinned to the corner, present wherever you are and
-// belonging to the page rather than to the writing. It borrows the transport
-// buttons' look on purpose: a square, a hairline border, no shadow. This site
-// has no floating furniture anywhere else, so the one piece of it should read
-// as part of the same set rather than as something bolted on.
+// It borrows the transport buttons' look on purpose — a square, a hairline
+// border, no shadow. This is the site's only floating furniture, so it should
+// read as part of the same set rather than as something bolted on.
 function BackToTop() {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
-    // A fixed distance, not a share of the window.
+    // A fixed distance, not a share of the window. A window-relative threshold
+    // makes the same page behave differently on a laptop and a monitor, and
+    // never offers the control at all on pages that are not a full screen
+    // taller than the window.
     //
-    // This was "more than one window height", which made the control appear on
-    // some pages and never on others for a reason no reader could see: /about
-    // and /contact are not a whole screen taller than the window, so on a
-    // 1512×945 Mac you could scroll 452 pixels down /about and never be offered
-    // the way back. Worse, the taller the window the further you had to scroll,
-    // so the same page behaved differently on a laptop and on a monitor.
-    //
-    // 320 is about a header and the first block of a page — far enough that the
-    // top is genuinely out of sight, near enough that it is offered on every
-    // page long enough to need it. A page too short to scroll that far cannot
-    // trigger it, which is the one case where nothing should appear.
+    // 320 is about a header and the first block: far enough that the top is out
+    // of sight, near enough to be offered on every page long enough to need it.
+    // A page too short to scroll that far never triggers it, which is right.
     const onScroll = () => setScrolled(window.scrollY > 320)
 
     // Run once immediately. A reload partway down a page, or a link into
@@ -58,21 +47,15 @@ function BackToTop() {
       type="button"
       onClick={() => {
         // Smooth, because arriving instantly from the foot of a 10,000-pixel
-        // page gives no sense of having travelled and reads like the site
-        // reloaded. Honoured only where the reader has not asked for less
-        // motion — for them the jump is the accessible answer, not a courtesy.
+        // page reads like the site reloaded. Not for a reader who has asked for
+        // less motion: for them the jump is the accessible answer.
         const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
         window.scrollTo({ top: 0, behavior: still ? 'auto' : 'smooth' })
 
-        // Take focus somewhere before this button removes itself.
-        //
-        // Pressing it scrolls to the top, which hides the control, which unmounts
-        // the element that had focus — and focus falls back to <body>. For anyone
-        // using a keyboard that is the whole page gone: nothing is announced, and
-        // the next Tab starts from wherever the browser decides. Moving it to the
-        // header first means the button hands over rather than vanishing, and the
-        // next Tab carries on from the top of the page, which is where they just
-        // asked to be.
+        // Hand focus over before this button removes itself. Scrolling to the
+        // top hides the control, which unmounts the element holding focus — and
+        // focus would fall to <body>, which for a keyboard is the whole page
+        // gone. The header takes it, so the next Tab carries on from the top.
         document.getElementById('site-header')?.focus()
       }}
       // Both, because the label is what a screen reader announces and the title

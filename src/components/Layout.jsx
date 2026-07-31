@@ -18,16 +18,13 @@ function Layout() {
   // it can go straight into the context without a useMemo around it.
   const [sections, setSections] = useState(null)
 
-  // How tall the pinned block currently is, published as --chrome so that a
-  // heading jumped to by a hash link lands below it rather than under it.
+  // How tall the pinned block currently is, published as --chrome so a heading
+  // jumped to by a hash link lands below it rather than under it.
   //
-  // Measured rather than written down. It was a fixed 7rem, chosen to cover the
-  // header and the now-playing strip, which was already a little too much most
-  // of the time and became too little the moment a page added a row of section
-  // links. Every one of those pieces comes and goes independently — the strip
-  // when something plays, the section links per page, the header itself when
-  // the phone menu opens — so the only number that is right in all of those is
-  // the one taken from the block.
+  // Measured rather than written down: every piece of that block comes and goes
+  // independently — the strip when something plays, the section links per page,
+  // the header itself when the phone menu opens — so the only number right in
+  // all of those is the one taken from the block.
   const chrome = useRef(null)
 
   useEffect(() => {
@@ -68,14 +65,12 @@ function Layout() {
         <AdminBar />
 
         {/* Header, now-playing and the page's own section links pinned as one
-            unit. Sticky, because the pages this serves are long — /songs runs
-            to a few dozen entries and each musical carries a synopsis — and
-            reaching another page used to mean scrolling back to the top first.
+            unit, because the pages this serves are long: /songs runs to a few
+            dozen entries and each musical carries a synopsis.
 
-            All three in one block rather than three sticky elements: each one
-            after the first would otherwise need to know the height of the ones
-            above it, and the now-playing strip is only there some of the
-            time. */}
+            One block rather than three sticky elements — each after the first
+            would need to know the height of the ones above it, and the strip is
+            only there some of the time. */}
         <div ref={chrome} className="sticky top-0 z-20">
           <Header />
           <NowPlaying />

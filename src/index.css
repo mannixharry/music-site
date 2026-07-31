@@ -5,16 +5,14 @@
    arrives from our own origin cannot be delayed by someone else's outage.
 
    Imported from src/ rather than sat in public/, so Vite puts a content hash in
-   each filename. That is what lets these be cached for a year and never
-   revalidated: the name changes if the file does, so a stale copy is not
-   reachable. A fixed name under public/ could not be cached that way safely.
+   each filename — which is what lets these be cached for a year and never
+   revalidated: a name changes if its file does, so a stale copy is unreachable.
 
-   Split by script, so the browser downloads only what the page needs. Measured
-   against the real site: a page is one request, `normal-latin`, 85 kB. Nothing
-   fetches `latinext` — the é in "Chérie je t'aime trop" is U+00E9, inside the
-   latin range — and nothing fetches the italics, because no page sets any type
-   in italic. Both are kept for the words Frank has not written yet; they cost
-   deployment space and no bandwidth at all until something needs them.
+   Split by script, so the browser downloads only what a page needs. In practice
+   that is one request, `normal-latin`, 85 kB: nothing reaches for `latinext`
+   (the é in "Chérie je t'aime trop" is U+00E9, inside the latin range) and
+   nothing sets italic type. Both are kept for words not yet written; they cost
+   deployment space and no bandwidth until something needs them.
 
    `font-weight: 400 700` is one variable file covering the whole range, so bold
    headings cost no extra request. Italic is a separate file because variable
@@ -60,30 +58,25 @@
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
-/* The whole site's look — the admin included.
+/* The whole site's look — the admin included, so a description is edited in the
+   face it will be published in.
 
-   Every one of these is a Tailwind theme variable being given a different
-   value, not a new class, so `bg-gray-100` and `text-sm` keep working exactly
-   as written throughout the components and simply resolve warmer. That is why
-   this changes no layout anywhere.
+   Every one of these is a Tailwind theme variable given a different value, not
+   a new class, so `bg-gray-100` and `text-sm` keep working exactly as written
+   throughout the components and simply resolve warmer. That is why this changes
+   no layout anywhere.
 
-   This was briefly scoped to the public pages, on the assumption that the admin
-   should keep the plain look it was built with. It reads better in the same
-   face as the site it edits: a description typed here is read there, and seeing
-   it in the typeface it will be published in is the point of an editor.
-
-   Unlayered on purpose. Tailwind's own :root values live in @layer theme, and
+   Unlayered on purpose: Tailwind's own :root values live in @layer theme, and
    an unlayered rule beats any layered one regardless of specificity, so this
-   wins without needing !important or a longer selector. */
+   wins without !important or a longer selector. */
 html {
   /* Literata is drawn for reading at length on a screen, which is what this
      site mostly asks of it: a bio, three synopses, and an about page.
 
-     `--font-mono` is deliberately left alone. The admin uses it for the things
-     that genuinely are machine text — song ids, storage keys, byte counts — and
-     a serif would make those harder to read, not easier. The two places where
-     it was doing nothing but line digits up are the players, and those say
-     `tabular-nums` instead now. */
+     `--font-mono` is deliberately left alone — the admin uses it for things
+     that genuinely are machine text, like song ids and byte counts, and a serif
+     would make those harder to read. The players use `tabular-nums` instead,
+     which is all they ever wanted from a monospace. */
   --font-sans: 'Literata', Georgia, 'Times New Roman', serif;
 
   /* Paper, not screen. `white` becomes a warm off-white and the grey ramp warms
@@ -124,16 +117,13 @@ a {
   text-decoration-thickness: from-font;
 }
 
-/* One focus ring for the whole site.
-
-   The scrub bar drew its own, in the accent, because removing the native
-   control removed the native ring with it — and the play button two centimetres
-   away kept the browser's default. Two different answers to the same question,
-   side by side. This is the same ring the scrubber already used, applied to
-   everything that takes focus.
+/* One focus ring for the whole site, in the accent. The scrub bar needs its own
+   because removing the native control removes the native ring with it, and a
+   ring that differs between two controls sitting side by side is worse than
+   either.
 
    :focus-visible rather than :focus, so it appears for a keyboard and not for a
-   mouse click, which is the distinction the pseudo-class exists to draw. */
+   mouse click. */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
@@ -156,33 +146,28 @@ summary:focus-visible,
   --color-accent: #8a3b32;
 }
 
-/* Holds an anchor target clear of the pinned header, whatever the header
-   currently consists of. See ANCHOR in src/rules.js, which is what the
-   components import; this is only where the arithmetic lives.
+/* Holds an anchor target clear of the pinned header, whatever that header
+   currently consists of. See ANCHOR in src/rules.js, which is what components
+   import; this is only where the arithmetic lives.
 
-   The fallback matters: it is what applies between first paint and Layout's
-   first measurement, and on any browser without ResizeObserver. 7rem is the
-   fixed value this replaced, so the worst case is exactly the old behaviour.
-   The extra half-rem is so a heading has a little air above it rather than
-   sitting flush against the rule under the header. */
+   The fallback applies between first paint and Layout's first measurement, and
+   on any browser without ResizeObserver. The extra half-rem gives a heading a
+   little air rather than sitting flush against the rule above it. */
 .clears-chrome {
   scroll-margin-top: calc(var(--chrome, 7rem) + 0.5rem);
 }
 
 /* The scrub bar, drawn here rather than left to the browser.
 
-   Written as plain CSS, against the grain of the rest of this project, because
-   a range input is not one element: it is a track and a thumb living in a
-   shadow tree that can only be reached through vendor pseudo-elements. There is
-   no class to put in the markup for those, so there is nothing for Tailwind to
-   generate.
+   Plain CSS, against the grain of the rest of this project, because a range
+   input is not one element: it is a track and a thumb in a shadow tree reached
+   only through vendor pseudo-elements, and there is no class to put in the
+   markup for Tailwind to generate.
 
-   The reason to take it over at all is that until now every engine drew its own
-   idea of a slider — which is where the line of dark pixels along the top of
-   some of these bars in Safari came from. What is not drawn cannot be drawn
-   wrongly. It also puts the most repeated element on the site, twenty-one of
-   them on the musicals page, in the site's own language: a hairline, a small
-   square, no gloss.
+   Taking it over means every engine draws the same thing rather than its own
+   idea of a slider, and puts the most repeated element on the site — twenty-one
+   of them on the musicals page — in the site's own language: a hairline, a
+   small square, no gloss.
 
    `--played` is set per element by scrubberTrack in AudioPlayer.jsx. */
 .scrubber {
@@ -258,17 +243,12 @@ summary:focus-visible,
   background: var(--color-gray-400);
 }
 
-/* What comes out of a printer.
-   
-   A two-hour musical's synopsis is exactly the kind of thing a director prints,
-   and until now they would have got the pinned header, the grey player boxes,
-   the placeholder outlines and the paper colour, in ink. This is the page
-   rearranged for a medium with no scrolling, no colour worth spending, and
-   nothing to press.
-   
-   Screen colours are dropped rather than translated: warm paper printed on
-   white paper is a grey wash over every page, and the greys the site uses for
-   hairlines vanish at 300dpi anyway. */
+/* What comes out of a printer: the page rearranged for a medium with no
+   scrolling, no colour worth spending and nothing to press. A two-hour
+   musical's synopsis is exactly what a director prints.
+
+   Screen colours are dropped rather than translated — warm paper printed on
+   white paper is a grey wash, and the hairline greys vanish at 300dpi. */
 @media print {
   html {
     background: #fff;
@@ -277,10 +257,8 @@ summary:focus-visible,
     font-size: 11pt;
   }
 
-  /* The furniture. Everything here is a way of getting somewhere, and paper
-     goes nowhere: the pinned header and its section links, the playing strip,
-     the admin bar, the back-to-top control, and every audio player — a scrub
-     bar is a photograph of a control that cannot be used. */
+  /* The furniture: everything here is a way of getting somewhere, and paper
+     goes nowhere. A scrub bar in ink is a photograph of a control. */
   header,
   footer,
   nav,
@@ -326,9 +304,8 @@ summary:focus-visible,
   }
 
   /* A link is a colour and an underline on screen and neither on paper, so the
-     address goes inline — but only for links that leave the site. Printing
-     "(/songs)" after every internal link is noise; printing where a script
-     actually lives is the thing someone wants when they pick the page up. */
+     address goes inline — but only for links that leave the site. "(/songs)"
+     after every internal link would be noise. */
   a[href^='http']::after,
   a[href^='mailto:']::after {
     content: ' (' attr(href) ')';
@@ -336,7 +313,7 @@ summary:focus-visible,
     word-break: break-all;
   }
 
-  /* Empty boxes with "1600×900px" written in them are a note to ourselves. */
+  /* Placeholder outlines are a note to ourselves, not to a reader. */
   .border-dashed {
     display: none !important;
   }

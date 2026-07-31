@@ -66,9 +66,8 @@ export const musicals = [
     ],
     downloads: [],
     needsScriptwriter: true,
-    // Not written out again here. This had been left as the placeholder address
-    // long after the real one was set, because a second copy of a fact is a
-    // second thing to remember — contact.js is the one place it lives.
+    // Not written out again here: a second copy of a fact is a second thing to
+    // remember, and contact.js is the one place it lives.
     contactHref: mailtoUrl,
   },
 ]

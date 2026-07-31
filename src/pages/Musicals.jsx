@@ -12,12 +12,9 @@ function Musicals() {
       'Pigs, Copperfield & Co. and Guyana Skies. Scripts, scores and demos for two musicals previously published by Warner Chappell, and a third looking for a scriptwriter.',
   })
 
-  // Handed to Layout, which pins it under the header for as long as this page
-  // is on screen. It used to be a row drawn here, at the top, where it stopped
-  // being reachable the moment you started reading.
-  //
-  // Memoised because the hook clears and re-sets whenever this changes, and a
-  // fresh array on every render would mean every render.
+  // Handed to Layout, which pins it under the header while this page is on
+  // screen. Memoised because the hook clears and re-sets whenever it changes,
+  // and a fresh array on every render would mean every render.
   const sections = useMemo(
     () => musicals.map((musical) => ({ slug: musical.slug, label: musical.title })),
     [],

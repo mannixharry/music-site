@@ -2,15 +2,14 @@
 //
 // Every upload writes a new key — `web/<song>/<uuid>.mp3` and friends — rather
 // than overwriting the old one, which is what lets the media domain serve
-// `immutable` with a year-long max-age. The cost of that is the object it
-// replaced: nothing referred to it any more, and until now nothing removed it
-// either, so re-uploading a master a few times quietly left copies behind.
+// `immutable` with a year-long max-age. The cost is the object it replaced:
+// nothing refers to it any more, and without this nothing would remove it.
 //
-// Two halves. `deleteReplacedObjects` is the cheap one and runs on every write:
-// it removes exactly the object a patch has just stopped pointing at.
-// `readStorage` is the survey — what is stored, what is stored that nothing
-// names, and what is in the bin — for anything that got away before this
-// existed, or after a failure between an upload and the row meant to name it.
+// Two halves. `deleteReplacedObjects` runs on every write and removes exactly
+// the object a patch has just stopped pointing at. `readStorage` is the survey
+// — what is stored, what is stored that nothing names, and what is in the bin —
+// which catches anything left by a failure between an upload and the row meant
+// to name it.
 
 import { listDeletedSongs, listExpiredSongs, purgeSong } from './db'
 import { ruleForKey, D1_LIMIT_BYTES, PREFIXES, R2_LIMIT_BYTES } from './validate'

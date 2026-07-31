@@ -20,7 +20,7 @@ export function songSlug(row) {
     .toLowerCase()
     .normalize('NFD')
     // Strip the accents, not the letters: "Chérie" becomes "cherie", not "chrie".
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
 }

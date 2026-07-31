@@ -25,9 +25,6 @@ const FOLD_ABOVE = 600
 // instead of one being cut mid-word and the other not at all.
 const PREVIEW_LINES = 'line-clamp-4'
 
-// `first` is gone with the row of quick links it existed for: SECTION_FIRST was
-// the tighter spacing used under a links row that had already drawn a rule, and
-// the links are pinned under the header now rather than sitting on the page.
 function MusicalSection({ musical }) {
   const { demosFor } = useContent()
   const demos = demosFor(musical.slug)
@@ -99,12 +96,9 @@ function MusicalSection({ musical }) {
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <h3 className="font-bold">Demos</h3>
 
-            {/* Nine demos is a show, and hearing it should not be nine separate
-                decisions. Starts the first and hands the provider the whole
-                list, so each one runs into the next.
-
-                Only offered when there is more than one — on a single demo it
-                would be a second play button for the same track. */}
+            {/* Nine demos is a show, and hearing it should not be nine
+                decisions. Only offered above one demo, where it would otherwise
+                be a second play button for the same track. */}
             {queue.length > 1 && (
               <button
                 type="button"
@@ -121,8 +115,8 @@ function MusicalSection({ musical }) {
             {demos.map((demo) => (
               <div key={demo.id}>
                 {/* The musical's name is the heading above, so the bare title
-                    is enough here — but the player's screen-reader label wants
-                    the full one, since it may be announced out of context. */}
+                    is enough — but the player's label wants the full one, which
+                    may be announced out of context. */}
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-sm">{demo.shortTitle}</p>
                   {demo.isSnippet && demo.showSnippetTag && <SnippetTag title={demo.title} />}
@@ -160,9 +154,7 @@ function MusicalSection({ musical }) {
                 >
                   <span className="underline">{download.label}</span>
                   {/* Measured at build time, so it cannot describe a file that
-                      has since been replaced. Someone on a phone deciding
-                      whether to fetch a one-megabyte score wants this before
-                      they tap, not after. */}
+                      has since been replaced. */}
                   {downloadSizes[download.href] && (
                     <span className="text-xs text-gray-600">
                       {formatBytes(downloadSizes[download.href])}

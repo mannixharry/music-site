@@ -25,16 +25,13 @@ function AdminBar() {
   const [signedIn, setSignedIn] = useState(hasAdminSession)
   const [email] = useState(adminSessionEmail)
 
-  // ...and then checked, because the hint outlives what it describes. It is
-  // written when /admin loads and cleared when you sign out through the site —
-  // neither of which happens when an Access session simply lapses in a tab left
-  // open. The strip went on saying "Signed in as …" for a session that no
-  // longer existed, which is the site stating something untrue about the reader.
+  // ...and then checked, because the hint outlives what it describes: it is
+  // written when /admin loads and cleared on sign-out, neither of which happens
+  // when an Access session simply lapses in an open tab.
   //
-  // Only ever for someone the hint is already set for, which is the reason it
-  // exists rather than a session probe on every visit (see adminHint.js): a
-  // visitor still costs the Worker nothing. `manual` so the Access redirect is
-  // not chased across origins into a CORS error, exactly as signOut does.
+  // Only ever for someone the hint is already set for, so a visitor still costs
+  // the Worker nothing. `manual` so the Access redirect is not chased across
+  // origins into a CORS error, exactly as signOut does.
   useEffect(() => {
     if (!signedIn) return
     let cancelled = false

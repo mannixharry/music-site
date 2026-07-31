@@ -39,10 +39,9 @@ function Songs() {
 
   const { songs } = useContent()
   const [query, setQuery] = useState('')
-  // Which show to narrow the list to, or null for the whole catalogue. Twenty-one
-  // of the twenty-six songs here are demos from three musicals, and typing a
-  // show's name into the search does find them — but only if a reader guesses
-  // that it will. This says so out loud.
+  // Which show to narrow to, or null for everything. Most of the catalogue is
+  // demos from three musicals; the search finds them by name, but only if a
+  // reader guesses that it will. This says so out loud.
   const [show, setShow] = useState(null)
 
   // Only the shows that actually have something in the catalogue, with counts,
@@ -77,12 +76,10 @@ function Songs() {
   const searching = query.trim().length > 0 || show !== null
 
   // Handed to Layout, which pins it under the header — the same row the musicals
-  // page gets, and for the same reason: this page runs to a few dozen entries
-  // and the way to the second group was to scroll past the first.
+  // page gets, and for the same reason: this page runs to a few dozen entries.
   //
-  // Null while searching. The page is short then, the counts would be describing
-  // the search rather than the catalogue, and a pinned row of links to sections
-  // that the search has emptied is worse than no row at all.
+  // Null while narrowed. The page is short then, and a pinned row of links to
+  // sections a search has emptied is worse than no row at all.
   const sections = useMemo(
     () =>
       searching
@@ -92,7 +89,7 @@ function Songs() {
             label: group.title,
             count: group.songs.length,
           })),
-    [songs, query, show],
+    [songs, searching],
   )
 
   useSectionNav(sections)
@@ -122,9 +119,8 @@ function Songs() {
             />
             {/* type="search" gives a clear button in some browsers and not
                 others, and it is the one control here worth being sure of. */}
-            {/* Tied to the text, not to `searching` — `searching` now also
-                means "a musical is chosen", and a Clear button beside an empty
-                box that does not clear the thing you can see is a lie. */}
+            {/* Tied to the text, not to `searching`, which also covers a
+                chosen musical: a Clear beside an empty box would be a lie. */}
             {query.trim().length > 0 && (
               <button type="button" onClick={() => setQuery('')} className="shrink-0 text-sm underline">
                 Clear
@@ -134,9 +130,8 @@ function Songs() {
         </div>
       )}
 
-      {/* Named rather than typed. Each show is a button and not a link: this
-          filters what is on the page, it does not go anywhere, and a control
-          that changes the page in place should not look like a way off it. */}
+      {/* Buttons rather than links: this filters the page in place, and a
+          control that does not go anywhere should not look like a way off. */}
       {shows.length > 1 && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="text-sm text-gray-600">From a musical:</span>
@@ -146,8 +141,8 @@ function Songs() {
               <button
                 key={musical.slug}
                 type="button"
-                // Clicking the one already chosen turns it off, so there is
-                // always a way back to everything without hunting for a reset.
+                // The chosen one turns itself off, so there is always a way
+                // back to everything without hunting for a reset.
                 onClick={() => setShow(on ? null : musical.slug)}
                 aria-pressed={on}
                 className={`border px-2 py-1 text-sm ${

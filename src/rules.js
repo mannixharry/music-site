@@ -30,19 +30,13 @@ export const LIST_ITEM = 'py-6'
 // Side padding for the two blocks that run the length of the page — the content
 // and the footer — with a wider right-hand lane on small screens.
 //
-// The lane is for the back-to-top control, which is pinned to the bottom-right
-// corner of the window. On a desktop the column is 42rem in the middle of a
-// wide window and the corner is empty margin, so nothing is ever underneath it.
-// On a phone the column runs edge to edge and the control sat on top of the
-// content — over a song's length, most visibly.
+// The lane keeps the back-to-top control off the content. On a desktop the
+// column sits in the middle of a wide window and the corner is empty margin; on
+// a phone it runs edge to edge and the control would cover a song's length.
 //
-// Reserved at every scroll position rather than only while the control is
-// showing: making it conditional would slide the whole page sideways as you
-// scrolled past the first screen, which is a worse thing to look at than a
-// slightly narrower column.
-//
-// Both blocks, because the control floats over the footer too once you reach
-// the end of a page.
+// Reserved at every scroll position rather than only while the control shows:
+// making it conditional would slide the page sideways as you scrolled. Both
+// blocks, because the control floats over the footer too.
 export const COLUMN = 'pl-4 pr-16 sm:pr-4'
 
 // Every section heading on the public site. The home page had two at one size
@@ -50,12 +44,9 @@ export const COLUMN = 'pl-4 pr-16 sm:pr-4'
 export const HEADING = 'text-xl font-bold'
 
 // How far an in-page anchor holds off the top, so a hash jump does not land
-// with its heading under the sticky header.
+// with its heading under the pinned header.
 //
-// This was `scroll-mt-28`, a fixed 7rem covering the header and the now-playing
-// strip — too much whenever nothing was playing, and not enough at all once a
-// page could also pin a row of section links. It is now whatever the pinned
-// block actually measures: Layout publishes that as --chrome and the class
-// below reads it. Defined in index.css because no Tailwind utility takes a
+// Whatever that block actually measures: Layout publishes it as --chrome and
+// the class reads it. Defined in index.css because no Tailwind utility takes a
 // custom property without an arbitrary value, which this project does not use.
 export const ANCHOR = 'clears-chrome'

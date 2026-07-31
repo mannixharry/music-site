@@ -9,20 +9,15 @@ import { musicals } from '../content/musicals'
 import { ANCHOR, HEADING, SECTION_FIRST } from '../rules'
 import { usePageMeta } from '../usePageMeta'
 
-// One song, at an address of its own.
-//
-// Until now the smallest thing on this site that could be linked to was a page
-// of two dozen songs, so sending somebody a particular song meant sending them
-// /songs and telling them to scroll. This is the page that makes a single track
+// One song, at an address of its own — the page that makes a single track
 // something Frank can put in a message.
 function Song() {
   const { slug } = useParams()
   const { songs } = useContent()
 
-  // By slug, and by id as a fallback. The slug is built from the title, so
-  // renaming a song changes it and any link already shared stops resolving —
-  // the id never changes, which makes it the address of last resort rather than
-  // the one on show.
+  // By slug, then by id. The slug is built from the title, so renaming a song
+  // changes it; the id never does, which makes it the address of last resort
+  // rather than the one on show.
   const song = songs.find((item) => item.slug === slug) ?? songs.find((item) => item.id === slug)
 
   // Its neighbours, so playing it runs on into the rest of what it belongs to:
@@ -46,9 +41,8 @@ function Song() {
         : 'That song does not exist on this site.'),
   })
 
-  // The catalogue arrives with the bundle, so an unknown slug is genuinely
-  // unknown rather than not-loaded-yet, and the ordinary not-found page is the
-  // honest answer.
+  // The catalogue ships with the bundle, so an unknown slug is genuinely
+  // unknown rather than not-loaded-yet.
   if (!song) return <NotFound />
 
   return (

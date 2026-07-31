@@ -1,47 +1,34 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { PlaybackContext } from '../context/playbackContext'
-// The fallback lock-screen artwork: a song with no cover of its own still shows
-// a photograph of the person who wrote it rather than a browser icon.
+// Fallback lock-screen artwork, for a song with no cover of its own.
 import portrait from '../images/frank-kirwan-672.jpg'
 
-// One <audio> element for the entire site, owned here.
+// One <audio> element for the entire site, owned here and mounted above the
+// router. React moves nothing between parents, so a sound can only survive a
+// page change if the thing making it lives above the pages; the rows are
+// controls that ask this to play something, and own no audio themselves.
 //
-// This is the whole point of the change. Each row used to render its own
-// element, which meant the element belonged to a page — and navigating away
-// unmounted it and cut the song off mid-bar. React moves nothing between
-// parents, so the only way for a sound to survive a page change is for the
-// thing making it to live above the router. It does now, and the rows became
-// controls that describe what they would like it to play.
-//
-// preload="none" survives intact, and matters more than before: there is one
-// element and it has no src at all until something is asked for, so a page of a
-// hundred songs still costs zero audio requests until someone presses play.
-// `remember` is opt-in, and only the public site opts in. The admin mounts its
-// own provider for the preview player inside the song form, and restoring a
-// half-played demo into that on every page load would be noise in a place that
-// is meant to be a workbench.
+// preload="none" and no src until something is asked for, so a page of a
+// hundred songs costs zero audio requests until someone presses play.
 const REMEMBER_KEY = 'playback'
 
 function PlaybackProvider({ children, remember = false }) {
   const audioRef = useRef(null)
   const frameRef = useRef(0)
-  // What the element is actually pointed at, kept in a ref as well as in state.
-  // The ref is the one the handlers read, because they have to know *now* — see
-  // the note on play() below.
+  // The displayed track, in a ref as well as in state: handlers need the answer
+  // now, not on the next render.
   const trackRef = useRef(null)
-  // Which track the <audio> element is actually pointed at, which is not always
-  // the one being displayed: a restored session shows a track before anything
-  // has been loaded, and the first press of play is what loads it.
+  // Which track the element is pointed at, which is not always the displayed
+  // one — a restored session shows a track before anything has been loaded.
   const loadedIdRef = useRef(null)
-  // Where to move to once the file has enough of itself to be moved. Seeking an
-  // element that has not loaded throws, so a restored position has to wait.
+  // A restored position, applied once the file can accept a seek. Seeking an
+  // element that has not loaded throws.
   const pendingSeekRef = useRef(null)
-  // The list the current track was started from, so there is something for
-  // "next" to mean.
+  // The list the current track was started from, so "next" has a meaning.
   const queueRef = useRef([])
 
-  // The whole track, not just its id — the bar at the bottom has to name what
-  // is playing after you have left the page the row was on.
+  // The whole track, not just its id: the strip has to name what is playing
+  // after you have left the page its row was on.
   const [track, setTrack] = useState(null)
   const [playing, setPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -49,26 +36,18 @@ function PlaybackProvider({ children, remember = false }) {
   // Seeking a track the browser has not fetched throws InvalidStateError, so
   // the scrubber waits for the element even when the length is already known.
   const [hasMetadata, setHasMetadata] = useState(false)
-  // In state as well as in the ref because the strip's next and previous
-  // buttons have to redraw when the list changes under them.
+  // In state as well as in the ref so the strip's next button redraws when the
+  // list changes under it.
   const [queue, setQueue] = useState([])
 
-  // rAF rather than timeupdate, which fires about four times a second and makes
-  // the scrubber visibly step — but not a React update on every frame.
+  // Driven by rAF, throttled to one React update every 80ms.
   //
-  // Measured on a 6×-throttled phone: playing one song cost a quarter of the
-  // main thread, and only about a sixth of that was the twenty other players on
-  // the page re-rendering. The rest was this loop asking React to render sixty
-  // times a second so a bar could move. It does not need to. A scrub bar is a
-  // few hundred pixels wide, so the shortest song here moves the thumb about
-  // eleven pixels a second and a full-length demo moves it one — an update
-  // every 80ms is under a pixel of travel either way, which is invisible, and a
-  // fifth of the work.
-  //
-  // Still driven by rAF rather than an interval, because rAF stops while the
-  // tab is in the background and an interval keeps burning battery there. The
-  // frame callback still runs sixty times a second; most of those times all it
-  // does is compare two numbers.
+  // rAF rather than the element's own timeupdate, which fires about four times
+  // a second and makes the thumb visibly step; rAF rather than an interval,
+  // because it stops while the tab is in the background. Throttled because a
+  // scrub bar a few hundred pixels wide moves under a pixel in 80ms, and
+  // rendering every frame instead cost a quarter of the main thread on a
+  // 6×-throttled phone against about seven per cent for this.
   const lastPaintRef = useRef(0)
 
   const tick = useCallback(() => {
@@ -86,39 +65,34 @@ function PlaybackProvider({ children, remember = false }) {
 
   useEffect(() => () => cancelAnimationFrame(frameRef.current), [])
 
-  // Everything that touches the element happens here, synchronously, in the
-  // click that asked for it. Both halves of that matter.
+  // Everything that touches the element happens here, synchronously, inside the
+  // click that asked for it. Both halves matter.
   //
-  // Synchronously, because this was written with the src assignment inside a
-  // setTrack updater — and React runs updaters during the *next render*, not
-  // when you call them. So play() ran first, against whatever the element was
-  // pointed at before: nothing on the first press, the previous song after
-  // that. It looked like random songs failing and a reload fixing some while
-  // breaking others, because a reload changes which one is loaded. A state
-  // updater is also allowed to run more than once, which is reason enough not
-  // to put an assignment in one.
+  // Synchronously: assigning src from inside a state updater would run on the
+  // next render, so play() would fire against whatever was loaded before. A
+  // state updater may also run more than once, which is reason enough never to
+  // put an assignment in one.
   //
-  // In the click, because a phone will only start audio from a gesture, and
-  // anything awaited first loses that.
+  // Inside the click: a phone will only start audio from a gesture, and
+  // anything awaited first loses it.
   const play = useCallback((next, nextQueue) => {
     const element = audioRef.current
     if (!element) return
 
-    // The list this was started from, if the caller knows one. Kept when it is
-    // not given, so pressing play on the bar does not empty the queue the row
-    // set up.
+    // Kept when the caller does not supply one, so pressing play on the strip
+    // does not empty the queue a row set up.
     if (nextQueue) {
       queueRef.current = nextQueue
       setQueue(nextQueue)
     }
 
     // A song the element is not pointed at: point it there and start from the
-    // top. One it is already pointed at: carry on from where it was, which is
-    // what makes pressing play on the bar and on the row the same button.
+    // top. One it already is: carry on, which is what makes the strip's play
+    // button and the row's the same button.
     //
-    // Compared against what is *loaded* rather than what is displayed. After a
-    // reload the strip shows a track the element has never seen, and comparing
-    // against the displayed one would skip the load and play silence.
+    // Compared against what is loaded, not what is displayed: after a reload
+    // the strip shows a track the element has never seen, and comparing against
+    // the displayed one would skip the load and play silence.
     if (loadedIdRef.current !== next.id) {
       loadedIdRef.current = next.id
       trackRef.current = next
@@ -206,19 +180,15 @@ function PlaybackProvider({ children, remember = false }) {
     else seek(0)
   }, [at, play, seek])
 
-  // Remembering where you were.
+  // Remembering where you were: the track, its list and the position.
   //
-  // A refresh, or a link out and back, used to stop the music and forget it
-  // entirely. What is written down is the track, the list it came from and the
-  // position — enough to put the strip back exactly as it was, paused.
+  // sessionStorage rather than localStorage, so this survives a reload and an
+  // accidental back button without greeting someone a week later with a
+  // half-played demo.
   //
-  // sessionStorage rather than localStorage on purpose: this is meant to
-  // survive a reload and an accidental back button, not to greet someone a week
-  // later with a half-played demo they have forgotten starting.
-  //
-  // It restores paused, and cannot do otherwise: no browser will start audio on
-  // a page the reader has not touched yet. So the strip comes back showing the
-  // song and the position, and the first press of play carries on from there.
+  // Restores paused, and cannot do otherwise — no browser starts audio on a
+  // page the reader has not touched. The first press of play carries on from
+  // the restored position.
   useEffect(() => {
     if (!remember) return
 
@@ -260,16 +230,14 @@ function PlaybackProvider({ children, remember = false }) {
           }),
         )
       } catch {
-        // Private browsing, a full quota, a browser that has switched it off.
-        // Losing the position is not worth breaking the page over.
+        // Private browsing, a full quota, storage switched off. Losing the
+        // position is not worth breaking the page over.
       }
     }
 
-    // pagehide rather than beforeunload: it is the one iOS Safari reliably
-    // fires, and this is a phone feature more than a desktop one.
+    // pagehide rather than beforeunload: the one iOS Safari reliably fires.
+    // visibilitychange too, because a phone may never come back to fire it.
     window.addEventListener('pagehide', write)
-    // And on the way into the background, because a phone may never come back
-    // to fire pagehide at all.
     document.addEventListener('visibilitychange', write)
 
     return () => {
@@ -279,12 +247,9 @@ function PlaybackProvider({ children, remember = false }) {
     }
   }, [remember])
 
-  // Space to play and pause, which is the one shortcut everybody tries.
-  //
-  // Ignored while the reader is inside anything that has its own idea of what
+  // Space to play and pause. Ignored inside anything with its own idea of what
   // a space bar means — a search box, or a button, where space is how you press
-  // it. preventDefault only after that, so the page still scrolls with space
-  // everywhere else on the site.
+  // it — and preventDefault only after that, so space still scrolls the page.
   useEffect(() => {
     const onKey = (event) => {
       if (event.key !== ' ' && event.code !== 'Space') return
@@ -317,17 +282,12 @@ function PlaybackProvider({ children, remember = false }) {
   const index = queue.findIndex((item) => item.id === track?.id)
   const hasNext = index !== -1 && index < queue.length - 1
 
-  // The controls that are not on the page.
+  // The controls that are not on the page: a pinch on a pair of AirPods, a car
+  // stereo, a lock screen, the media keys on a keyboard. All of them talk to
+  // the Media Session API and none of them can see the site.
   //
-  // A pinch on a pair of AirPods, the play button on a car stereo, the lock
-  // screen of a phone, the media keys on a keyboard: all of them talk to the
-  // Media Session API and none of them can see the site. Without this they do
-  // nothing at all, or — worse on iOS — they act on whatever the browser last
-  // decided was the media on the page, which is a guess.
-  //
-  // Telling the operating system what is playing is the other half of it. A
-  // phone showing "frankkirwan.com" on its lock screen is a browser tab; one
-  // showing the song, Frank's name and the musical it comes from is a record.
+  // The metadata is the other half. A lock screen showing "frankkirwan.com" is
+  // a browser tab; one showing the song, Frank and the musical is a record.
   useEffect(() => {
     if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return
 
@@ -339,14 +299,13 @@ function PlaybackProvider({ children, remember = false }) {
       return
     }
 
-    // Absolute, because this leaves the page: it is handed to the OS, which has
-    // no notion of where the document it came from was.
+    // Absolute: this is handed to the OS, which has no notion of the document
+    // it came from.
     const artwork = track.artwork ?? portrait
     session.metadata = new MediaMetadata({
       title: track.title,
       artist: 'Frank Kirwan',
-      // The musical for a demo; the site for a single, so the field is never
-      // blank and never wrong.
+      // The musical for a demo, the site for a single: never blank, never wrong.
       album: track.album ?? 'frankkirwan.com',
       artwork: [{ src: new URL(artwork, window.location.origin).href }],
     })
@@ -359,9 +318,8 @@ function PlaybackProvider({ children, remember = false }) {
 
     const session = navigator.mediaSession
 
-    // Every one of these is wrapped, because a browser that does not implement
-    // an action throws when you try to register it, and one unsupported action
-    // should not cost the others.
+    // Wrapped because registering an action a browser does not implement
+    // throws, and one unsupported action should not cost the others.
     const set = (action, handler) => {
       try {
         session.setActionHandler(action, handler)
@@ -374,10 +332,10 @@ function PlaybackProvider({ children, remember = false }) {
     set('pause', () => audioRef.current?.pause())
     set('stop', clear)
 
-    // Registered as null when there is nowhere to go, which is how the platform
-    // is told to grey the button out rather than offer a control that does
-    // nothing. Previous is always live: at the top of a list it restarts.
     set('previoustrack', previous)
+    // null tells the platform to grey the button out rather than offer a
+    // control that does nothing. Previous is always live: at the top of a list
+    // it restarts.
     set('nexttrack', hasNext ? next : null)
 
     set('seekbackward', (details) => {
@@ -418,10 +376,9 @@ function PlaybackProvider({ children, remember = false }) {
     }
   }, [play, clear, previous, next, seek, hasNext])
 
-  // Where the lock screen's own scrub bar should sit. The browser keeps this in
-  // step with a real <audio> element on its own most of the time; setting it
-  // explicitly is what makes it right immediately after a seek rather than at
-  // the next update.
+  // Where the lock screen's own scrub bar sits. The browser keeps this in step
+  // with a real <audio> element most of the time; setting it explicitly makes
+  // it right immediately after a seek rather than at the next update.
   useEffect(() => {
     if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return
     if (!navigator.mediaSession.setPositionState) return
@@ -436,8 +393,8 @@ function PlaybackProvider({ children, remember = false }) {
         position: Math.min(Math.max(currentTime, 0), duration),
       })
     } catch {
-      // Some engines are stricter than others about the numbers. A lock screen
-      // scrubber that lags is not worth an exception.
+      // Engines differ on how strict they are about these numbers, and a lock
+      // screen scrubber that lags is not worth an exception.
     }
   }, [track, duration, currentTime])
 
@@ -492,10 +449,8 @@ function PlaybackProvider({ children, remember = false }) {
         onEnded={() => {
           setPlaying(false)
           setCurrentTime(0)
-          // On to the next one in the list this was started from. Nine demos
-          // from one musical are meant to be heard in order, and pressing play
-          // nine times is not listening to a show, it is operating a website.
-          // The last track in a list simply stops.
+          // On through the list. Nine demos from one musical are meant to be
+          // heard in order; the last track simply stops.
           next()
         }}
         onLoadedMetadata={(event) => {
@@ -504,8 +459,7 @@ function PlaybackProvider({ children, remember = false }) {
           setDuration(event.currentTarget.duration)
           setHasMetadata(true)
 
-          // A position restored from the last visit, applied at the first
-          // moment the element is able to accept it.
+          // A restored position, applied at the first moment it can be.
           if (pendingSeekRef.current !== null) {
             const to = Math.min(pendingSeekRef.current, event.currentTarget.duration - 0.5)
             pendingSeekRef.current = null

@@ -1,16 +1,9 @@
 import { formatTime } from '../format'
 import { usePlayback } from '../context/playbackContext'
-import {
-  PauseIcon,
-  PlayIcon,
-  TRANSPORT,
-  TRANSPORT_ACTIVE,
-  TRANSPORT_IDLE,
-  scrubberTrack,
-} from './AudioPlayer'
+import { PauseIcon, PlayIcon } from './AudioPlayer'
+import { TRANSPORT, TRANSPORT_ACTIVE, TRANSPORT_IDLE, scrubberTrack } from './transport'
 
-// Drawn, like the play and pause icons, and for the same reason. A bar and a
-// triangle: the same shape the transport buttons use, turned round.
+// Drawn, like the play and pause icons, and for the same reason.
 function SkipIcon({ back = false }) {
   return (
     <svg
@@ -27,18 +20,13 @@ function SkipIcon({ back = false }) {
 
 // A slim strip under the header, once something is playing.
 //
-// It was fixed to the bottom of the viewport, which is where a player usually
-// goes and which turned out to be the one edge the site does not control: if
-// the browser window overhangs the work area, Windows draws its taskbar over
-// that strip and the bar is simply gone. A page cannot see OS chrome —
-// env(safe-area-inset-*) describes iOS cutouts and reports zero here — so the
-// only reliable answer is not to sit against that edge.
-//
-// It rides with the header instead, which is already pinned and which nothing
-// else draws over. Identical at every width, so there is no second layout to
-// keep working.
-// Smaller than a row's, because this bar rides with the header and every pixel
-// of it is taken off every page.
+// It rides with the header rather than sitting against the bottom of the
+// viewport, which is the one edge a page cannot see: Windows draws its taskbar
+// over a window that overhangs the work area, and env(safe-area-inset-*)
+// describes iOS cutouts and reports zero there. Identical at every width, so
+// there is no second layout to keep working.
+// Smaller than a row's: this bar rides with the header, and every pixel of it
+// is taken off every page.
 const BUTTON = `${TRANSPORT} h-7 w-7`
 
 function NowPlaying() {
@@ -73,8 +61,7 @@ function NowPlaying() {
     >
       <div className="mx-auto flex max-w-2xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-1.5">
         {/* Back to the start of this track, or to the one before it if you are
-            barely into it. Never disabled: at the top of a list it restarts,
-            which is what a transport does and is better than a dead control. */}
+            barely into it. Never disabled: at the top of a list it restarts. */}
         <button
           type="button"
           onClick={previous}
@@ -94,8 +81,8 @@ function NowPlaying() {
           {playing ? <PauseIcon /> : <PlayIcon />}
         </button>
 
-        {/* Next is disabled at the end of a list rather than hidden, so the row
-            does not change width as you move through one. */}
+        {/* Disabled rather than hidden at the end of a list, so the row does
+            not change width as you move through one. */}
         <button
           type="button"
           onClick={next}
@@ -124,8 +111,7 @@ function NowPlaying() {
           type="range"
           min="0"
           max={scrubber.max}
-          // Exact value, proportional keyboard step — see the note on the row
-          // players, which explains why this is not a number.
+          // Exact value, proportional keyboard step — see the row players.
           step="any"
           value={currentTime}
           disabled={!seekable}
@@ -143,10 +129,9 @@ function NowPlaying() {
           type="button"
           onClick={clear}
           aria-label="Stop and close"
-          // Measured at 25×22 before this, which is under the 24px square a
-          // touch target is meant to be — on the one control that is on screen
-          // at every scroll position, and the one whose neighbour is a play
-          // button you did not mean to press.
+          // A full square, like the others: this is on screen at every scroll
+          // position and its neighbour is a play button you did not mean to
+          // press.
           className={`${BUTTON} ${TRANSPORT_IDLE} text-xs`}
         >
           ✕
