@@ -27,11 +27,14 @@ function toSong(row, mediaBase = '', albums = new Map()) {
   return {
     id: row.id,
     slug: songSlug(row),
-    // `title` carries the album's name, because /songs lists the whole
-    // catalogue flat and "Musical snapshot" alone says nothing there.
+    // `title` carries the album's name, for everywhere a song is named away
+    // from its album: a lock screen, the now-playing strip, a tab title, and
+    // the search on /songs, where it is what makes typing "Pigs" find all five
+    // of its demos. "Musical snapshot" on its own says nothing in any of those.
     title: album ? `${album.title} — ${row.title}` : row.title,
     // `shortTitle` is the bare stored title, for when the album's name is
-    // already the heading above it.
+    // already the heading above it — which is every listing on the site, since
+    // both /songs and a musical's section draw their songs under one.
     shortTitle: row.title,
     description: row.description ?? '',
     audioSrc: toMediaSrc(row.webKey, mediaBase),

@@ -4,6 +4,16 @@ import SnippetTag from './SnippetTag'
 
 // Everything below the title is optional, so a song can be a player, a set of
 // streaming links, a paragraph of text, or any combination of the three.
+//
+// The bare title, not the composed one. /songs draws every song under its
+// album's heading, so the composed title repeated the show's name on all
+// nineteen of its demos — "Pigs — Trotters" under a heading reading "Pigs".
+// Which is the same reason MusicalSection has always used `shortTitle`.
+//
+// The player and the preview tag keep the composed title, because both are read
+// out of the list: one names the track on a lock screen, the other in a tooltip
+// that has to stand on its own. Search on /songs still matches the composed
+// title too, so typing a musical's name finds its demos.
 function SongItem({ song, queue }) {
   const links = song.links ?? []
 
@@ -14,7 +24,7 @@ function SongItem({ song, queue }) {
             also a link is how a list of things becomes a set of addresses. */}
         <h3 className="text-lg font-bold">
           <Link to={`/songs/${song.slug}`} className="underline">
-            {song.title}
+            {song.shortTitle}
           </Link>
         </h3>
         {song.isSnippet && song.showSnippetTag && <SnippetTag title={song.title} />}
