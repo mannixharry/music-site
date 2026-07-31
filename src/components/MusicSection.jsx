@@ -1,10 +1,14 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import ReleaseItem from './ReleaseItem'
 import { useContent } from '../context/contentContext'
+import { toQueue } from '../content/normalise'
 import { HEADING, LIST, LIST_ITEM } from '../rules'
 
 function MusicSection() {
   const { singles } = useContent()
+  // The five singles play on from one to the next, in the order shown.
+  const queue = useMemo(() => toQueue(singles), [singles])
 
   return (
     <section>
@@ -12,7 +16,7 @@ function MusicSection() {
       <div className={`mt-2 ${LIST}`}>
         {singles.map((single) => (
           <div key={single.id} className={LIST_ITEM}>
-            <ReleaseItem release={single} />
+            <ReleaseItem release={single} queue={queue} />
           </div>
         ))}
       </div>

@@ -50,7 +50,7 @@ function Layout() {
   return (
     // The provider sits above the router outlet so the "one snippet at a time"
     // rule holds across every page that embeds a player.
-    <PlaybackProvider>
+    <PlaybackProvider remember>
       <ScrollToTop />
       <RefreshOnNavigate />
 

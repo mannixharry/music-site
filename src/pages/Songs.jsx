@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import Placeholder from '../components/Placeholder'
 import SongItem from '../components/SongItem'
 import { useContent } from '../context/contentContext'
+import { toQueue } from '../content/normalise'
 import { useSectionNav } from '../context/sectionNavContext'
 import { ANCHOR, HEADING, LIST, LIST_ITEM, SECTION } from '../rules'
 import { usePageMeta } from '../usePageMeta'
@@ -122,22 +123,25 @@ function Songs() {
         <Placeholder label="No songs added yet — add one from /admin" className="mt-8 h-32" />
       )}
 
-      {groups.map((group, i) => (
-        <section
-          key={group.slug}
-          id={group.slug}
-          className={`${SECTION} ${ANCHOR}`}
-        >
-          <h2 className={HEADING}>{group.title}</h2>
-          <div className={`mt-2 ${LIST}`}>
-            {group.songs.map((song) => (
-              <div key={song.id} className={LIST_ITEM}>
-                <SongItem song={song} />
-              </div>
-            ))}
-          </div>
-        </section>
-      ))}
+      {groups.map((group) => {
+        // Once per group, not once per row. The group is also the list that
+        // plays on: reaching the end of the singles does not carry the listener
+        // into the musicals' demos.
+        const queue = toQueue(group.songs)
+
+        return (
+          <section key={group.slug} id={group.slug} className={`${SECTION} ${ANCHOR}`}>
+            <h2 className={HEADING}>{group.title}</h2>
+            <div className={`mt-2 ${LIST}`}>
+              {group.songs.map((song) => (
+                <div key={song.id} className={LIST_ITEM}>
+                  <SongItem song={song} queue={queue} />
+                </div>
+              ))}
+            </div>
+          </section>
+        )
+      })}
     </div>
   )
 }

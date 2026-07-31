@@ -21,7 +21,7 @@ export function toMediaSrc(key, mediaBase) {
   return `${mediaBase}/${key}`
 }
 
-export function toSong(row, mediaBase = '') {
+function toSong(row, mediaBase = '') {
   const musicalTitle = row.kind === 'demo' ? musicalTitles.get(row.musicalSlug) : null
 
   return {
@@ -57,4 +57,19 @@ export function toSong(row, mediaBase = '') {
 // visitor. /api/content filters them too — this is the second lock.
 export function toSongs(rows, mediaBase = '') {
   return rows.filter((row) => row.published !== false).map((row) => toSong(row, mediaBase))
+}
+
+// The playable part of a list of songs, in the order it is shown, which is what
+// PlaybackProvider needs to move from one to the next. Songs with no audio are
+// dropped rather than skipped over later — a queue entry that cannot be played
+// is a gap that "next" would have to know about.
+export function toQueue(songs) {
+  return songs
+    .filter((song) => song.audioSrc)
+    .map((song) => ({
+      id: song.id,
+      src: song.audioSrc,
+      title: song.title,
+      duration: song.duration,
+    }))
 }

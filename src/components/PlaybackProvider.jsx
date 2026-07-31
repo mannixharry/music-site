@@ -13,13 +13,29 @@ import { PlaybackContext } from '../context/playbackContext'
 // preload="none" survives intact, and matters more than before: there is one
 // element and it has no src at all until something is asked for, so a page of a
 // hundred songs still costs zero audio requests until someone presses play.
-function PlaybackProvider({ children }) {
+// `remember` is opt-in, and only the public site opts in. The admin mounts its
+// own provider for the preview player inside the song form, and restoring a
+// half-played demo into that on every page load would be noise in a place that
+// is meant to be a workbench.
+const REMEMBER_KEY = 'playback'
+
+function PlaybackProvider({ children, remember = false }) {
   const audioRef = useRef(null)
   const frameRef = useRef(0)
   // What the element is actually pointed at, kept in a ref as well as in state.
   // The ref is the one the handlers read, because they have to know *now* — see
   // the note on play() below.
   const trackRef = useRef(null)
+  // Which track the <audio> element is actually pointed at, which is not always
+  // the one being displayed: a restored session shows a track before anything
+  // has been loaded, and the first press of play is what loads it.
+  const loadedIdRef = useRef(null)
+  // Where to move to once the file has enough of itself to be moved. Seeking an
+  // element that has not loaded throws, so a restored position has to wait.
+  const pendingSeekRef = useRef(null)
+  // The list the current track was started from, so there is something for
+  // "next" to mean.
+  const queueRef = useRef([])
 
   // The whole track, not just its id — the bar at the bottom has to name what
   // is playing after you have left the page the row was on.
@@ -30,6 +46,9 @@ function PlaybackProvider({ children }) {
   // Seeking a track the browser has not fetched throws InvalidStateError, so
   // the scrubber waits for the element even when the length is already known.
   const [hasMetadata, setHasMetadata] = useState(false)
+  // In state as well as in the ref because the strip's next and previous
+  // buttons have to redraw when the list changes under them.
+  const [queue, setQueue] = useState([])
 
   // rAF rather than timeupdate, which fires about four times a second and makes
   // the scrubber visibly step — but not a React update on every frame.
@@ -78,14 +97,27 @@ function PlaybackProvider({ children }) {
   //
   // In the click, because a phone will only start audio from a gesture, and
   // anything awaited first loses that.
-  const play = useCallback((next) => {
+  const play = useCallback((next, nextQueue) => {
     const element = audioRef.current
     if (!element) return
 
-    // A different song: point the element at it and start from the top. The
-    // same one: carry on from where it was, which is what makes pressing play
-    // on the bar and on the row the same button.
-    if (trackRef.current?.id !== next.id) {
+    // The list this was started from, if the caller knows one. Kept when it is
+    // not given, so pressing play on the bar does not empty the queue the row
+    // set up.
+    if (nextQueue) {
+      queueRef.current = nextQueue
+      setQueue(nextQueue)
+    }
+
+    // A song the element is not pointed at: point it there and start from the
+    // top. One it is already pointed at: carry on from where it was, which is
+    // what makes pressing play on the bar and on the row the same button.
+    //
+    // Compared against what is *loaded* rather than what is displayed. After a
+    // reload the strip shows a track the element has never seen, and comparing
+    // against the displayed one would skip the load and play silence.
+    if (loadedIdRef.current !== next.id) {
+      loadedIdRef.current = next.id
       trackRef.current = next
       element.src = next.src
       // Tells the element to pick the new source up now rather than at some
@@ -93,7 +125,7 @@ function PlaybackProvider({ children }) {
       element.load()
 
       setTrack(next)
-      setCurrentTime(0)
+      setCurrentTime(pendingSeekRef.current ?? 0)
       setDuration(next.duration ?? NaN)
       setHasMetadata(false)
     }
@@ -123,6 +155,10 @@ function PlaybackProvider({ children }) {
       element.load()
     }
     trackRef.current = null
+    loadedIdRef.current = null
+    pendingSeekRef.current = null
+    queueRef.current = []
+    setQueue([])
     setTrack(null)
     setPlaying(false)
     setCurrentTime(0)
@@ -136,6 +172,144 @@ function PlaybackProvider({ children }) {
     setCurrentTime(time)
   }, [])
 
+  // Where the current track sits in the list it was started from. -1 when there
+  // is no list, which is what makes next and previous inert rather than wrong.
+  const at = useCallback(
+    () => queueRef.current.findIndex((item) => item.id === trackRef.current?.id),
+    [],
+  )
+
+  const next = useCallback(() => {
+    const target = queueRef.current[at() + 1]
+    if (target) play(target)
+  }, [at, play])
+
+  // Back to the start of this track if you are into it, the previous one if you
+  // are not — which is what every other transport does, and the reason the
+  // button is never dead: at the top of a list it restarts rather than nothing.
+  const previous = useCallback(() => {
+    const element = audioRef.current
+    if (element && element.currentTime > 3) {
+      seek(0)
+      return
+    }
+    const target = queueRef.current[at() - 1]
+    if (target) play(target)
+    else seek(0)
+  }, [at, play, seek])
+
+  // Remembering where you were.
+  //
+  // A refresh, or a link out and back, used to stop the music and forget it
+  // entirely. What is written down is the track, the list it came from and the
+  // position — enough to put the strip back exactly as it was, paused.
+  //
+  // sessionStorage rather than localStorage on purpose: this is meant to
+  // survive a reload and an accidental back button, not to greet someone a week
+  // later with a half-played demo they have forgotten starting.
+  //
+  // It restores paused, and cannot do otherwise: no browser will start audio on
+  // a page the reader has not touched yet. So the strip comes back showing the
+  // song and the position, and the first press of play carries on from there.
+  useEffect(() => {
+    if (!remember) return
+
+    let saved = null
+    try {
+      saved = JSON.parse(sessionStorage.getItem(REMEMBER_KEY) ?? 'null')
+    } catch {
+      return
+    }
+    if (!saved?.track?.id || !saved.track.src) return
+
+    trackRef.current = saved.track
+    pendingSeekRef.current = saved.position ?? 0
+    setTrack(saved.track)
+    setDuration(saved.track.duration ?? NaN)
+    setCurrentTime(saved.position ?? 0)
+
+    if (Array.isArray(saved.queue)) {
+      queueRef.current = saved.queue
+      setQueue(saved.queue)
+    }
+  }, [remember])
+
+  useEffect(() => {
+    if (!remember) return
+
+    const write = () => {
+      try {
+        if (!trackRef.current) {
+          sessionStorage.removeItem(REMEMBER_KEY)
+          return
+        }
+        sessionStorage.setItem(
+          REMEMBER_KEY,
+          JSON.stringify({
+            track: trackRef.current,
+            queue: queueRef.current,
+            position: audioRef.current?.currentTime ?? 0,
+          }),
+        )
+      } catch {
+        // Private browsing, a full quota, a browser that has switched it off.
+        // Losing the position is not worth breaking the page over.
+      }
+    }
+
+    // pagehide rather than beforeunload: it is the one iOS Safari reliably
+    // fires, and this is a phone feature more than a desktop one.
+    window.addEventListener('pagehide', write)
+    // And on the way into the background, because a phone may never come back
+    // to fire pagehide at all.
+    document.addEventListener('visibilitychange', write)
+
+    return () => {
+      write()
+      window.removeEventListener('pagehide', write)
+      document.removeEventListener('visibilitychange', write)
+    }
+  }, [remember])
+
+  // Space to play and pause, which is the one shortcut everybody tries.
+  //
+  // Ignored while the reader is inside anything that has its own idea of what
+  // a space bar means — a search box, or a button, where space is how you press
+  // it. preventDefault only after that, so the page still scrolls with space
+  // everywhere else on the site.
+  useEffect(() => {
+    const onKey = (event) => {
+      if (event.key !== ' ' && event.code !== 'Space') return
+      if (event.metaKey || event.ctrlKey || event.altKey) return
+
+      const el = document.activeElement
+      const tag = el?.tagName
+      if (
+        el?.isContentEditable ||
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        tag === 'SELECT' ||
+        tag === 'BUTTON' ||
+        tag === 'A'
+      ) {
+        return
+      }
+
+      if (!trackRef.current) return
+
+      event.preventDefault()
+      if (audioRef.current?.paused) play(trackRef.current)
+      else audioRef.current?.pause()
+    }
+
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [play])
+
+  const index = queue.findIndex((item) => item.id === track?.id)
+  const hasNext = index !== -1 && index < queue.length - 1
+  const hasPrevious = index > 0
+
   const value = useMemo(
     () => ({
       track,
@@ -143,13 +317,32 @@ function PlaybackProvider({ children }) {
       currentTime,
       duration,
       hasMetadata,
+      hasNext,
+      hasPrevious,
       play,
       pause,
       stop,
       clear,
       seek,
+      next,
+      previous,
     }),
-    [track, playing, currentTime, duration, hasMetadata, play, pause, stop, clear, seek],
+    [
+      track,
+      playing,
+      currentTime,
+      duration,
+      hasMetadata,
+      hasNext,
+      hasPrevious,
+      play,
+      pause,
+      stop,
+      clear,
+      seek,
+      next,
+      previous,
+    ],
   )
 
   return (
@@ -169,12 +362,28 @@ function PlaybackProvider({ children }) {
         onEnded={() => {
           setPlaying(false)
           setCurrentTime(0)
+          // On to the next one in the list this was started from. Nine demos
+          // from one musical are meant to be heard in order, and pressing play
+          // nine times is not listening to a show, it is operating a website.
+          // The last track in a list simply stops.
+          next()
         }}
         onLoadedMetadata={(event) => {
           // The file's own length replaces the recorded one, so a stale
           // duration in the database cannot outlive the first play.
           setDuration(event.currentTarget.duration)
           setHasMetadata(true)
+
+          // A position restored from the last visit, applied at the first
+          // moment the element is able to accept it.
+          if (pendingSeekRef.current !== null) {
+            const to = Math.min(pendingSeekRef.current, event.currentTarget.duration - 0.5)
+            pendingSeekRef.current = null
+            if (to > 0) {
+              event.currentTarget.currentTime = to
+              setCurrentTime(to)
+            }
+          }
         }}
       />
       {children}

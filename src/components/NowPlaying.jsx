@@ -2,6 +2,22 @@ import { formatTime } from '../format'
 import { usePlayback } from '../context/playbackContext'
 import { PauseIcon, PlayIcon, scrubberTrack } from './AudioPlayer'
 
+// Drawn, like the play and pause icons, and for the same reason. A bar and a
+// triangle: the same shape the transport buttons use, turned round.
+function SkipIcon({ back = false }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="currentColor"
+      aria-hidden="true"
+      className={`h-3.5 w-3.5 ${back ? 'rotate-180' : ''}`}
+    >
+      <path d="M3 3v10l7-5z" />
+      <rect x="11" y="3" width="2" height="10" />
+    </svg>
+  )
+}
+
 // A slim strip under the header, once something is playing.
 //
 // It was fixed to the bottom of the viewport, which is where a player usually
@@ -14,9 +30,25 @@ import { PauseIcon, PlayIcon, scrubberTrack } from './AudioPlayer'
 // It rides with the header instead, which is already pinned and which nothing
 // else draws over. Identical at every width, so there is no second layout to
 // keep working.
+// Every button in this row is the same square. Declared once because there are
+// now four of them and they were copies of each other.
+const TRANSPORT = 'grid h-7 w-7 shrink-0 place-items-center border transition-colors'
+
 function NowPlaying() {
-  const { track, playing, currentTime, duration, hasMetadata, play, pause, clear, seek } =
-    usePlayback()
+  const {
+    track,
+    playing,
+    currentTime,
+    duration,
+    hasMetadata,
+    hasNext,
+    play,
+    pause,
+    clear,
+    seek,
+    next,
+    previous,
+  } = usePlayback()
 
   if (!track) return null
 
@@ -32,18 +64,48 @@ function NowPlaying() {
       // a state the site is in rather than a part of the site.
       className="border-b border-gray-300 bg-gray-200"
     >
-      <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-1.5">
+      <div className="mx-auto flex max-w-2xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-1.5">
+        {/* Back to the start of this track, or to the one before it if you are
+            barely into it. Never disabled: at the top of a list it restarts,
+            which is what a transport does and is better than a dead control. */}
+        <button
+          type="button"
+          onClick={previous}
+          aria-label="Previous"
+          title="Previous"
+          className={`${TRANSPORT} border-gray-400 bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900`}
+        >
+          <SkipIcon back />
+        </button>
+
         <button
           type="button"
           onClick={() => (playing ? pause() : play(track))}
           aria-label={`${playing ? 'Pause' : 'Play'} ${track.title}`}
-          className={`grid h-7 w-7 shrink-0 place-items-center border transition-colors ${
+          className={`${TRANSPORT} ${
             playing
               ? 'border-gray-500 bg-gray-300 text-gray-900'
               : 'border-gray-400 bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900'
           }`}
         >
           {playing ? <PauseIcon /> : <PlayIcon />}
+        </button>
+
+        {/* Next is disabled at the end of a list rather than hidden, so the row
+            does not change width as you move through one. */}
+        <button
+          type="button"
+          onClick={next}
+          disabled={!hasNext}
+          aria-label="Next"
+          title="Next"
+          className={`${TRANSPORT} border-gray-400 bg-white ${
+            hasNext
+              ? 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              : 'cursor-default text-gray-400'
+          }`}
+        >
+          <SkipIcon />
         </button>
 
         <p className="min-w-0 flex-1 truncate text-xs">
@@ -68,7 +130,7 @@ function NowPlaying() {
           disabled={!seekable}
           aria-label={`Seek within ${track.title}`}
           style={scrubber.style}
-          className="scrubber hidden h-4 min-w-0 flex-1 sm:block sm:max-w-xs"
+          className="scrubber order-last h-4 w-full basis-full sm:order-none sm:w-auto sm:min-w-0 sm:flex-1 sm:basis-auto sm:max-w-xs"
           onChange={(event) => seek(Number(event.currentTarget.value))}
         />
 
@@ -84,7 +146,7 @@ function NowPlaying() {
           // touch target is meant to be — on the one control that is on screen
           // at every scroll position, and the one whose neighbour is a play
           // button you did not mean to press.
-          className="grid h-7 w-7 shrink-0 place-items-center border border-gray-400 bg-white text-xs"
+          className={`${TRANSPORT} border-gray-400 bg-white text-xs hover:bg-gray-100`}
         >
           ✕
         </button>

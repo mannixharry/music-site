@@ -9,7 +9,7 @@ import SnippetTag from './SnippetTag'
 // long as neighbouring songs agree — which they do, art arriving per release.
 const COVER_CLASS = 'aspect-square w-24 shrink-0'
 
-function ReleaseItem({ release }) {
+function ReleaseItem({ release, queue }) {
   return (
     <div className="flex gap-3">
       {release.coverSrc && (
@@ -38,6 +38,7 @@ function ReleaseItem({ release }) {
             src={release.audioSrc}
             title={release.title}
             duration={release.duration}
+            queue={queue}
           />
         </div>
 

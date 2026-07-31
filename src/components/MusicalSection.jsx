@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Placeholder from './Placeholder'
 import AudioPlayer from './AudioPlayer'
 import ScriptwriterCallout from './ScriptwriterCallout'
 import SnippetTag from './SnippetTag'
 import { useContent } from '../context/contentContext'
+import { usePlayback } from '../context/playbackContext'
+import { toQueue } from '../content/normalise'
+import { PlayIcon } from './AudioPlayer'
 import { ANCHOR, SECTION } from '../rules'
 
 // Above this many characters the resume opens shortened, with the first few
@@ -27,6 +30,11 @@ function MusicalSection({ musical }) {
   const { demosFor } = useContent()
   const demos = demosFor(musical.slug)
   const [expanded, setExpanded] = useState(false)
+
+  // The show's own demos, in the order they are listed, which is the order they
+  // are meant to be heard in.
+  const playback = usePlayback()
+  const queue = useMemo(() => toQueue(demos), [demos])
 
   const shortened = musical.resume.join(' ').length > FOLD_ABOVE
   const showAll = expanded || !shortened
@@ -86,7 +94,27 @@ function MusicalSection({ musical }) {
           show with no demos yet loses the block entirely. */}
       {demos.length > 0 && (
         <>
-          <h3 className="mt-6 font-bold">Demos</h3>
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+            <h3 className="font-bold">Demos</h3>
+
+            {/* Nine demos is a show, and hearing it should not be nine separate
+                decisions. Starts the first and hands the provider the whole
+                list, so each one runs into the next.
+
+                Only offered when there is more than one — on a single demo it
+                would be a second play button for the same track. */}
+            {queue.length > 1 && (
+              <button
+                type="button"
+                onClick={() => playback.play(queue[0], queue)}
+                className="flex items-center gap-2 border border-gray-400 bg-white px-3 py-1 text-sm hover:bg-gray-200"
+              >
+                <PlayIcon />
+                Play all {queue.length}
+              </button>
+            )}
+          </div>
+
           <div className="mt-2 space-y-3">
             {demos.map((demo) => (
               <div key={demo.id}>
@@ -103,6 +131,7 @@ function MusicalSection({ musical }) {
                     src={demo.audioSrc}
                     title={demo.title}
                     duration={demo.duration}
+                    queue={queue}
                   />
                 </div>
               </div>

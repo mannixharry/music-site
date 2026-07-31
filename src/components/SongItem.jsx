@@ -3,7 +3,7 @@ import SnippetTag from './SnippetTag'
 
 // Everything below the title is optional, so a song can be a player, a set of
 // streaming links, a paragraph of text, or any combination of the three.
-function SongItem({ song }) {
+function SongItem({ song, queue }) {
   const links = song.links ?? []
 
   return (
@@ -22,6 +22,7 @@ function SongItem({ song }) {
             src={song.audioSrc}
             title={song.title}
             duration={song.duration}
+            queue={queue}
           />
         </div>
       )}

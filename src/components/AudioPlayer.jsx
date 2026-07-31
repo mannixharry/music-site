@@ -21,7 +21,7 @@ export function PauseIcon() {
   )
 }
 
-export const transportClass = 'grid h-9 w-9 shrink-0 place-items-center border transition-colors'
+const transportClass = 'grid h-9 w-9 shrink-0 place-items-center border transition-colors'
 
 // The two numbers a scrub bar needs, worked out in one place because there are
 // two of these — the row players and the now-playing strip — and they were
@@ -52,7 +52,11 @@ export function scrubberTrack(duration, currentTime, seekable) {
 // `duration` is that recorded length, and is what lets the whole thing stay
 // preload="none": every row shows how long its song is without a byte being
 // fetched, which on a page of a hundred songs is a hundred requests saved.
-function AudioPlayer({ id, src, title, duration: knownDuration = null }) {
+// `queue` is the list this row belongs to — the songs in its group, the demos
+// of its musical. It is what gives "next" something to mean, and what lets a
+// musical play through rather than stopping after every track. A row without
+// one still plays; it simply has nothing after it.
+function AudioPlayer({ id, src, title, duration: knownDuration = null, queue }) {
   const playback = usePlayback()
 
   const isActive = playback.track?.id === id
@@ -70,7 +74,9 @@ function AudioPlayer({ id, src, title, duration: knownDuration = null }) {
       <button
         type="button"
         onClick={() =>
-          isPlaying ? playback.pause() : playback.play({ id, src, title, duration: knownDuration })
+          isPlaying
+            ? playback.pause()
+            : playback.play({ id, src, title, duration: knownDuration }, queue)
         }
         aria-label={`${isPlaying ? 'Pause' : 'Play'} ${title}`}
         className={`${transportClass} ${
