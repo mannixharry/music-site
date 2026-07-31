@@ -266,6 +266,7 @@ function Admin() {
 
             <SongList
               songs={songs}
+              albums={albums}
               selectedId={selectedId}
               busy={busy}
               onSelect={(id) => {
