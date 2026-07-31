@@ -1,0 +1,15 @@
+# The site is staged: index.html also carries <meta name="robots" content="noindex,
+# nofollow">, and these two have to agree. A Disallow here stops a crawler
+# fetching the page at all, which is the belt to that meta tag's braces.
+#
+# TO GO PUBLIC: delete the Disallow line below and the meta tag in index.html.
+# The sitemap line can stay either way; it is only read once crawling is allowed.
+User-agent: *
+Disallow: /
+
+# Never, in any state. Cloudflare Access refuses these anyway, but a crawler
+# should not be knocking on them to find that out.
+Disallow: /admin
+Disallow: /api/
+
+Sitemap: https://frankkirwan.com/sitemap.xml

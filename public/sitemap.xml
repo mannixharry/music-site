@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The five public pages. /admin is not here and never should be.
+
+  No <lastmod>: it would be a date written by hand that quietly goes stale, and
+  a wrong one is worse than none. Five pages is small enough that a crawler will
+  reach everything from the header anyway — this exists to say plainly which
+  five they are, and which spelling of each URL is the real one.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://frankkirwan.com/</loc></url>
+  <url><loc>https://frankkirwan.com/songs</loc></url>
+  <url><loc>https://frankkirwan.com/musicals</loc></url>
+  <url><loc>https://frankkirwan.com/about</loc></url>
+  <url><loc>https://frankkirwan.com/contact</loc></url>
+</urlset>

@@ -6,9 +6,81 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- TODO: remove before going public -->
+    <!-- TODO: remove before going public, together with the Disallow in robots.txt -->
     <meta name="robots" content="noindex, nofollow" />
+
     <title>Frank Kirwan</title>
+
+    <!--
+      The home page's own values, not a generic fallback.
+
+      Every address is served this one file, so anything written here describes
+      whichever page a reader happens to land on until React replaces it (see
+      src/usePageMeta.js). Something that reads the HTML and stops — a link
+      preview in a chat app, most often — sees only this. Making it the home
+      page means the worst case is a correct description of the wrong page,
+      rather than a wrong one.
+    -->
+    <meta
+      name="description"
+      content="Singer-songwriter, musician and composer of musicals. Songs and demos to listen to, and three musicals — two of them previously published by Warner Chappell."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Frank Kirwan" />
+    <meta property="og:title" content="Frank Kirwan" />
+    <meta
+      property="og:description"
+      content="Singer-songwriter, musician and composer of musicals. Songs and demos to listen to, and three musicals — two of them previously published by Warner Chappell."
+    />
+    <meta property="og:url" content="https://frankkirwan.com/" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!--
+      What Frank is, in the vocabulary search engines actually parse. A composer
+      with a named body of work is one of the few things they will show richly,
+      and this is the difference between being read as "a website" and being
+      read as a person with three musicals to his name.
+
+      Deliberately only the things that are true and stable. No sameAs for
+      Instagram until the handle is confirmed — pointing a machine-readable
+      identity claim at the wrong account is worse than omitting it.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Frank Kirwan",
+        "url": "https://frankkirwan.com/",
+        "email": "mailto:frank@frankkirwan.com",
+        "jobTitle": "Singer-songwriter, musician, composer of musicals",
+        "description": "Singer-songwriter, musician and composer of musicals.",
+        "knowsAbout": ["Songwriting", "Musical theatre"],
+        "workExampleCount": 3,
+        "subjectOf": [
+          {
+            "@type": "CreativeWork",
+            "name": "Pigs",
+            "genre": "Musical",
+            "url": "https://frankkirwan.com/musicals#pigs",
+            "publisher": { "@type": "Organization", "name": "Warner Chappell" }
+          },
+          {
+            "@type": "CreativeWork",
+            "name": "Copperfield & Co.",
+            "genre": "Musical",
+            "url": "https://frankkirwan.com/musicals#copperfield-co",
+            "publisher": { "@type": "Organization", "name": "Warner Chappell" }
+          },
+          {
+            "@type": "CreativeWork",
+            "name": "Guyana Skies",
+            "genre": "Musical",
+            "url": "https://frankkirwan.com/musicals#guyana-skies",
+            "creativeWorkStatus": "In development"
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -5,11 +5,14 @@ import { profile } from '../content/profile'
 import { musicals } from '../content/musicals'
 import { instagramUrl } from '../content/contact'
 import { HEADING, SECTION } from '../rules'
-import { usePageTitle } from '../usePageTitle'
+import { usePageMeta } from '../usePageMeta'
 
 function Home() {
-  // No prefix — the home page is the site, so its tab is just the name.
-  usePageTitle()
+  // No title prefix — the home page is the site, so its tab is just the name.
+  usePageMeta({
+    description:
+      'Singer-songwriter, musician and composer of musicals. Songs and demos to listen to, and three musicals — two of them previously published by Warner Chappell.',
+  })
 
   return (
     <div className="py-8">

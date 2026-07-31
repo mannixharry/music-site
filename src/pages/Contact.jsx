@@ -1,9 +1,13 @@
 import PageImages from '../components/PageImages'
 import { contact, contactImages, instagramUrl, mailtoUrl } from '../content/contact'
-import { usePageTitle } from '../usePageTitle'
+import { usePageMeta } from '../usePageMeta'
 
 function Contact() {
-  usePageTitle('Contact')
+  usePageMeta({
+    title: 'Contact',
+    description:
+      'How to reach Frank Kirwan. Email is the surest way.',
+  })
 
   return (
     <div className="py-8">

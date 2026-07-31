@@ -1,9 +1,13 @@
 import PageImages from '../components/PageImages'
 import { about, aboutImages } from '../content/about'
-import { usePageTitle } from '../usePageTitle'
+import { usePageMeta } from '../usePageMeta'
 
 function About() {
-  usePageTitle('About')
+  usePageMeta({
+    title: 'About',
+    description:
+      'Frank Kirwan on songwriting, on twice having musicals published by Warner Chappell, and on the work he is doing now.',
+  })
 
   return (
     <div className="py-8">

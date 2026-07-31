@@ -16,7 +16,7 @@ import SongForm from '../admin/SongForm'
 import DeletedSongs from '../admin/DeletedSongs'
 import SongList from '../admin/SongList'
 import StoragePanel from '../admin/StoragePanel'
-import { usePageTitle } from '../usePageTitle'
+import { usePageMeta } from '../usePageMeta'
 
 // Deliberately outside <Layout>: no site header, no 42rem column. Cloudflare
 // Access stops anonymous requests before this page is served at all, and the
@@ -24,7 +24,11 @@ import { usePageTitle } from '../usePageTitle'
 // the bundle a visitor downloads.
 
 function Admin() {
-  usePageTitle('Admin')
+  usePageMeta({
+    title: 'Admin',
+    description:
+      'Editing the site.',
+  })
 
   const [session, setSession] = useState(null)
   const [songs, setSongs] = useState([])
