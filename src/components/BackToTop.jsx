@@ -28,10 +28,20 @@ function BackToTop() {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
-    // A window's height rather than a fixed number of pixels: the point is
-    // "far enough that the header is gone", and on a phone that is 700px while
-    // on a desktop it is closer to 1000.
-    const onScroll = () => setScrolled(window.scrollY > window.innerHeight)
+    // A fixed distance, not a share of the window.
+    //
+    // This was "more than one window height", which made the control appear on
+    // some pages and never on others for a reason no reader could see: /about
+    // and /contact are not a whole screen taller than the window, so on a
+    // 1512×945 Mac you could scroll 452 pixels down /about and never be offered
+    // the way back. Worse, the taller the window the further you had to scroll,
+    // so the same page behaved differently on a laptop and on a monitor.
+    //
+    // 320 is about a header and the first block of a page — far enough that the
+    // top is genuinely out of sight, near enough that it is offered on every
+    // page long enough to need it. A page too short to scroll that far cannot
+    // trigger it, which is the one case where nothing should appear.
+    const onScroll = () => setScrolled(window.scrollY > 320)
 
     // Run once immediately. A reload partway down a page, or a link into
     // /musicals#guyana-skies, both start scrolled without firing an event.
