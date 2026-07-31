@@ -3,6 +3,7 @@ import Placeholder from '../components/Placeholder'
 import SongItem from '../components/SongItem'
 import { useContent } from '../context/contentContext'
 import { toQueue } from '../content/normalise'
+import { musicals } from '../content/musicals'
 import { useSectionNav } from '../context/sectionNavContext'
 import { ANCHOR, HEADING, LIST, LIST_ITEM, SECTION } from '../rules'
 import { usePageMeta } from '../usePageMeta'
@@ -38,22 +39,42 @@ function Songs() {
 
   const { songs } = useContent()
   const [query, setQuery] = useState('')
+  // Which show to narrow the list to, or null for the whole catalogue. Twenty-one
+  // of the twenty-six songs here are demos from three musicals, and typing a
+  // show's name into the search does find them — but only if a reader guesses
+  // that it will. This says so out loud.
+  const [show, setShow] = useState(null)
+
+  // Only the shows that actually have something in the catalogue, with counts,
+  // so the row cannot offer a filter that leads to an empty page.
+  const shows = useMemo(
+    () =>
+      musicals
+        .map((musical) => ({
+          slug: musical.slug,
+          title: musical.title,
+          count: songs.filter((song) => song.musicalSlug === musical.slug).length,
+        }))
+        .filter((musical) => musical.count > 0),
+    [songs],
+  )
 
   // Title and description, like the admin's search — and `title` here is the
   // composed one, so typing a musical's name finds all of its demos.
   const matches = useMemo(() => {
     const needle = query.trim().toLowerCase()
-    if (!needle) return songs
+    const narrowed = show ? songs.filter((song) => song.musicalSlug === show) : songs
+    if (!needle) return narrowed
 
-    return songs.filter(
+    return narrowed.filter(
       (song) =>
         song.title.toLowerCase().includes(needle) ||
         song.description.toLowerCase().includes(needle),
     )
-  }, [songs, query])
+  }, [songs, query, show])
 
   const groups = groupSongs(matches)
-  const searching = query.trim().length > 0
+  const searching = query.trim().length > 0 || show !== null
 
   // Handed to Layout, which pins it under the header — the same row the musicals
   // page gets, and for the same reason: this page runs to a few dozen entries
@@ -64,14 +85,14 @@ function Songs() {
   // that the search has emptied is worse than no row at all.
   const sections = useMemo(
     () =>
-      query.trim()
+      searching
         ? null
         : groupSongs(songs).map((group) => ({
             slug: group.slug,
             label: group.title,
             count: group.songs.length,
           })),
-    [songs, query],
+    [songs, query, show],
   )
 
   useSectionNav(sections)
@@ -101,7 +122,10 @@ function Songs() {
             />
             {/* type="search" gives a clear button in some browsers and not
                 others, and it is the one control here worth being sure of. */}
-            {searching && (
+            {/* Tied to the text, not to `searching` — `searching` now also
+                means "a musical is chosen", and a Clear button beside an empty
+                box that does not clear the thing you can see is a lie. */}
+            {query.trim().length > 0 && (
               <button type="button" onClick={() => setQuery('')} className="shrink-0 text-sm underline">
                 Clear
               </button>
@@ -110,12 +134,49 @@ function Songs() {
         </div>
       )}
 
+      {/* Named rather than typed. Each show is a button and not a link: this
+          filters what is on the page, it does not go anywhere, and a control
+          that changes the page in place should not look like a way off it. */}
+      {shows.length > 1 && (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="text-sm text-gray-600">From a musical:</span>
+          {shows.map((musical) => {
+            const on = show === musical.slug
+            return (
+              <button
+                key={musical.slug}
+                type="button"
+                // Clicking the one already chosen turns it off, so there is
+                // always a way back to everything without hunting for a reset.
+                onClick={() => setShow(on ? null : musical.slug)}
+                aria-pressed={on}
+                className={`border px-2 py-1 text-sm ${
+                  on
+                    ? 'border-accent bg-accent text-white'
+                    : 'border-gray-400 bg-white hover:bg-gray-200'
+                }`}
+              >
+                {musical.title}{' '}
+                <span className={on ? 'text-gray-200' : 'text-gray-600'}>({musical.count})</span>
+              </button>
+            )
+          })}
+          {show && (
+            <button type="button" onClick={() => setShow(null)} className="text-sm underline">
+              Show everything
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Announced, so the count reaches someone who cannot see the list shrink. */}
       {searching && (
         <p aria-live="polite" className="mt-4 text-sm text-gray-600">
           {matches.length === 0
-            ? `Nothing matches “${query.trim()}”.`
-            : `${matches.length} of ${songs.length} songs match “${query.trim()}”.`}
+            ? `Nothing here matches${query.trim() ? ` “${query.trim()}”` : ''}.`
+            : `${matches.length} of ${songs.length} songs${
+                query.trim() ? ` match “${query.trim()}”` : ''
+              }.`}
         </p>
       )}
 
