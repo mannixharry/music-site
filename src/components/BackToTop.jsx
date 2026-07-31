@@ -63,6 +63,17 @@ function BackToTop() {
         // motion — for them the jump is the accessible answer, not a courtesy.
         const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
         window.scrollTo({ top: 0, behavior: still ? 'auto' : 'smooth' })
+
+        // Take focus somewhere before this button removes itself.
+        //
+        // Pressing it scrolls to the top, which hides the control, which unmounts
+        // the element that had focus — and focus falls back to <body>. For anyone
+        // using a keyboard that is the whole page gone: nothing is announced, and
+        // the next Tab starts from wherever the browser decides. Moving it to the
+        // header first means the button hands over rather than vanishing, and the
+        // next Tab carries on from the top of the page, which is where they just
+        // asked to be.
+        document.getElementById('site-header')?.focus()
       }}
       // Both, because the label is what a screen reader announces and the title
       // is what everyone else gets on hover — the icon alone says "up", not
