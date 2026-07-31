@@ -1,6 +1,6 @@
 import { formatTime } from '../format'
 import { usePlayback } from '../context/playbackContext'
-import { PauseIcon, PlayIcon } from './AudioPlayer'
+import { PauseIcon, PlayIcon, scrubberTrack } from './AudioPlayer'
 
 // A slim strip under the header, once something is playing.
 //
@@ -21,6 +21,7 @@ function NowPlaying() {
   if (!track) return null
 
   const seekable = hasMetadata && Number.isFinite(duration) && duration > 0
+  const scrubber = scrubberTrack(duration, currentTime, seekable)
 
   return (
     <div
@@ -59,12 +60,13 @@ function NowPlaying() {
         <input
           type="range"
           min="0"
-          max={seekable ? duration : 0}
+          max={scrubber.max}
           step="0.01"
           value={currentTime}
           disabled={!seekable}
           aria-label={`Seek within ${track.title}`}
-          className="hidden h-4 min-w-0 flex-1 accent-accent sm:block sm:max-w-xs"
+          style={scrubber.style}
+          className="scrubber hidden h-4 min-w-0 flex-1 sm:block sm:max-w-xs"
           onChange={(event) => seek(Number(event.currentTarget.value))}
         />
 

@@ -128,3 +128,92 @@ a {
      redefine names Tailwind already knows. */
   --color-accent: #8a3b32;
 }
+
+/* The scrub bar, drawn here rather than left to the browser.
+
+   Written as plain CSS, against the grain of the rest of this project, because
+   a range input is not one element: it is a track and a thumb living in a
+   shadow tree that can only be reached through vendor pseudo-elements. There is
+   no class to put in the markup for those, so there is nothing for Tailwind to
+   generate.
+
+   The reason to take it over at all is that until now every engine drew its own
+   idea of a slider — which is where the line of dark pixels along the top of
+   some of these bars in Safari came from. What is not drawn cannot be drawn
+   wrongly. It also puts the most repeated element on the site, twenty-one of
+   them on the musicals page, in the site's own language: a hairline, a small
+   square, no gloss.
+
+   `--played` is set per element by scrubberTrack in AudioPlayer.jsx. */
+.scrubber {
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.scrubber:disabled {
+  cursor: default;
+}
+
+.scrubber:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* WebKit and Blink. The track is one element carrying a two-stop gradient:
+   accent up to the played point, then the rule colour, with no blend between —
+   which is a hard edge at exactly the right place and costs no second element. */
+.scrubber::-webkit-slider-runnable-track {
+  height: 3px;
+  background: linear-gradient(
+    to right,
+    var(--color-accent) var(--played, 0%),
+    var(--color-gray-300) var(--played, 0%)
+  );
+}
+
+.scrubber:disabled::-webkit-slider-runnable-track {
+  background: var(--color-gray-300);
+}
+
+.scrubber::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  /* Half the thumb less half the track, which is what centres it on the line —
+     WebKit aligns a thumb to the top of the track rather than to its middle. */
+  margin-top: -4.5px;
+  background: var(--color-accent);
+}
+
+.scrubber:disabled::-webkit-slider-thumb {
+  background: var(--color-gray-400);
+}
+
+/* Firefox, which splits the same job across three pseudo-elements and centres
+   the thumb for you. `border: 0` because it draws one otherwise. */
+.scrubber::-moz-range-track {
+  height: 3px;
+  background: var(--color-gray-300);
+}
+
+.scrubber::-moz-range-progress {
+  height: 3px;
+  background: var(--color-accent);
+}
+
+.scrubber::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 0;
+  border-radius: 0;
+  background: var(--color-accent);
+}
+
+.scrubber:disabled::-moz-range-progress {
+  background: var(--color-gray-300);
+}
+
+.scrubber:disabled::-moz-range-thumb {
+  background: var(--color-gray-400);
+}

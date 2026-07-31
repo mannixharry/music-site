@@ -23,6 +23,27 @@ export function PauseIcon() {
 
 export const transportClass = 'grid h-9 w-9 shrink-0 place-items-center border transition-colors'
 
+// The two numbers a scrub bar needs, worked out in one place because there are
+// two of these — the row players and the now-playing strip — and they were
+// close enough to drift apart without anyone noticing.
+//
+// `max` is never zero. It used to be, for every row that was not the song
+// currently loaded: min="0" max="0" is a control with no range at all, and what
+// a browser draws for one is undefined and differs by engine. That is the most
+// likely source of the dark line reported along the top of some of these bars in
+// Safari, and it is worth not doing regardless of whether it was the cause. The
+// row still cannot be dragged before there is audio to seek in — `disabled` is
+// what does that, and always was.
+//
+// `--played` is how far along the bar is filled. A range with its native
+// appearance removed has no idea of a "played" side, so the track is painted as
+// a two-stop gradient and this is where the stop goes.
+export function scrubberTrack(duration, currentTime, seekable) {
+  const max = Number.isFinite(duration) && duration > 0 ? duration : 1
+  const played = seekable ? Math.min(100, Math.max(0, (currentTime / max) * 100)) : 0
+  return { max, style: { '--played': `${played}%` } }
+}
+
 // A transport for one song. It owns no audio — the single element lives in
 // PlaybackProvider, so a song carries on playing when you leave the page this
 // row was on. What this draws is either live state, when it is the song
@@ -42,6 +63,7 @@ function AudioPlayer({ id, src, title, duration: knownDuration = null }) {
   const duration = isActive ? playback.duration : (knownDuration ?? NaN)
   const currentTime = isActive ? playback.currentTime : 0
   const seekable = isActive && playback.hasMetadata && Number.isFinite(duration) && duration > 0
+  const track = scrubberTrack(duration, currentTime, seekable)
 
   return (
     <div className="flex h-14 items-center gap-3 border border-gray-300 bg-gray-100 px-3">
@@ -63,13 +85,14 @@ function AudioPlayer({ id, src, title, duration: knownDuration = null }) {
       <input
         type="range"
         min="0"
-        max={seekable ? duration : 0}
+        max={track.max}
         step="0.01"
         value={currentTime}
         disabled={!seekable}
         aria-label={`Seek within ${title}`}
         onChange={(event) => playback.seek(Number(event.currentTarget.value))}
-        className="h-6 min-w-0 flex-1 accent-accent"
+        style={track.style}
+        className="scrubber h-6 min-w-0 flex-1"
       />
 
       {/* Total length, not elapsed — the scrub bar already shows position, and
