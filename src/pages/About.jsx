@@ -1,7 +1,10 @@
 import PageImages from '../components/PageImages'
 import { about, aboutImages } from '../content/about'
+import { usePageTitle } from '../usePageTitle'
 
 function About() {
+  usePageTitle('About')
+
   return (
     <div className="py-8">
       <h1 className="text-4xl font-bold">About</h1>

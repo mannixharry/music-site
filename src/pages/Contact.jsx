@@ -1,7 +1,10 @@
 import PageImages from '../components/PageImages'
 import { contact, contactImages, instagramUrl, mailtoUrl } from '../content/contact'
+import { usePageTitle } from '../usePageTitle'
 
 function Contact() {
+  usePageTitle('Contact')
+
   return (
     <div className="py-8">
       <h1 className="text-4xl font-bold">Contact</h1>

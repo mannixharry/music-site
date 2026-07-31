@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ANCHOR, HEADING, SECTION_FIRST } from '../rules'
+import { usePageTitle } from '../usePageTitle'
 
 // What an address that does not exist gets.
 //
@@ -12,6 +13,8 @@ import { ANCHOR, HEADING, SECTION_FIRST } from '../rules'
 // It sits inside <Layout>, so whatever brought someone here, the site is still
 // around them and every page is one click away.
 function NotFound() {
+  usePageTitle('Page not found')
+
   return (
     <div className={`${ANCHOR} py-8`}>
       <h1 className="text-4xl font-bold">Page not found</h1>

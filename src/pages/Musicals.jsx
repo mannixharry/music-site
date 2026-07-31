@@ -3,8 +3,11 @@ import MusicalSection from '../components/MusicalSection'
 import { musicals } from '../content/musicals'
 import { useSectionNav } from '../context/sectionNavContext'
 import { ANCHOR } from '../rules'
+import { usePageTitle } from '../usePageTitle'
 
 function Musicals() {
+  usePageTitle('Musicals')
+
   // Handed to Layout, which pins it under the header for as long as this page
   // is on screen. It used to be a row drawn here, at the top, where it stopped
   // being reachable the moment you started reading.

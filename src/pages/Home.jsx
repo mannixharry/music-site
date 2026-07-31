@@ -4,8 +4,12 @@ import { profile } from '../content/profile'
 import { musicals } from '../content/musicals'
 import { instagramUrl } from '../content/contact'
 import { HEADING, SECTION } from '../rules'
+import { usePageTitle } from '../usePageTitle'
 
 function Home() {
+  // No prefix — the home page is the site, so its tab is just the name.
+  usePageTitle()
+
   return (
     <div className="py-8">
       <section className="flex flex-col gap-4 md:flex-row md:items-center">
