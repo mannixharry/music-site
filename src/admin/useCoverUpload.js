@@ -68,13 +68,34 @@ export function useCoverUpload({ songId, capabilities, patch }) {
     [songId, capabilities, patch],
   )
 
-  // Clearing the art drops the public object from the row but leaves both R2
-  // objects alone, exactly as deleting a song does. The placeholder comes back,
-  // and the original is still there to restore from.
+  // Removing the art clears BOTH keys, so both objects go — the public copy and
+  // the original behind it.
+  //
+  // It used to clear only the public one. That looked like it kept the original
+  // "to restore from", and the row did keep naming it, so the storage sweep
+  // rightly never called it unreferenced — but nothing anywhere could restore
+  // from it. The result was a private object per removal that no screen showed,
+  // no button could reach and no sweep would collect: two of them, at 600 kB
+  // each, were sitting in the bucket when this was found, counted under "your
+  // original artwork" for artwork that was no longer on the site.
+  //
+  // Which is the same reasoning deleteReplacedObjects already gives for the
+  // public copy — "recoverable was never surfaced anywhere a person could use
+  // it". It applies harder to the master, because the master is the bigger file.
+  //
+  // Both fields have to be named for both objects to go: deleteReplacedObjects
+  // only considers key columns the patch actually mentions, which is what stops
+  // an unrelated edit costing a song its artwork.
   const clear = useCallback(async () => {
     setStatus({ phase: 'uploading', ratio: 1, message: 'Removing…', error: null })
     try {
-      await patch({ coverKey: null, coverBytes: null })
+      await patch({
+        coverKey: null,
+        coverBytes: null,
+        coverMasterKey: null,
+        coverMasterBytes: null,
+        coverMasterMime: null,
+      })
       setStatus(IDLE)
     } catch (error) {
       setStatus({ phase: 'error', ratio: 0, message: '', error: error.message })
