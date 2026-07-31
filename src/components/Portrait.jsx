@@ -28,21 +28,31 @@ import jpg1000 from '../images/frank-kirwan-1000.jpg'
 // hash and is cached for a year — see public/_headers.
 function Portrait({ className = '' }) {
   return (
-    <picture>
+    // The sizing class goes on the <picture>, not on the <img> inside it, and
+    // the <picture> is made a block that will not shrink.
+    //
+    // Both of those are repairs. This started as an <img> that was itself the
+    // flex child; wrapping it handed that role to the <picture>, which is an
+    // inline element that collapses to its content — so `md:w-1/2` on the image
+    // was taking half of a box that had already shrunk, and the photograph came
+    // out at 135 pixels instead of 320. Fixing that left it at 262, because a
+    // replaced element resists being squeezed in a flex row and an ordinary box
+    // does not: the heading beside it was taking the difference.
+    <picture className={`block shrink-0 ${className}`}>
       <source
         type="image/avif"
         srcSet={`${avif672} 672w, ${avif1000} 1000w`}
-        sizes="(min-width: 768px) 336px, calc(100vw - 4rem)"
+        sizes="(min-width: 768px) 320px, calc(100vw - 4rem)"
       />
       <source
         type="image/webp"
         srcSet={`${webp672} 672w, ${webp1000} 1000w`}
-        sizes="(min-width: 768px) 336px, calc(100vw - 4rem)"
+        sizes="(min-width: 768px) 320px, calc(100vw - 4rem)"
       />
       <img
         src={jpg672}
         srcSet={`${jpg672} 672w, ${jpg1000} 1000w`}
-        sizes="(min-width: 768px) 336px, calc(100vw - 4rem)"
+        sizes="(min-width: 768px) 320px, calc(100vw - 4rem)"
         alt="Frank Kirwan with his guitar"
         width={1000}
         height={1250}
@@ -51,7 +61,8 @@ function Portrait({ className = '' }) {
         // eagerly and early rather than lazily.
         fetchPriority="high"
         decoding="async"
-        className={className}
+        // Fills whatever the <picture> above has been sized to.
+        className="w-full"
       />
     </picture>
   )
