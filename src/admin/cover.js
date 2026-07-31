@@ -27,14 +27,14 @@ export function imageTypeFor(file) {
 // What the site is built to show. The home page draws covers at 96px, so 1000 is
 // already generous — it is the size the placeholder has always advertised, and
 // leaves room to show art larger later without going back to the originals.
-export const TARGET_SIZE = 1000
+const TARGET_SIZE = 1000
 
 // Under this and already a web format, the file is served untouched. Mirrors
 // canUseDirectly() for audio, and for the same reason: re-encoding something
 // already small and already compressed only loses quality.
 const DIRECT_LIMIT = 400 * 1024
 
-export function isWebImage(file) {
+function isWebImage(file) {
   const type = imageTypeFor(file)
   return type === 'image/jpeg' || type === 'image/png' || type === 'image/webp'
 }

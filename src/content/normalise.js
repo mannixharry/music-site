@@ -6,6 +6,7 @@
 // audio to R2 (or renaming a musical) touches one file.
 
 import { musicals } from './musicals'
+import { songSlug } from './slug'
 
 const musicalTitles = new Map(musicals.map((musical) => [musical.slug, musical.title]))
 
@@ -19,30 +20,6 @@ export function toMediaSrc(key, mediaBase) {
   if (!key) return null
   if (key.startsWith('/') || key.startsWith('http')) return key
   return `${mediaBase}/${key}`
-}
-
-// The address a song gets of its own.
-//
-// Built from the words rather than from the id, because a link Frank sends
-// somebody should say what it is: /songs/pigs-animals-rule, not a database key
-// nobody can read. A demo is prefixed with its musical, which is what makes it
-// unique — there are three songs called "Musical snapshot" and they would
-// otherwise all want the same address.
-//
-// The trade-off is that renaming a song changes its address and any link
-// already shared with it stops working. The route accepts a song's id as well
-// for exactly that reason, so there is always one address that cannot break.
-export function songSlug(row) {
-  const words = row.kind === 'demo' && row.musicalSlug ? `${row.musicalSlug} ${row.title}` : row.title
-
-  return words
-    .toLowerCase()
-    .normalize('NFD')
-    // Strip the accents rather than the letters, so "Chérie" becomes "cherie"
-    // and not "chrie".
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
 }
 
 function toSong(row, mediaBase = '') {

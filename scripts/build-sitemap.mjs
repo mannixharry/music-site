@@ -7,6 +7,7 @@
 //
 // Runs from `prebuild`, after the snapshot has been pulled.
 import { readFile, writeFile } from 'node:fs/promises'
+import { songSlug } from '../src/content/slug.js'
 
 const ORIGIN = 'https://frankkirwan.com'
 const PAGES = ['/', '/songs', '/musicals', '/about', '/contact']
@@ -15,19 +16,7 @@ const snapshotPath = new URL('../src/content/snapshot.json', import.meta.url)
 const snapshot = JSON.parse(await readFile(snapshotPath, 'utf8'))
 const rows = snapshot.songs ?? []
 
-// The same rule as songSlug in src/content/normalise.js. Duplicated rather than
-// imported because that module pulls in the site's content graph, and a build
-// script should not need to resolve JSX imports to write an XML file. If one
-// changes, the other has to: the check below is what catches it.
-const slugFor = (row) =>
-  (row.kind === 'demo' && row.musicalSlug ? `${row.musicalSlug} ${row.title}` : row.title)
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-
-const songs = rows.filter((row) => row.published !== false).map(slugFor)
+const songs = rows.filter((row) => row.published !== false).map(songSlug)
 
 const duplicates = songs.filter((slug, i) => songs.indexOf(slug) !== i)
 if (duplicates.length) {

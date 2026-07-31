@@ -21,7 +21,13 @@ export function PauseIcon() {
   )
 }
 
-const transportClass = 'grid h-9 w-9 shrink-0 place-items-center border transition-colors'
+// The look of every transport button on the site, in one place: the row
+// players, and the four in the now-playing strip. Size is left to the caller
+// because the strip's are smaller than a row's.
+export const TRANSPORT = 'grid shrink-0 place-items-center border transition-colors'
+export const TRANSPORT_IDLE =
+  'border-gray-400 bg-white text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+export const TRANSPORT_ACTIVE = 'border-gray-500 bg-gray-300 text-gray-900'
 
 // The two numbers a scrub bar needs, worked out in one place because there are
 // two of these — the row players and the now-playing strip — and they were
@@ -91,11 +97,7 @@ function AudioPlayer({ id, src, title, duration: knownDuration = null, queue }) 
             : playback.play(entry, queue)
         }
         aria-label={`${isPlaying ? 'Pause' : 'Play'} ${title}`}
-        className={`${transportClass} ${
-          isPlaying
-            ? 'border-gray-500 bg-gray-300 text-gray-900'
-            : 'border-gray-400 bg-white text-gray-600 hover:bg-gray-200 hover:text-gray-900'
-        }`}
+        className={`${TRANSPORT} h-9 w-9 ${isPlaying ? TRANSPORT_ACTIVE : TRANSPORT_IDLE}`}
       >
         {isPlaying ? <PauseIcon /> : <PlayIcon />}
       </button>

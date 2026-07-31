@@ -1,6 +1,13 @@
 import { formatTime } from '../format'
 import { usePlayback } from '../context/playbackContext'
-import { PauseIcon, PlayIcon, scrubberTrack } from './AudioPlayer'
+import {
+  PauseIcon,
+  PlayIcon,
+  TRANSPORT,
+  TRANSPORT_ACTIVE,
+  TRANSPORT_IDLE,
+  scrubberTrack,
+} from './AudioPlayer'
 
 // Drawn, like the play and pause icons, and for the same reason. A bar and a
 // triangle: the same shape the transport buttons use, turned round.
@@ -30,9 +37,9 @@ function SkipIcon({ back = false }) {
 // It rides with the header instead, which is already pinned and which nothing
 // else draws over. Identical at every width, so there is no second layout to
 // keep working.
-// Every button in this row is the same square. Declared once because there are
-// now four of them and they were copies of each other.
-const TRANSPORT = 'grid h-7 w-7 shrink-0 place-items-center border transition-colors'
+// Smaller than a row's, because this bar rides with the header and every pixel
+// of it is taken off every page.
+const BUTTON = `${TRANSPORT} h-7 w-7`
 
 function NowPlaying() {
   const {
@@ -73,7 +80,7 @@ function NowPlaying() {
           onClick={previous}
           aria-label="Previous"
           title="Previous"
-          className={`${TRANSPORT} border-gray-400 bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900`}
+          className={`${BUTTON} ${TRANSPORT_IDLE}`}
         >
           <SkipIcon back />
         </button>
@@ -82,11 +89,7 @@ function NowPlaying() {
           type="button"
           onClick={() => (playing ? pause() : play(track))}
           aria-label={`${playing ? 'Pause' : 'Play'} ${track.title}`}
-          className={`${TRANSPORT} ${
-            playing
-              ? 'border-gray-500 bg-gray-300 text-gray-900'
-              : 'border-gray-400 bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-          }`}
+          className={`${BUTTON} ${playing ? TRANSPORT_ACTIVE : TRANSPORT_IDLE}`}
         >
           {playing ? <PauseIcon /> : <PlayIcon />}
         </button>
@@ -99,10 +102,8 @@ function NowPlaying() {
           disabled={!hasNext}
           aria-label="Next"
           title="Next"
-          className={`${TRANSPORT} border-gray-400 bg-white ${
-            hasNext
-              ? 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-              : 'cursor-default text-gray-400'
+          className={`${BUTTON} ${
+            hasNext ? TRANSPORT_IDLE : 'border-gray-400 bg-white text-gray-400'
           }`}
         >
           <SkipIcon />
@@ -146,7 +147,7 @@ function NowPlaying() {
           // touch target is meant to be — on the one control that is on screen
           // at every scroll position, and the one whose neighbour is a play
           // button you did not mean to press.
-          className={`${TRANSPORT} border-gray-400 bg-white text-xs hover:bg-gray-100`}
+          className={`${BUTTON} ${TRANSPORT_IDLE} text-xs`}
         >
           ✕
         </button>

@@ -4,9 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-A portfolio/website for artist Frank Kirwan (see `<title>` in `index.html`). Built on Vite's `react` template. Five routes, a custom audio player, and no tests or component library.
+A portfolio/website for artist Frank Kirwan (see `<title>` in `index.html`). Built on Vite's `react` template. Six routes — five pages plus `/songs/:slug`, a page per song — a custom audio player wired to the Media Session API, and no tests or component library.
 
-The site is still staged: `index.html` carries a `noindex, nofollow` meta tag. The About page, the home-page bio, and all three musicals' teasers and synopses are Frank's real words. Still outstanding: the song descriptions (all empty), `contact.email` (`frank@example.com`), the hero images, and cover art for the singles. No song carries streaming links — the placeholder `#` Spotify ones were removed rather than left dead, and Frank adds the real URLs from `/admin` himself.
+The site is staged. `index.html` carries `noindex, nofollow` and `public/robots.txt` carries a matching `Disallow: /`; **both come off together to go public**, and nothing else does. Descriptions, Open Graph tags, canonicals, structured data and a generated sitemap are already in place.
+
+Outstanding, and all of it Frank's rather than code: the song descriptions (all 26 empty), the three musicals' hero images, cover art for the singles, the photographs on About and Contact, and streaming links — the placeholder `#` Spotify ones were removed rather than left dead, and Frank adds the real URLs from `/admin`. `contact.instagramHandle` has never been confirmed, which is why it is kept out of the structured data.
+
+Settled deliberately, so they are not reopened by accident:
+
+- **Assets are served without invoking the Worker**, which is why an unknown address returns HTTP 200 with the not-found page rather than a real 404. Chosen over routing page requests through the Worker.
+- **The musicals stay on one page**, navigated by the pinned section row.
+- **No dark mode.** The design is committed to paper, ink and one oxblood accent.
 
 It is mid-migration to a self-hosted admin CMS — see "Content" below.
 

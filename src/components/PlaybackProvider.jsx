@@ -183,7 +183,11 @@ function PlaybackProvider({ children, remember = false }) {
   )
 
   const next = useCallback(() => {
-    const target = queueRef.current[at() + 1]
+    const i = at()
+    // -1 means the track is not in this list at all, and -1 + 1 would address
+    // its first entry — a "next" that jumps to the top of a list you are not in.
+    if (i === -1) return
+    const target = queueRef.current[i + 1]
     if (target) play(target)
   }, [at, play])
 
@@ -196,7 +200,8 @@ function PlaybackProvider({ children, remember = false }) {
       seek(0)
       return
     }
-    const target = queueRef.current[at() - 1]
+    const i = at()
+    const target = i > 0 ? queueRef.current[i - 1] : null
     if (target) play(target)
     else seek(0)
   }, [at, play, seek])
@@ -311,7 +316,6 @@ function PlaybackProvider({ children, remember = false }) {
 
   const index = queue.findIndex((item) => item.id === track?.id)
   const hasNext = index !== -1 && index < queue.length - 1
-  const hasPrevious = index > 0
 
   // The controls that are not on the page.
   //
@@ -446,7 +450,6 @@ function PlaybackProvider({ children, remember = false }) {
       duration,
       hasMetadata,
       hasNext,
-      hasPrevious,
       play,
       pause,
       stop,
@@ -462,7 +465,6 @@ function PlaybackProvider({ children, remember = false }) {
       duration,
       hasMetadata,
       hasNext,
-      hasPrevious,
       play,
       pause,
       stop,

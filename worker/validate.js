@@ -55,11 +55,11 @@ export const MAX_UPLOAD_BYTES = 500 * 1024 * 1024
 // by every visitor inside /api/content, so without them a slip of the paste
 // buffer puts two megabytes of anything on the front page. A song given 5000
 // links reached D1 and came back SQLITE_TOOBIG as a 500.
-export const MAX_TITLE_LENGTH = 200
-export const MAX_DESCRIPTION_LENGTH = 5000
-export const MAX_LINKS = 20
-export const MAX_LABEL_LENGTH = 80
-export const MAX_HREF_LENGTH = 2000
+const MAX_TITLE_LENGTH = 200
+const MAX_DESCRIPTION_LENGTH = 5000
+const MAX_LINKS = 20
+const MAX_LABEL_LENGTH = 80
+const MAX_HREF_LENGTH = 2000
 
 // Artwork does not need the audio ceiling, and a limit that fits the job is one
 // less way for a mistaken drag to fill the bucket.
