@@ -69,6 +69,18 @@ function AudioPlayer({ id, src, title, duration: knownDuration = null, queue }) 
   const seekable = isActive && playback.hasMetadata && Number.isFinite(duration) && duration > 0
   const track = scrubberTrack(duration, currentTime, seekable)
 
+  // What to hand the provider when this row is pressed. Taken from the queue
+  // when there is one, so the musical's name and the cover art travel with the
+  // track — those are what a lock screen shows, and toQueue is the one place
+  // that decides what a playable track carries. The fallback is for a player
+  // with no list around it, which today means the admin's preview.
+  const entry = queue?.find((item) => item.id === id) ?? {
+    id,
+    src,
+    title,
+    duration: knownDuration,
+  }
+
   return (
     <div className="flex h-14 items-center gap-3 border border-gray-300 bg-gray-100 px-3">
       <button
@@ -76,7 +88,7 @@ function AudioPlayer({ id, src, title, duration: knownDuration = null, queue }) 
         onClick={() =>
           isPlaying
             ? playback.pause()
-            : playback.play({ id, src, title, duration: knownDuration }, queue)
+            : playback.play(entry, queue)
         }
         aria-label={`${isPlaying ? 'Pause' : 'Play'} ${title}`}
         className={`${transportClass} ${

@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { PlaybackContext } from '../context/playbackContext'
+// The fallback lock-screen artwork: a song with no cover of its own still shows
+// a photograph of the person who wrote it rather than a browser icon.
+import portrait from '../images/frank-kirwan-672.jpg'
 
 // One <audio> element for the entire site, owned here.
 //
@@ -309,6 +312,131 @@ function PlaybackProvider({ children, remember = false }) {
   const index = queue.findIndex((item) => item.id === track?.id)
   const hasNext = index !== -1 && index < queue.length - 1
   const hasPrevious = index > 0
+
+  // The controls that are not on the page.
+  //
+  // A pinch on a pair of AirPods, the play button on a car stereo, the lock
+  // screen of a phone, the media keys on a keyboard: all of them talk to the
+  // Media Session API and none of them can see the site. Without this they do
+  // nothing at all, or — worse on iOS — they act on whatever the browser last
+  // decided was the media on the page, which is a guess.
+  //
+  // Telling the operating system what is playing is the other half of it. A
+  // phone showing "frankkirwan.com" on its lock screen is a browser tab; one
+  // showing the song, Frank's name and the musical it comes from is a record.
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return
+
+    const session = navigator.mediaSession
+
+    if (!track) {
+      session.metadata = null
+      session.playbackState = 'none'
+      return
+    }
+
+    // Absolute, because this leaves the page: it is handed to the OS, which has
+    // no notion of where the document it came from was.
+    const artwork = track.artwork ?? portrait
+    session.metadata = new MediaMetadata({
+      title: track.title,
+      artist: 'Frank Kirwan',
+      // The musical for a demo; the site for a single, so the field is never
+      // blank and never wrong.
+      album: track.album ?? 'frankkirwan.com',
+      artwork: [{ src: new URL(artwork, window.location.origin).href }],
+    })
+
+    session.playbackState = playing ? 'playing' : 'paused'
+  }, [track, playing])
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return
+
+    const session = navigator.mediaSession
+
+    // Every one of these is wrapped, because a browser that does not implement
+    // an action throws when you try to register it, and one unsupported action
+    // should not cost the others.
+    const set = (action, handler) => {
+      try {
+        session.setActionHandler(action, handler)
+      } catch {
+        // Not supported here. The button simply stays inert, as it did before.
+      }
+    }
+
+    set('play', () => trackRef.current && play(trackRef.current))
+    set('pause', () => audioRef.current?.pause())
+    set('stop', clear)
+
+    // Registered as null when there is nowhere to go, which is how the platform
+    // is told to grey the button out rather than offer a control that does
+    // nothing. Previous is always live: at the top of a list it restarts.
+    set('previoustrack', previous)
+    set('nexttrack', hasNext ? next : null)
+
+    set('seekbackward', (details) => {
+      const element = audioRef.current
+      if (element) seek(Math.max(0, element.currentTime - (details?.seekOffset ?? 10)))
+    })
+
+    set('seekforward', (details) => {
+      const element = audioRef.current
+      if (!element) return
+      const to = element.currentTime + (details?.seekOffset ?? 10)
+      seek(Number.isFinite(element.duration) ? Math.min(to, element.duration) : to)
+    })
+
+    // Dragging the scrubber on a lock screen or in a car.
+    set('seekto', (details) => {
+      if (typeof details?.seekTime !== 'number') return
+      if (details.fastSeek && audioRef.current?.fastSeek) {
+        audioRef.current.fastSeek(details.seekTime)
+        return
+      }
+      seek(details.seekTime)
+    })
+
+    return () => {
+      for (const action of [
+        'play',
+        'pause',
+        'stop',
+        'previoustrack',
+        'nexttrack',
+        'seekbackward',
+        'seekforward',
+        'seekto',
+      ]) {
+        set(action, null)
+      }
+    }
+  }, [play, clear, previous, next, seek, hasNext])
+
+  // Where the lock screen's own scrub bar should sit. The browser keeps this in
+  // step with a real <audio> element on its own most of the time; setting it
+  // explicitly is what makes it right immediately after a seek rather than at
+  // the next update.
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return
+    if (!navigator.mediaSession.setPositionState) return
+    if (!track || !Number.isFinite(duration) || duration <= 0) return
+
+    try {
+      navigator.mediaSession.setPositionState({
+        duration,
+        playbackRate: audioRef.current?.playbackRate ?? 1,
+        // Clamped: the spec rejects a position past the duration, and the two
+        // can disagree by a frame at the very end of a track.
+        position: Math.min(Math.max(currentTime, 0), duration),
+      })
+    } catch {
+      // Some engines are stricter than others about the numbers. A lock screen
+      // scrubber that lags is not worth an exception.
+    }
+  }, [track, duration, currentTime])
+
 
   const value = useMemo(
     () => ({

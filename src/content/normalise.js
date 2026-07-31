@@ -88,6 +88,12 @@ export function toSongs(rows, mediaBase = '') {
 // PlaybackProvider needs to move from one to the next. Songs with no audio are
 // dropped rather than skipped over later — a queue entry that cannot be played
 // is a gap that "next" would have to know about.
+//
+// This is also the one definition of what a playing track *is*, which now
+// matters beyond this site: `album` and `artwork` are what a phone's lock
+// screen, a car stereo and a pair of headphones display. They are carried on
+// every entry rather than looked up later, because by the time the operating
+// system asks, the page that knew about musicals may be long gone.
 export function toQueue(songs) {
   return songs
     .filter((song) => song.audioSrc)
@@ -96,5 +102,7 @@ export function toQueue(songs) {
       src: song.audioSrc,
       title: song.title,
       duration: song.duration,
+      album: song.musicalSlug ? (musicalTitles.get(song.musicalSlug) ?? null) : null,
+      artwork: song.coverSrc ?? null,
     }))
 }
