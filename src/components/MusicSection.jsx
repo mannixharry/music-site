@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import ReleaseItem from './ReleaseItem'
 import { useContent } from '../context/contentContext'
 import { toQueue } from '../content/normalise'
-import { HEADING, LIST, LIST_ITEM } from '../rules'
+import { HEADING, LIST, LIST_ITEM, SECTION_LINK } from '../rules'
 
 function MusicSection() {
   const { singles } = useContent()
@@ -20,7 +20,7 @@ function MusicSection() {
           </div>
         ))}
       </div>
-      <Link to="/songs" className="mt-6 inline-block text-sm underline">
+      <Link to="/songs" className={SECTION_LINK}>
         Hear more songs
       </Link>
     </section>

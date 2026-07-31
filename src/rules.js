@@ -25,7 +25,19 @@ export const SECTION_FIRST = 'mt-5 border-t border-gray-300 pt-6'
 // left two lines with an empty band between.
 
 export const LIST = 'divide-y divide-gray-200'
-export const LIST_ITEM = 'py-6'
+
+// `last:pb-0` is the difference between a gap and a gap plus nothing. `divide-y`
+// draws lines between items, so the padding under the final one separates it
+// from no line at all — and then the section's own margin is added on top,
+// which is how the space between the last song on a page and the next heading
+// came out half as big again as the space anywhere else.
+export const LIST_ITEM = 'py-6 last:pb-0'
+
+// The "go deeper" link that closes a section — "Hear more songs", "Explore the
+// musicals". One distance, because they are one thing: these were written at
+// two different margins, which is exactly the kind of difference that reads as
+// carelessness without being noticeable enough to name.
+export const SECTION_LINK = 'mt-6 inline-block text-sm underline'
 
 // Side padding for the two blocks that run the length of the page — the content
 // and the footer — with a wider right-hand lane on small screens.

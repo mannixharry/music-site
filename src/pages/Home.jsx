@@ -4,7 +4,7 @@ import Portrait from '../components/Portrait'
 import { profile } from '../content/profile'
 import { musicals } from '../content/musicals'
 import { instagramUrl } from '../content/contact'
-import { HEADING, SECTION } from '../rules'
+import { HEADING, SECTION, SECTION_LINK } from '../rules'
 import { usePageMeta } from '../usePageMeta'
 
 function Home() {
@@ -35,7 +35,7 @@ function Home() {
             <p key={i}>{paragraph}</p>
           ))}
         </div>
-        <Link to="/about" className="mt-3 inline-block underline">
+        <Link to="/about" className={SECTION_LINK}>
           Read more about Frank
         </Link>
       </section>
@@ -61,7 +61,7 @@ function Home() {
             </li>
           ))}
         </ul>
-        <Link to="/musicals" className="mt-3 inline-block text-sm underline">
+        <Link to="/musicals" className={SECTION_LINK}>
           Explore the musicals
         </Link>
       </section>
