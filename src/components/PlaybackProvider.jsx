@@ -32,11 +32,33 @@ function PlaybackProvider({ children }) {
   const [hasMetadata, setHasMetadata] = useState(false)
 
   // rAF rather than timeupdate, which fires about four times a second and makes
-  // the scrubber visibly step.
+  // the scrubber visibly step — but not a React update on every frame.
+  //
+  // Measured on a 6×-throttled phone: playing one song cost a quarter of the
+  // main thread, and only about a sixth of that was the twenty other players on
+  // the page re-rendering. The rest was this loop asking React to render sixty
+  // times a second so a bar could move. It does not need to. A scrub bar is a
+  // few hundred pixels wide, so the shortest song here moves the thumb about
+  // eleven pixels a second and a full-length demo moves it one — an update
+  // every 80ms is under a pixel of travel either way, which is invisible, and a
+  // fifth of the work.
+  //
+  // Still driven by rAF rather than an interval, because rAF stops while the
+  // tab is in the background and an interval keeps burning battery there. The
+  // frame callback still runs sixty times a second; most of those times all it
+  // does is compare two numbers.
+  const lastPaintRef = useRef(0)
+
   const tick = useCallback(() => {
     const element = audioRef.current
     if (!element) return
-    setCurrentTime(element.currentTime)
+
+    const now = performance.now()
+    if (now - lastPaintRef.current >= 80) {
+      lastPaintRef.current = now
+      setCurrentTime(element.currentTime)
+    }
+
     frameRef.current = requestAnimationFrame(tick)
   }, [])
 
