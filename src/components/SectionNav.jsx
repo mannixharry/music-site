@@ -75,6 +75,12 @@ function SectionNav({ items }) {
                 aria-current={current ? 'true' : undefined}
               >
                 {item.label}
+                {/* How many are in there, where a page has counted them. Muted
+                    and inside the link, so it reads as part of the label rather
+                    than as a second thing to aim at. */}
+                {item.count !== undefined && (
+                  <span className="font-normal text-gray-600"> ({item.count})</span>
+                )}
               </Link>
             </li>
           )

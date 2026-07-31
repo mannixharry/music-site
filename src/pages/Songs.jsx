@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import Placeholder from '../components/Placeholder'
 import SongItem from '../components/SongItem'
 import { useContent } from '../context/contentContext'
-import { ANCHOR, HEADING, LIST, LIST_ITEM, SECTION, SECTION_FIRST } from '../rules'
+import { useSectionNav } from '../context/sectionNavContext'
+import { ANCHOR, HEADING, LIST, LIST_ITEM, SECTION } from '../rules'
 import { usePageMeta } from '../usePageMeta'
 
 // The three kinds the catalogue already sorts itself into — the same split the
@@ -18,6 +18,15 @@ const GROUPS = [
   { kind: 'demo', slug: 'from-the-musicals', title: 'From the musicals' },
   { kind: 'other', slug: 'other', title: 'Other' },
 ]
+
+// Used twice — once for what is drawn, once for what the pinned row lists — so
+// the two can never disagree about which groups exist or how many are in them.
+function groupSongs(list) {
+  return GROUPS.map((group) => ({
+    ...group,
+    songs: list.filter((song) => song.kind === group.kind),
+  })).filter((group) => group.songs.length > 0)
+}
 
 function Songs() {
   usePageMeta({
@@ -42,12 +51,29 @@ function Songs() {
     )
   }, [songs, query])
 
-  const groups = GROUPS.map((group) => ({
-    ...group,
-    songs: matches.filter((song) => song.kind === group.kind),
-  })).filter((group) => group.songs.length > 0)
-
+  const groups = groupSongs(matches)
   const searching = query.trim().length > 0
+
+  // Handed to Layout, which pins it under the header — the same row the musicals
+  // page gets, and for the same reason: this page runs to a few dozen entries
+  // and the way to the second group was to scroll past the first.
+  //
+  // Null while searching. The page is short then, the counts would be describing
+  // the search rather than the catalogue, and a pinned row of links to sections
+  // that the search has emptied is worse than no row at all.
+  const sections = useMemo(
+    () =>
+      query.trim()
+        ? null
+        : groupSongs(songs).map((group) => ({
+            slug: group.slug,
+            label: group.title,
+            count: group.songs.length,
+          })),
+    [songs, query],
+  )
+
+  useSectionNav(sections)
 
   return (
     <div className={`${ANCHOR} py-8`}>
@@ -83,23 +109,6 @@ function Songs() {
         </div>
       )}
 
-      {/* The quick links are a way around a long page; while searching, the
-          page is short and the counts would be describing the search anyway. */}
-      {groups.length > 1 && !searching && (
-        <nav aria-label="Jump to a group" className="mt-6 border-t border-gray-300 pt-3">
-          <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
-            {groups.map((group) => (
-              <li key={group.slug}>
-                <Link to={`#${group.slug}`} className="underline">
-                  {group.title}
-                </Link>{' '}
-                <span className="text-gray-600">({group.songs.length})</span>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      )}
-
       {/* Announced, so the count reaches someone who cannot see the list shrink. */}
       {searching && (
         <p aria-live="polite" className="mt-4 text-sm text-gray-600">
@@ -117,7 +126,7 @@ function Songs() {
         <section
           key={group.slug}
           id={group.slug}
-          className={`${i === 0 && !searching ? SECTION_FIRST : SECTION} ${ANCHOR}`}
+          className={`${SECTION} ${ANCHOR}`}
         >
           <h2 className={HEADING}>{group.title}</h2>
           <div className={`mt-2 ${LIST}`}>
