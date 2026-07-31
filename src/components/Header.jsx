@@ -50,17 +50,7 @@ function Header() {
   return (
     // Not sticky itself: Layout pins this and the now-playing strip together,
     // so the two cannot drift apart or need an offset guessed between them.
-    // id and tabIndex so the back-to-top control has somewhere to hand focus
-    // before it removes itself. -1 keeps it out of the tab order, so nobody
-    // tabbing through the page ever stops on the header itself, and
-    // focus:outline-none because it is a destination rather than a control —
-    // the thing that receives focus here is a whole band, not something to
-    // press.
-    <header
-      id="site-header"
-      tabIndex={-1}
-      className="border-b border-gray-300 bg-gray-100 focus:outline-none"
-    >
+    <header className="border-b border-gray-300 bg-gray-100">
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-4 px-4 py-4">
         <Link to="/" className="text-xl font-bold" onClick={closeMenu}>
           Frank Kirwan

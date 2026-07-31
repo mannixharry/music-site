@@ -40,16 +40,13 @@ export const LIST_ITEM = 'py-6 last:pb-0'
 export const SECTION_LINK = 'mt-6 inline-block text-sm underline'
 
 // Side padding for the two blocks that run the length of the page — the content
-// and the footer — with a wider right-hand lane on small screens.
+// and the footer. Even on both sides at every width.
 //
-// The lane keeps the back-to-top control off the content. On a desktop the
-// column sits in the middle of a wide window and the corner is empty margin; on
-// a phone it runs edge to edge and the control would cover a song's length.
-//
-// Reserved at every scroll position rather than only while the control shows:
-// making it conditional would slide the page sideways as you scrolled. Both
-// blocks, because the control floats over the footer too.
-export const COLUMN = 'pl-4 pr-16 sm:pr-4'
+// It used to carry a wider right-hand lane on small screens, to keep the
+// floating back-to-top control off the content. That control is gone — the
+// pinned header and section links are the way around a long page — so the lane
+// went with it rather than being left as space reserved for nothing.
+export const COLUMN = 'px-4'
 
 // Every section heading on the public site. The home page had two at one size
 // and a third at another, on the same screen.

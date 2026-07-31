@@ -45,12 +45,10 @@ const HEROES = {
 }
 
 // What the browser should assume it is drawing into before it has any layout.
-// The content column is max-w-2xl (42rem) with the page's own side padding
-// either side of it — pr-16 below the small breakpoint, to keep the
-// back-to-top control off the content. Told the truth in all three cases,
-// because the alternative is the browser assuming the full viewport and
-// fetching the 1344 for a phone.
-const SIZES = '(min-width: 44rem) 672px, (min-width: 40rem) calc(100vw - 2rem), calc(100vw - 5rem)'
+// The content column is max-w-2xl (42rem) with 1rem of the page's own padding
+// either side of it. Told the truth in both cases, because the alternative is
+// the browser assuming the full viewport and fetching the 1344 for a phone.
+const SIZES = '(min-width: 44rem) 672px, calc(100vw - 2rem)'
 
 function MusicalHero({ musical, className = '' }) {
   const hero = HEROES[musical.slug]
