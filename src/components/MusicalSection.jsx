@@ -6,6 +6,8 @@ import SnippetTag from './SnippetTag'
 import { useContent } from '../context/contentContext'
 import { usePlayback } from '../context/playbackContext'
 import { toQueue } from '../content/normalise'
+import downloadSizes from '../content/downloadSizes.json'
+import { formatBytes } from '../format'
 import { PlayIcon } from './AudioPlayer'
 import { ANCHOR, SECTION } from '../rules'
 
@@ -154,9 +156,18 @@ function MusicalSection({ musical }) {
                   key={download.label}
                   href={download.href}
                   download={download.download ? '' : undefined}
-                  className="flex w-40 items-center justify-center border border-gray-400 bg-white p-2 text-center text-sm underline"
+                  className="flex w-40 flex-col items-center justify-center gap-0.5 border border-gray-400 bg-white p-2 text-center text-sm"
                 >
-                  {download.label}
+                  <span className="underline">{download.label}</span>
+                  {/* Measured at build time, so it cannot describe a file that
+                      has since been replaced. Someone on a phone deciding
+                      whether to fetch a one-megabyte score wants this before
+                      they tap, not after. */}
+                  {downloadSizes[download.href] && (
+                    <span className="text-xs text-gray-600">
+                      {formatBytes(downloadSizes[download.href])}
+                    </span>
+                  )}
                 </a>
               ) : (
                 <Placeholder key={download.label} label={download.label} className="w-40" />
