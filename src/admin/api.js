@@ -77,6 +77,13 @@ export const api = {
   deleted: () => request('/deleted'),
   restore: (id) => request(`/songs/${encodeURIComponent(id)}/restore`, { method: 'POST' }),
   purge: (id) => request(`/songs/${encodeURIComponent(id)}/purge`, { method: 'DELETE' }),
+  albums: () => request('/albums'),
+  createAlbum: (input) => request('/albums', { method: 'POST', body: input }),
+  updateAlbum: (id, patch) =>
+    request(`/albums/${encodeURIComponent(id)}`, { method: 'PATCH', body: patch }),
+  removeAlbum: (id) => request(`/albums/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  moveAlbum: (id, afterId) =>
+    request(`/albums/${encodeURIComponent(id)}/move`, { method: 'POST', body: { afterId } }),
   storage: () => request('/storage'),
   sweepStorage: () => request('/storage', { method: 'POST' }),
 }

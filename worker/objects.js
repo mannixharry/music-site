@@ -130,16 +130,23 @@ async function listAll(bucket, prefix) {
   return keys
 }
 
-// Every key any row names, live or soft-deleted.
+// Every key any row names, live or soft-deleted, songs and albums alike.
 //
-// Deleted songs count as referring to their objects, and must: a soft delete is
-// meant to be undoable, and a sweep that took the audio with it would make that
-// a lie. This is why the query has no WHERE clause.
+// Deleted rows count as referring to their objects, and must: a soft delete is
+// meant to be undoable, and a sweep that took the files with it would make that
+// a lie. This is why neither query has a WHERE clause.
+//
+// Albums belong here for a blunter reason. What this returns is the set of
+// files the orphan sweep will spare, so an album cover missing from it is a
+// cover the admin offers to delete while the site is still showing it.
 async function referencedKeys(env) {
-  const { results } = await env.DB.prepare(SELECT_KEYS).all()
+  const [songs, albums] = await env.DB.batch([
+    env.DB.prepare(SELECT_KEYS),
+    env.DB.prepare(`SELECT cover_key, cover_master_key FROM albums`),
+  ])
 
   const referenced = new Set()
-  for (const record of results) {
+  for (const record of [...songs.results, ...albums.results]) {
     for (const key of Object.values(record)) {
       if (key) referenced.add(key)
     }
@@ -277,4 +284,18 @@ export async function readStorage(env) {
 export async function deleteOrphans(env, orphans) {
   const removed = await deleteKeys(env, orphans.map((orphan) => orphan.key))
   return removed.length
+}
+
+// An album's own artwork, for the same reason readObjectKeys exists for a song:
+// a patch that replaces a cover has to know what it displaced before the row
+// stops naming it.
+export async function readAlbumObjectKeys(env, id) {
+  const row = await env.DB.prepare(
+    `SELECT cover_key, cover_master_key FROM albums WHERE id = ?`,
+  )
+    .bind(id)
+    .first()
+
+  if (!row) return {}
+  return { coverKey: row.cover_key, coverMasterKey: row.cover_master_key }
 }

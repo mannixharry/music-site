@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ContentContext } from '../context/contentContext'
-import { toSongs } from '../content/normalise'
+import { toAlbums, toSongs } from '../content/normalise'
 import snapshot from '../content/snapshot.json'
 
 // The catalogue is committed to the repo as snapshot.json and bundled, so the
@@ -63,13 +63,18 @@ function ContentProvider({ children }) {
   }, [refresh])
 
   const value = useMemo(() => {
-    const songs = toSongs(data.songs, data.mediaBase ?? '')
+    const mediaBase = data.mediaBase ?? ''
+    const albums = toAlbums(data.albums, mediaBase)
+    const songs = toSongs(data.songs, mediaBase, data.albums)
 
     return {
       songs,
+      albums,
       version: data.version,
-      singles: songs.filter((song) => song.kind === 'single'),
-      demosFor: (slug) => songs.filter((song) => song.musicalSlug === slug),
+      // The home page's five: songs belonging to no album. "Single" is not a
+      // property a song carries any more — it is what being in no album means.
+      singles: songs.filter((song) => !song.albumId),
+      songsIn: (albumId) => songs.filter((song) => song.albumId === albumId),
       refresh,
     }
   }, [data, refresh])

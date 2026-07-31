@@ -1,68 +1,73 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import Placeholder from '../components/Placeholder'
 import SongItem from '../components/SongItem'
+import AlbumCover from '../components/AlbumCover'
 import { useContent } from '../context/contentContext'
 import { toQueue } from '../content/normalise'
-import { musicals } from '../content/musicals'
 import { useSectionNav } from '../context/sectionNavContext'
 import { ANCHOR, HEADING, LIST, LIST_ITEM, SECTION } from '../rules'
 import { usePageMeta } from '../usePageMeta'
 
-// The three kinds the catalogue already sorts itself into — the same split the
-// admin's list uses, and the one the paragraph below has always described. It
-// was only ever the rendering that ignored it.
+// The catalogue in the shape it is read in: the singles first, then one section
+// per album in the order the albums are arranged.
 //
-// Order matters here and is not the storage order: this is the order the groups
-// appear in, and the catalogue's own `sortOrder` still decides what happens
-// inside each one.
-const GROUPS = [
-  { kind: 'single', slug: 'singles', title: 'Singles' },
-  { kind: 'demo', slug: 'from-the-musicals', title: 'From the musicals' },
-  { kind: 'other', slug: 'other', title: 'Other' },
-]
+// Singles are not a kind of song, they are songs in no album — which is why an
+// album can be dissolved without anything being reclassified. Its songs simply
+// arrive here instead.
+//
+// Used twice, once for what is drawn and once for what the pinned row lists, so
+// the two can never disagree about which sections exist or how many are in them.
+const SINGLES = { id: 'singles', title: 'Singles', album: null }
 
-// Used twice — once for what is drawn, once for what the pinned row lists — so
-// the two can never disagree about which groups exist or how many are in them.
-function groupSongs(list) {
-  return GROUPS.map((group) => ({
-    ...group,
-    songs: list.filter((song) => song.kind === group.kind),
-  })).filter((group) => group.songs.length > 0)
+function groupSongs(list, albums) {
+  const sections = [
+    { ...SINGLES, songs: list.filter((song) => !song.albumId) },
+    ...albums.map((album) => ({
+      id: album.id,
+      title: album.title,
+      album,
+      songs: list.filter((song) => song.albumId === album.id),
+    })),
+  ]
+
+  return sections.filter((section) => section.songs.length > 0)
 }
 
 function Songs() {
   usePageMeta({
     title: 'Songs',
     description:
-      'The whole catalogue in one place — the singles, the snapshots from the musicals, and everything else.',
+      'The whole catalogue in one place — the singles, and everything that belongs to an album or a musical.',
   })
 
-  const { songs } = useContent()
+  const { songs, albums } = useContent()
   const [query, setQuery] = useState('')
-  // Which show to narrow to, or null for everything. Most of the catalogue is
-  // demos from three musicals; the search finds them by name, but only if a
-  // reader guesses that it will. This says so out loud.
+  // Which album to narrow to, or null for everything. The search finds an
+  // album's songs by name, but only if a reader guesses that it will. This says
+  // so out loud.
   const [show, setShow] = useState(null)
 
-  // Only the shows that actually have something in the catalogue, with counts,
+  // Only the albums that actually have something in the catalogue, with counts,
   // so the row cannot offer a filter that leads to an empty page.
   const shows = useMemo(
     () =>
-      musicals
-        .map((musical) => ({
-          slug: musical.slug,
-          title: musical.title,
-          count: songs.filter((song) => song.musicalSlug === musical.slug).length,
+      albums
+        .map((album) => ({
+          slug: album.id,
+          title: album.title,
+          isMusical: album.isMusical,
+          count: songs.filter((song) => song.albumId === album.id).length,
         }))
-        .filter((musical) => musical.count > 0),
-    [songs],
+        .filter((album) => album.count > 0),
+    [songs, albums],
   )
 
   // Title and description, like the admin's search — and `title` here is the
   // composed one, so typing a musical's name finds all of its demos.
   const matches = useMemo(() => {
     const needle = query.trim().toLowerCase()
-    const narrowed = show ? songs.filter((song) => song.musicalSlug === show) : songs
+    const narrowed = show ? songs.filter((song) => song.albumId === show) : songs
     if (!needle) return narrowed
 
     return narrowed.filter(
@@ -72,7 +77,7 @@ function Songs() {
     )
   }, [songs, query, show])
 
-  const groups = groupSongs(matches)
+  const groups = groupSongs(matches, albums)
   const searching = query.trim().length > 0 || show !== null
 
   // Handed to Layout, which pins it under the header — the same row the musicals
@@ -84,12 +89,12 @@ function Songs() {
     () =>
       searching
         ? null
-        : groupSongs(songs).map((group) => ({
-            slug: group.slug,
+        : groupSongs(songs, albums).map((group) => ({
+            slug: group.id,
             label: group.title,
             count: group.songs.length,
           })),
-    [songs, searching],
+    [songs, albums, searching],
   )
 
   useSectionNav(sections)
@@ -98,8 +103,8 @@ function Songs() {
     <div className={`${ANCHOR} py-8`}>
       <h1 className="text-4xl font-bold">Songs</h1>
       <p className="mt-2 text-sm leading-relaxed">
-        The whole catalogue in one place — the singles, the snapshots from the musicals, and
-        everything else.
+        The whole catalogue in one place — the singles, and everything that belongs to an album or
+        a musical.
       </p>
 
       {/* Only worth offering once there is enough here to lose something in. */}
@@ -134,7 +139,13 @@ function Songs() {
           control that does not go anywhere should not look like a way off. */}
       {shows.length > 1 && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="text-sm text-gray-600">From a musical:</span>
+          <span className="text-sm text-gray-600">
+            {shows.some((album) => album.isMusical) && shows.some((album) => !album.isMusical)
+              ? 'From an album or musical:'
+              : shows.every((album) => album.isMusical)
+                ? 'From a musical:'
+                : 'From an album:'}
+          </span>
           {shows.map((musical) => {
             const on = show === musical.slug
             return (
@@ -186,9 +197,24 @@ function Songs() {
         const queue = toQueue(group.songs)
 
         return (
-          <section key={group.slug} id={group.slug} className={`${SECTION} ${ANCHOR}`}>
-            <h2 className={HEADING}>{group.title}</h2>
-            <div className={`mt-2 ${LIST}`}>
+          <section key={group.id} id={group.id} className={`${SECTION} ${ANCHOR}`}>
+            <div className="flex items-start gap-4">
+              {/* The record's own picture, at the head of its songs. Singles
+                  have no album and so no cover of their own here. */}
+              {group.album && <AlbumCover album={group.album} />}
+              <div className="min-w-0">
+                <h2 className={HEADING}>{group.title}</h2>
+                {group.album?.subtitle && (
+                  <p className="mt-1 text-sm text-gray-600">{group.album.subtitle}</p>
+                )}
+                {group.album?.isMusical && (
+                  <Link to={`/musicals#${group.album.id}`} className="mt-1 inline-block text-sm underline">
+                    About this musical
+                  </Link>
+                )}
+              </div>
+            </div>
+            <div className={`mt-4 ${LIST}`}>
               {group.songs.map((song) => (
                 <div key={song.id} className={LIST_ITEM}>
                   <SongItem song={song} queue={queue} />

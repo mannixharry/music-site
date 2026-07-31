@@ -12,7 +12,7 @@ import { useCoverUpload } from './useCoverUpload'
 const BLANK = {
   title: '',
   kind: 'single',
-  musicalSlug: '',
+  albumId: '',
   description: '',
   status: 'released',
   links: [],
@@ -114,7 +114,16 @@ function Block({ label, hint, children }) {
 
 const inputClass = 'w-full border border-gray-400 bg-white px-2 py-1 text-sm'
 
-function SongForm({ song, justCreated, musicals, capabilities, mediaBase, onChanged, onCreated, onCancel }) {
+function SongForm({
+  song,
+  justCreated,
+  albums,
+  capabilities,
+  mediaBase,
+  onChanged,
+  onCreated,
+  onCancel,
+}) {
   const [draft, setDraft] = useState(BLANK)
   // Audio pulled back down and waiting to be cut, with where the handles should
   // open. Nothing else ever waits here: an ordinary upload has nothing left to
@@ -142,7 +151,7 @@ function SongForm({ song, justCreated, musicals, capabilities, mediaBase, onChan
   // Nothing an upload writes belongs to this form anyway: it deals in titles,
   // links and flags, never in keys or durations.
   useEffect(() => {
-    setDraft(song ? { ...BLANK, ...song, musicalSlug: song.musicalSlug ?? '' } : BLANK)
+    setDraft(song ? { ...BLANK, ...song, albumId: song.albumId ?? '' } : BLANK)
     setPending(null)
     setFetching(null)
     setError(null)
@@ -253,8 +262,7 @@ function SongForm({ song, justCreated, musicals, capabilities, mediaBase, onChan
     try {
       const payload = {
         title: draft.title,
-        kind: draft.kind,
-        musicalSlug: draft.kind === 'demo' ? draft.musicalSlug : null,
+        albumId: draft.albumId || null,
         description: draft.description,
         status: draft.status,
         links: draft.links.filter((link) => link.label && link.href),
@@ -317,42 +325,26 @@ function SongForm({ song, justCreated, musicals, capabilities, mediaBase, onChan
           />
         </Field>
 
-        <Field label="Type">
-          <div className="flex gap-4 text-sm">
-            {[
-              ['single', 'Single'],
-              ['demo', 'From a musical'],
-              ['other', 'Other'],
-            ].map(([value, label]) => (
-              <label key={value} className="flex items-center gap-1">
-                <input
-                  type="radio"
-                  name="kind"
-                  checked={draft.kind === value}
-                  onChange={() => set({ kind: value })}
-                />
-                {label}
-              </label>
+        {/* One question where there were two. A song used to carry a type as
+            well as a musical, which were two ways of saying the same thing and
+            could disagree; now it belongs to an album or it does not, and
+            "single" is what belonging to none is called. */}
+        <Field label="Album" hint="a musical is an album too — leave it as a single for a standalone song">
+          <select
+            className={inputClass}
+            value={draft.albumId}
+            onChange={(event) => set({ albumId: event.currentTarget.value })}
+          >
+            <option value="">A single — no album</option>
+            {albums.map((album) => (
+              <option key={album.id} value={album.id}>
+                {album.title}
+                {album.kind === 'musical' ? ' (musical)' : ''}
+                {album.published ? '' : ' — draft'}
+              </option>
             ))}
-          </div>
+          </select>
         </Field>
-
-        {draft.kind === 'demo' && (
-          <Field label="Musical">
-            <select
-              className={inputClass}
-              value={draft.musicalSlug}
-              onChange={(event) => set({ musicalSlug: event.currentTarget.value })}
-            >
-              <option value="">Choose one…</option>
-              {musicals.map((musical) => (
-                <option key={musical.slug} value={musical.slug}>
-                  {musical.title}
-                </option>
-              ))}
-            </select>
-          </Field>
-        )}
 
         <Field label="Description" hint="optional — appears under the title on the Songs page">
           <textarea

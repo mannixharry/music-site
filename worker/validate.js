@@ -2,15 +2,8 @@
 // it bothers the server, but that is a courtesy to the person uploading — this
 // is the copy that decides.
 
-// The musicals' own file, imported rather than a second list of slugs kept in
-// step by hand. It is editorial copy with no imports of its own, so Wrangler
-// bundles it as happily as Vite does — and a demo can no longer be filed under
-// a show that does not exist.
-import { musicals } from '../src/content/musicals'
-
-const MUSICAL_SLUGS = new Set(musicals.map((musical) => musical.slug))
-
 export const KINDS = ['single', 'demo', 'other']
+export const ALBUM_KINDS = ['album', 'musical']
 export const STATUSES = ['released', 'coming-soon']
 
 // What decodeAudioData has a chance with, plus the containers Frank's exports
@@ -169,8 +162,10 @@ export function validateSong(input, { partial = false } = {}) {
     }
   }
 
-  if (!partial || has('kind')) {
-    if (!KINDS.includes(input.kind)) return `kind must be one of ${KINDS.join(', ')}`
+  // Only checked when it is given. A song's kind follows its album — the route
+  // derives it — so a caller that leaves it out is doing the right thing.
+  if (has('kind') && !KINDS.includes(input.kind)) {
+    return `kind must be one of ${KINDS.join(', ')}`
   }
 
   if (!partial || has('status')) {
@@ -179,18 +174,16 @@ export function validateSong(input, { partial = false } = {}) {
     }
   }
 
-  // A demo belongs to a musical; nothing else does. Letting these drift apart
-  // files a song under a show that does not exist, so MusicalSection never
-  // finds it and it appears nowhere at all.
-  const kind = input.kind
-  if (kind === 'demo' && has('musicalSlug') && !input.musicalSlug) {
-    return 'a demo needs a musical'
-  }
-  if (kind && kind !== 'demo' && input.musicalSlug) {
-    return 'only a demo can belong to a musical'
-  }
-  if (has('musicalSlug') && input.musicalSlug && !MUSICAL_SLUGS.has(input.musicalSlug)) {
-    return `there is no musical called "${String(input.musicalSlug).slice(0, 40)}"`
+  // Only the shape here. Whether an album with this id exists is a question for
+  // the database, and the route asks it — a validator that reached for D1 would
+  // be doing two jobs and could only ever be right about one of them.
+  if (has('albumId') && input.albumId !== null) {
+    if (typeof input.albumId !== 'string' || !input.albumId.trim()) {
+      return 'an album is named by its id, or left out entirely'
+    }
+    if (slugify(input.albumId) !== input.albumId) {
+      return `"${String(input.albumId).slice(0, 40)}" is not the shape of an album id`
+    }
   }
 
   if (has('links')) {
@@ -306,5 +299,44 @@ export function validateUpload({ key, contentType, size }) {
   if (size > rule.max) {
     return `file is larger than ${Math.round(rule.max / 1024 / 1024)}MB`
   }
+  return null
+}
+
+// An album. `kind` is the whole of the difference between a musical and a
+// record: a musical picks up its synopsis and downloads from
+// src/content/musicals.js by matching this id, and an album simply has songs.
+export function validateAlbum(input, { partial = false } = {}) {
+  const has = (field) => Object.prototype.hasOwnProperty.call(input ?? {}, field)
+
+  if (!input || typeof input !== 'object') return 'no album given'
+
+  // The id is optional: the route makes one from the title, as it does for a
+  // song. Checked for shape only when one is supplied.
+  if (has('id') && input.id) {
+    if (typeof input.id !== 'string' || slugify(input.id) !== input.id) {
+      return `"${String(input.id).slice(0, 40)}" is not the shape of an album id`
+    }
+  }
+
+  if (!partial || has('title')) {
+    if (typeof input.title !== 'string' || !input.title.trim()) return 'an album needs a title'
+    if (input.title.length > MAX_TITLE_LENGTH) {
+      return `the title is longer than ${MAX_TITLE_LENGTH} characters`
+    }
+  }
+
+  if (!partial || has('kind')) {
+    if (!ALBUM_KINDS.includes(input.kind)) {
+      return `an album is one of ${ALBUM_KINDS.join(', ')}`
+    }
+  }
+
+  if (has('subtitle')) {
+    if (typeof input.subtitle !== 'string') return 'the subtitle must be text'
+    if (input.subtitle.length > MAX_TITLE_LENGTH) {
+      return `the subtitle is longer than ${MAX_TITLE_LENGTH} characters`
+    }
+  }
+
   return null
 }

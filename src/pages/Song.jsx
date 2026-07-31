@@ -24,13 +24,14 @@ function Song() {
   // the other demos of its musical, or the other singles.
   const queue = useMemo(() => {
     if (!song) return []
-    const family = song.musicalSlug
-      ? songs.filter((item) => item.musicalSlug === song.musicalSlug)
-      : songs.filter((item) => item.kind === song.kind)
+    const family = song.albumId
+      ? songs.filter((item) => item.albumId === song.albumId)
+      : songs.filter((item) => !item.albumId)
     return toQueue(family)
   }, [song, songs])
 
-  const musical = musicals.find((item) => item.slug === song?.musicalSlug)
+  // Only a musical has an editorial page to point back at.
+  const musical = musicals.find((item) => item.slug === song?.albumId)
 
   usePageMeta({
     title: song ? song.title : 'Song not found',
@@ -52,13 +53,22 @@ function Song() {
         {song.isSnippet && song.showSnippetTag && <SnippetTag title={song.title} />}
       </div>
 
-      {musical && (
+      {musical ? (
         <p className="mt-2 text-sm">
           From{' '}
           <Link to={`/musicals#${musical.slug}`} className="underline">
             {musical.title}
           </Link>
         </p>
+      ) : (
+        song.album && (
+          <p className="mt-2 text-sm">
+            From{' '}
+            <Link to={`/songs#${song.album.id}`} className="underline">
+              {song.album.title}
+            </Link>
+          </p>
+        )
       )}
 
       {song.description && <p className="mt-4 text-sm leading-relaxed">{song.description}</p>}

@@ -18,7 +18,7 @@ function toRow(record) {
     title: record.title,
     description: record.description,
     kind: record.kind,
-    musicalSlug: record.musical_slug,
+    albumId: record.album_id,
     status: record.status,
     webKey: record.web_key,
     coverKey: record.cover_key,
@@ -41,7 +41,7 @@ function toRow(record) {
 // on the same principle — they are offsets into the master, and the public
 // object's own length is duration_s.
 const PUBLIC_COLUMNS = `
-  id, title, description, kind, musical_slug, status,
+  id, title, description, kind, album_id, status,
   web_key, cover_key, duration_s, is_snippet, show_snippet_tag,
   links_json, sort_order, published
 `
@@ -186,7 +186,7 @@ const WRITABLE = {
   title: 'title',
   description: 'description',
   kind: 'kind',
-  musicalSlug: 'musical_slug',
+  albumId: 'album_id',
   status: 'status',
   webKey: 'web_key',
   webBytes: 'web_bytes',
@@ -233,7 +233,7 @@ export async function createSong(env, input) {
   // not inherit a preview flag describing audio it no longer points at.
   await env.DB.prepare(
     `INSERT OR REPLACE INTO songs (
-       id, title, description, kind, musical_slug, status,
+       id, title, description, kind, album_id, status,
        web_key, web_bytes, master_key, master_bytes, master_mime, duration_s,
        cover_key, cover_bytes, cover_master_key, cover_master_bytes, cover_master_mime,
        is_snippet, show_snippet_tag, snippet_start_s, snippet_end_s,
@@ -245,7 +245,7 @@ export async function createSong(env, input) {
       input.title,
       input.description ?? '',
       input.kind,
-      input.musicalSlug ?? null,
+      input.albumId ?? null,
       input.status ?? 'released',
       input.webKey ?? null,
       input.webBytes ?? null,
@@ -348,4 +348,204 @@ export async function moveSong(env, id, afterId) {
   }
 
   await bumpVersion(env)
+}
+
+// ---------------------------------------------------------------------------
+// Albums. A named group of songs with a cover of its own; a musical is one of
+// these with kind = 'musical'. The shape below is what the client renders and
+// what snapshot.json holds, exactly as with songs.
+// ---------------------------------------------------------------------------
+
+function toAlbumRow(record) {
+  return {
+    id: record.id,
+    title: record.title,
+    kind: record.kind,
+    subtitle: record.subtitle,
+    coverKey: record.cover_key,
+    sortOrder: record.sort_order,
+    published: record.published === 1,
+  }
+}
+
+// No cover_master_* , for the reason songs have no master_*: nothing in the
+// private bucket is reachable from the web.
+const ALBUM_PUBLIC_COLUMNS = `id, title, kind, subtitle, cover_key, sort_order, published`
+
+export async function listPublishedAlbums(env) {
+  const { results } = await env.DB.prepare(
+    `SELECT ${ALBUM_PUBLIC_COLUMNS} FROM albums
+     WHERE published = 1 AND deleted_at IS NULL
+     ORDER BY sort_order`,
+  ).all()
+
+  return results.map(toAlbumRow)
+}
+
+export async function listAllAlbums(env) {
+  const { results } = await env.DB.prepare(
+    `SELECT ${ALBUM_PUBLIC_COLUMNS}, cover_bytes, cover_master_key, cover_master_bytes,
+            cover_master_mime
+     FROM albums WHERE deleted_at IS NULL ORDER BY sort_order`,
+  ).all()
+
+  return results.map((record) => ({
+    ...toAlbumRow(record),
+    coverBytes: record.cover_bytes,
+    coverMasterKey: record.cover_master_key,
+    coverMasterBytes: record.cover_master_bytes,
+    coverMasterMime: record.cover_master_mime,
+  }))
+}
+
+export async function getAlbum(env, id) {
+  const record = await env.DB.prepare(
+    `SELECT ${ALBUM_PUBLIC_COLUMNS}, cover_bytes, cover_master_key, cover_master_bytes,
+            cover_master_mime
+     FROM albums WHERE id = ? AND deleted_at IS NULL`,
+  )
+    .bind(id)
+    .first()
+
+  if (!record) return null
+  return {
+    ...toAlbumRow(record),
+    coverBytes: record.cover_bytes,
+    coverMasterKey: record.cover_master_key,
+    coverMasterBytes: record.cover_master_bytes,
+    coverMasterMime: record.cover_master_mime,
+  }
+}
+
+export async function createAlbum(env, input) {
+  const now = new Date().toISOString()
+  const last = await env.DB.prepare(`SELECT MAX(sort_order) AS max FROM albums`).first()
+
+  // OR REPLACE for the reason createSong has it: a deleted album keeps its id,
+  // and reusing a name that is no longer in use should simply work. Every
+  // nullable column is bound, so the new album cannot inherit the artwork of
+  // the one whose id it is taking.
+  await env.DB.prepare(
+    `INSERT OR REPLACE INTO albums (
+       id, title, kind, subtitle,
+       cover_key, cover_bytes, cover_master_key, cover_master_bytes, cover_master_mime,
+       sort_order, published, created_at, updated_at
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  )
+    .bind(
+      input.id,
+      input.title,
+      input.kind,
+      input.subtitle ?? '',
+      null,
+      null,
+      null,
+      null,
+      null,
+      (last?.max ?? 0) + 10,
+      input.published ? 1 : 0,
+      now,
+      now,
+    )
+    .run()
+
+  await bumpVersion(env)
+  return getAlbum(env, input.id)
+}
+
+const ALBUM_WRITABLE = {
+  title: 'title',
+  kind: 'kind',
+  subtitle: 'subtitle',
+  coverKey: 'cover_key',
+  coverBytes: 'cover_bytes',
+  coverMasterKey: 'cover_master_key',
+  coverMasterBytes: 'cover_master_bytes',
+  coverMasterMime: 'cover_master_mime',
+  published: 'published',
+}
+
+export async function updateAlbum(env, id, patch) {
+  const assignments = []
+  const values = []
+
+  for (const [field, column] of Object.entries(ALBUM_WRITABLE)) {
+    if (!(field in patch)) continue
+    assignments.push(`${column} = ?`)
+    values.push(field === 'published' ? (patch[field] ? 1 : 0) : patch[field])
+  }
+
+  if (assignments.length === 0) return getAlbum(env, id)
+
+  assignments.push('updated_at = ?')
+  values.push(new Date().toISOString(), id)
+
+  await env.DB.prepare(
+    `UPDATE albums SET ${assignments.join(', ')} WHERE id = ? AND deleted_at IS NULL`,
+  )
+    .bind(...values)
+    .run()
+
+  await bumpVersion(env)
+  return getAlbum(env, id)
+}
+
+// Soft, like a song's — and it releases the songs rather than taking them with
+// it. An album is a grouping; deleting the grouping should not delete the work.
+// The songs land back among the singles, which is a state the site already
+// knows how to show.
+export async function deleteAlbum(env, id) {
+  const now = new Date().toISOString()
+
+  await env.DB.batch([
+    env.DB.prepare(`UPDATE albums SET deleted_at = ?, updated_at = ? WHERE id = ?`).bind(now, now, id),
+    // `kind` follows the album, so releasing a song has to move it too, or the
+    // row says "demo" while belonging to nothing.
+    env.DB.prepare(
+      `UPDATE songs SET album_id = NULL, kind = 'single', updated_at = ? WHERE album_id = ?`,
+    ).bind(now, id),
+  ])
+
+  await bumpVersion(env)
+}
+
+export async function moveAlbum(env, id, afterId) {
+  const { results } = await env.DB.prepare(
+    `SELECT id, sort_order FROM albums WHERE deleted_at IS NULL ORDER BY sort_order`,
+  ).all()
+
+  const others = results.filter((row) => row.id !== id)
+  const index = afterId === null ? -1 : others.findIndex((row) => row.id === afterId)
+  if (afterId !== null && index === -1) return
+
+  const before = index >= 0 ? others[index].sort_order : 0
+  const after = others[index + 1]?.sort_order ?? before + 20
+
+  if (after - before > 1) {
+    await env.DB.prepare(`UPDATE albums SET sort_order = ?, updated_at = ? WHERE id = ?`)
+      .bind(Math.floor((before + after) / 2), new Date().toISOString(), id)
+      .run()
+  } else {
+    const ordered = [...others]
+    ordered.splice(index + 1, 0, { id })
+    await env.DB.batch(
+      ordered.map((row, position) =>
+        env.DB.prepare(`UPDATE albums SET sort_order = ? WHERE id = ?`).bind((position + 1) * 10, row.id),
+      ),
+    )
+  }
+
+  await bumpVersion(env)
+}
+
+// Whether anything still points at an album, which is what the admin needs to
+// say before offering to delete one.
+export async function countAlbumSongs(env, id) {
+  const row = await env.DB.prepare(
+    `SELECT COUNT(*) AS n FROM songs WHERE album_id = ? AND deleted_at IS NULL`,
+  )
+    .bind(id)
+    .first()
+
+  return row?.n ?? 0
 }

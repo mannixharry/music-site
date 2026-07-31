@@ -26,8 +26,8 @@ const FOLD_ABOVE = 600
 const PREVIEW_LINES = 'line-clamp-4'
 
 function MusicalSection({ musical }) {
-  const { demosFor } = useContent()
-  const demos = demosFor(musical.slug)
+  const { songsIn } = useContent()
+  const demos = songsIn(musical.slug)
   const [expanded, setExpanded] = useState(false)
 
   // The show's own demos, in the order they are listed, which is the order they

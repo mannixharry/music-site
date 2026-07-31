@@ -1,13 +1,20 @@
 import { verifyAccess } from './access'
 import { getContent, purgeContent } from './content'
 import {
+  countAlbumSongs,
+  createAlbum,
   createSong,
+  deleteAlbum,
   deleteSong,
+  getAlbum,
   getSong,
+  listAllAlbums,
   listAllSongs,
+  moveAlbum,
   moveSong,
   purgeSong,
   restoreSong,
+  updateAlbum,
   updateSong,
 } from './db'
 import { fail, json } from './json'
@@ -17,6 +24,7 @@ import {
   deleteOrphans,
   deleteReplacedObjects,
   deleteSongObjects,
+  readAlbumObjectKeys,
   readObjectKeys,
   readStorage,
   storedBytes,
@@ -24,6 +32,7 @@ import {
 import { presignPut } from './presign'
 import {
   slugify,
+  validateAlbum,
   validateSong,
   validateUpload,
   ruleForKey,
@@ -131,6 +140,12 @@ function songRoute(pathname) {
   return { id: decodeURIComponent(match[1]), action: match[2] ?? null }
 }
 
+function matchAlbum(pathname) {
+  const match = pathname.match(/^\/api\/admin\/albums\/([^/]+)(?:\/(move))?$/)
+  if (!match) return null
+  return { id: decodeURIComponent(match[1]), action: match[2] ?? null }
+}
+
 // Whole gigabytes read as nothing at 300MB, so this drops to MB below 1GB.
 function size(bytes) {
   const mb = bytes / 1024 / 1024
@@ -154,6 +169,22 @@ async function refuseIfFull(env, incomingBytes) {
     `or clear any leftover files, and try again.`
   )
 }
+
+// A song in an album is a demo; a song in none is a single. Derived rather than
+// asked for, so the two cannot disagree.
+function kindFor(albumId) {
+  return albumId ? 'demo' : 'single'
+}
+
+// Whether the album a song claims actually exists. The validator checks the
+// shape of the id; only the database can answer this, and a song filed under an
+// album that is not there would be shown nowhere at all.
+async function albumRefProblem(env, input) {
+  if (!input || !('albumId' in input) || !input.albumId) return null
+  if (await getAlbum(env, input.albumId)) return null
+  return `there is no album called "${String(input.albumId).slice(0, 40)}"`
+}
+
 
 async function handleAdmin(pathname, request, env, ctx, identity) {
   const method = request.method
@@ -223,7 +254,10 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
       if (!id) return fail(400, 'could not make a slug from that title')
       if (await getSong(env, id)) return fail(409, `"${id}" already exists`)
 
-      const song = await createSong(env, { ...input, id })
+      const albumProblem = await albumRefProblem(env, input)
+      if (albumProblem) return fail(400, albumProblem)
+
+      const song = await createSong(env, { ...input, id, kind: kindFor(input.albumId) })
       purgeContent(request, ctx)
       return json({ song }, { status: 201 })
     }
@@ -278,18 +312,27 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
       const problem = validateSong(patch, { partial: true })
       if (problem) return fail(400, problem)
 
+      const albumProblem = await albumRefProblem(env, patch)
+      if (albumProblem) return fail(400, albumProblem)
+
+      // `kind` is not something anyone sets any more: a song in an album is a
+      // demo and a song in none is a single, so it follows the album rather
+      // than being a second answer to the same question.
+      const withKind =
+        'albumId' in patch ? { ...patch, kind: kindFor(patch.albumId) } : patch
+
       // Read before the update, delete after it: an object is only unreferenced
       // once the row has actually stopped naming it, and doing it in that order
       // means a failed update cannot take the file with it.
       const before = await readObjectKeys(env, route.id)
 
-      const song = await updateSong(env, route.id, patch)
+      const song = await updateSong(env, route.id, withKind)
       if (!song) return fail(404, 'No such song')
 
       // Awaited for the same reason as the purge below: the admin refreshes
       // its figures on the back of this, and a displaced object still being
       // deleted would show up there as an orphan.
-      await deleteReplacedObjects(env, before, patch)
+      await deleteReplacedObjects(env, before, withKind)
       purgeContent(request, ctx)
       return json({ song })
     }
@@ -302,6 +345,70 @@ async function handleAdmin(pathname, request, env, ctx, identity) {
     }
 
     return fail(405, 'Method not allowed')
+  }
+
+  // Albums. A musical is one of these; the difference is `kind`, and what the
+  // site does with it.
+  if (pathname === '/api/admin/albums') {
+    if (method === 'GET') {
+      return json({ albums: await listAllAlbums(env), mediaBase: env.MEDIA_BASE ?? '' })
+    }
+
+    if (method === 'POST') {
+      const input = await request.json()
+      const problem = validateAlbum(input)
+      if (problem) return fail(400, problem)
+
+      const id = slugify(input.id || input.title)
+      if (!id) return fail(400, 'could not make a slug from that title')
+      if (await getAlbum(env, id)) return fail(409, `"${id}" already exists`)
+
+      const album = await createAlbum(env, { ...input, id })
+      purgeContent(request, ctx)
+      return json({ album }, { status: 201 })
+    }
+
+    return fail(405, 'Method not allowed')
+  }
+
+  {
+    const route = matchAlbum(pathname)
+    if (route) {
+      if (route.action === 'move' && method === 'POST') {
+        const { afterId = null } = await request.json()
+        await moveAlbum(env, route.id, afterId)
+        purgeContent(request, ctx)
+        return json({ moved: route.id })
+      }
+
+      if (route.action === null && method === 'PATCH') {
+        const patch = await request.json()
+        const problem = validateAlbum(patch, { partial: true })
+        if (problem) return fail(400, problem)
+
+        const before = await readAlbumObjectKeys(env, route.id)
+
+        const album = await updateAlbum(env, route.id, patch)
+        if (!album) return fail(404, 'No such album')
+
+        await deleteReplacedObjects(env, before, patch)
+        purgeContent(request, ctx)
+        return json({ album })
+      }
+
+      if (route.action === null && method === 'DELETE') {
+        if (!(await getAlbum(env, route.id))) return fail(404, 'No such album')
+
+        // Said rather than silently done: deleting an album releases its songs,
+        // and how many is the one thing worth knowing before pressing it.
+        const released = await countAlbumSongs(env, route.id)
+        await deleteAlbum(env, route.id)
+        purgeContent(request, ctx)
+        return json({ deleted: route.id, released })
+      }
+
+      return fail(405, 'Method not allowed')
+    }
   }
 
   // What the site is using, what it is using for nothing, and what is in the

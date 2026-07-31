@@ -10,9 +10,9 @@ import {
   reauthAlreadyTried,
   clearReauthAttempt,
 } from '../adminHint'
-import { musicals } from '../content/musicals'
 import { api } from '../admin/api'
 import SongForm from '../admin/SongForm'
+import AlbumPanel from '../admin/AlbumPanel'
 import DeletedSongs from '../admin/DeletedSongs'
 import SongList from '../admin/SongList'
 import StoragePanel from '../admin/StoragePanel'
@@ -32,6 +32,7 @@ function Admin() {
 
   const [session, setSession] = useState(null)
   const [songs, setSongs] = useState([])
+  const [albums, setAlbums] = useState([])
   const [mediaBase, setMediaBase] = useState('')
   const [selectedId, setSelectedId] = useState(null)
   const [creating, setCreating] = useState(false)
@@ -58,22 +59,28 @@ function Admin() {
   // upload moves the storage figures too, and one of the two going stale is how
   // a number on this page ends up lying.
   const refresh = useCallback(async () => {
-    const [{ songs: list, mediaBase: base }] = await Promise.all([
+    // Albums come back with the songs, because a song names one: refreshing
+    // half of that pair is how a song ends up filed under an album the page
+    // does not know about.
+    const [{ songs: list, mediaBase: base }, { albums: albumList }] = await Promise.all([
       api.list(),
+      api.albums(),
       refreshStorage().catch(() => {}),
     ])
     setSongs(list)
+    setAlbums(albumList)
     setMediaBase(base)
   }, [refreshStorage])
 
   useEffect(() => {
     let cancelled = false
 
-    Promise.all([api.session(), api.list()])
-      .then(([sessionData, listData]) => {
+    Promise.all([api.session(), api.list(), api.albums()])
+      .then(([sessionData, listData, albumData]) => {
         if (cancelled) return
         setSession(sessionData)
         setSongs(listData.songs)
+        setAlbums(albumData.albums)
         setMediaBase(listData.mediaBase)
         // Lets the site's header offer a way back here, so previewing a change
         // is not a one-way trip through the URL bar. A hint only — Access is
@@ -276,7 +283,7 @@ function Admin() {
                 key={selected?.id ?? 'new'}
                 song={selected}
                 justCreated={Boolean(selected) && selected.id === justCreatedId}
-                musicals={musicals}
+                albums={albums}
                 capabilities={session.capabilities}
                 mediaBase={mediaBase}
                 onChanged={refresh}
@@ -299,6 +306,16 @@ function Admin() {
             )}
           </div>
         </div>
+
+        {/* Not inside the storage block below: albums are part of the
+            catalogue, and waiting on a figures fetch to show them would make
+            them look optional. */}
+        <AlbumPanel
+          albums={albums}
+          mediaBase={mediaBase}
+          capabilities={session.capabilities}
+          onChanged={refresh}
+        />
 
         {storage && (
           <>

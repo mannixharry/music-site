@@ -1,4 +1,4 @@
-import { listPublishedSongs, getVersion } from './db'
+import { listPublishedAlbums, listPublishedSongs, getVersion } from './db'
 import { json } from './json'
 
 // Worker responses are not cached by Cloudflare unless the Worker puts them
@@ -26,13 +26,17 @@ export async function getContent(request, env, ctx) {
   const hit = await cache.match(key)
   if (hit) return hit
 
-  const [songs, version] = await Promise.all([listPublishedSongs(env), getVersion(env)])
+  const [songs, albums, version] = await Promise.all([
+    listPublishedSongs(env),
+    listPublishedAlbums(env),
+    getVersion(env),
+  ])
 
   // The base travels with the data rather than being compiled into the bundle,
   // so the client has no build-time knowledge of where audio lives and local
   // development can point somewhere else without a rebuild.
   const response = json(
-    { version, mediaBase: env.MEDIA_BASE ?? '', songs },
+    { version, mediaBase: env.MEDIA_BASE ?? '', albums, songs },
     { headers: { 'cache-control': CACHE_CONTROL, 'x-content-source': 'd1' } },
   )
 

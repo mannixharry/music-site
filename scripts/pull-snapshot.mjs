@@ -52,6 +52,11 @@ const data = await response.json()
 if (!Array.isArray(data.songs) || data.songs.length === 0) {
   throw new Error('refusing to write a snapshot with no songs')
 }
+// Albums arrived after the first snapshots, so an older payload has none. An
+// empty list is the honest reading of that — every song is a single — and is
+// what the site already renders correctly.
+if (!Array.isArray(data.albums)) data.albums = []
+
 if (!data.version) {
   throw new Error('refusing to write a snapshot with no version — the client compares on it')
 }
@@ -64,4 +69,7 @@ if (legacy.length > 0) {
 }
 
 await writeFile(target, `${JSON.stringify(data, null, 2)}\n`)
-console.log(`Wrote ${data.songs.length} songs at version ${data.version} to src/content/snapshot.json`)
+console.log(
+  `Wrote ${data.songs.length} songs and ${data.albums.length} albums ` +
+    `at version ${data.version} to src/content/snapshot.json`,
+)
