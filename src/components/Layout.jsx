@@ -10,7 +10,7 @@ import RefreshOnNavigate from './RefreshOnNavigate'
 import ScrollToTop from './ScrollToTop'
 import SectionNav from './SectionNav'
 import { SectionNavContext } from '../context/sectionNavContext'
-import { ANCHOR } from '../rules'
+import { ANCHOR, COLUMN } from '../rules'
 
 function Layout() {
   // Set by whichever page has sections worth listing; null on the ones that do
@@ -88,7 +88,7 @@ function Layout() {
         <main
           id="main"
           tabIndex={-1}
-          className={`mx-auto w-full max-w-2xl flex-1 px-4 focus:outline-none ${ANCHOR}`}
+          className={`mx-auto w-full max-w-2xl flex-1 focus:outline-none ${COLUMN} ${ANCHOR}`}
         >
           <SectionNavContext.Provider value={setSections}>
             <Outlet />

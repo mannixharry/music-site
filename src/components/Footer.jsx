@@ -1,13 +1,16 @@
 import { NavLink } from 'react-router-dom'
 import { contact, instagramUrl, mailtoUrl } from '../content/contact'
 import { navItems } from '../nav'
+import { COLUMN } from '../rules'
 
 // The bottom of a long page is the other place you want the site's index, and
 // the header is a scroll away even sticky — on a phone it is behind a tap.
 function Footer() {
   return (
     <footer className="mt-16 border-t border-gray-300 bg-gray-100">
-      <div className="mx-auto flex max-w-2xl flex-col gap-8 px-4 py-8 text-sm sm:flex-row sm:justify-between">
+      <div
+        className={`mx-auto flex max-w-2xl flex-col gap-8 py-8 text-sm sm:flex-row sm:justify-between ${COLUMN}`}
+      >
         <div>
           <p className="font-bold">Frank Kirwan</p>
           <p className="mt-1">
