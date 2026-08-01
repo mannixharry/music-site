@@ -42,7 +42,7 @@ export function clipToSnippet({ left, right, channels, duration }, range, sample
 
   if (!(end > start)) {
     throw new Error(
-      `The preview starts at ${formatTime(start)} but the track is only ${formatTime(duration)} long.`,
+      `The snapshot starts at ${formatTime(start)} but the track is only ${formatTime(duration)} long.`,
     )
   }
 

@@ -57,7 +57,7 @@ function DeletedSongs({ deleted, binDays, onChanged }) {
       `Permanently delete “${song.title}”?\n\n` +
         `Everything stored for it goes — ${song.files} file${song.files === 1 ? '' : 's'}, ` +
         `${formatBytes(song.bytes)}, including your original recording, the website copy and ` +
-        `any preview made from it. This cannot be undone.`,
+        `any snapshot made from it. This cannot be undone.`,
     )
     if (sure) act(song, () => api.purge(song.id))
   }
@@ -70,7 +70,7 @@ function DeletedSongs({ deleted, binDays, onChanged }) {
         back as a draft, so you decide when it goes live again.
         {binDays ? ` Anything left here is deleted for good after ${binDays} days, and its storage freed.` : ''}{' '}
         Deleting one yourself does the same thing now: your recording, the website copy and any
-        preview all go.
+        snapshot all go.
       </p>
 
       {error && <p className="mt-2 border border-gray-500 bg-gray-100 p-2 text-xs">{error}</p>}

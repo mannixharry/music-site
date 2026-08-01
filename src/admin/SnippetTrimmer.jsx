@@ -32,7 +32,7 @@ function Transport({ label, onClick, disabled }) {
 }
 
 // The audio has been fetched but nothing has been uploaded yet — this is where
-// the cut gets decided, and nothing leaves the browser until "Use this preview".
+// the cut gets decided, and nothing leaves the browser until "Use this snapshot".
 //
 // `initialRange` is where the handles start. Editing an existing preview passes
 // the range it was cut at, so the bars open where they were left rather than at
@@ -307,8 +307,8 @@ function SnippetTrimmer({ file, initialRange = null, onCancel, onConfirm }) {
           />
 
           {[
-            { kind: 'start', at: range.start, label: 'Preview start' },
-            { kind: 'end', at: range.end, label: 'Preview end' },
+            { kind: 'start', at: range.start, label: 'Snapshot start' },
+            { kind: 'end', at: range.end, label: 'Snapshot end' },
           ].map((handle) => (
             <div
               key={handle.kind}
@@ -335,7 +335,7 @@ function SnippetTrimmer({ file, initialRange = null, onCancel, onConfirm }) {
         <span>
           {formatTime(range.start)} → {formatTime(range.end)}
         </span>
-        <span className="font-bold">{formatTime(length)} preview</span>
+        <span className="font-bold">{formatTime(length)} snapshot</span>
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -343,13 +343,13 @@ function SnippetTrimmer({ file, initialRange = null, onCancel, onConfirm }) {
           label={playing ? 'Pause' : 'Play'}
           onClick={() => (playing ? pause() : play(null, null))}
         />
-        <Transport label="Play preview" onClick={() => play(range.start, range.end)} />
+        <Transport label="Play snapshot" onClick={() => play(range.start, range.end)} />
         <button
           type="button"
           onClick={() => onConfirm({ start: range.start, end: range.end })}
           className="ml-auto border border-gray-500 bg-gray-200 px-3 py-1 text-sm font-bold"
         >
-          Use this preview
+          Use this snapshot
         </button>
         <button type="button" onClick={onCancel} className="text-sm underline">
           Cancel
@@ -357,7 +357,7 @@ function SnippetTrimmer({ file, initialRange = null, onCancel, onConfirm }) {
       </div>
 
       <p className="mt-2 text-xs text-gray-600">
-        Drag the two bars to set where the preview starts and ends, or drag the middle to move
+        Drag the two bars to set where the snapshot starts and ends, or drag the middle to move
         the whole thing. You will hear the song as you drag. Arrow keys nudge a bar slightly —
         hold shift to move further.
       </p>

@@ -47,7 +47,7 @@ function PreviewControls({ song, fetching, transferring, onMake, onEdit, onResto
   if (song.isSnippet) {
     return (
       <div className="mt-3 border border-gray-400 bg-white p-3">
-        <p className="text-sm font-bold">The website is showing a preview of this song.</p>
+        <p className="text-sm font-bold">The website is showing a snapshot of this song.</p>
         {song.snippetStart !== null && (
           <p className="mt-1 font-mono text-xs text-gray-600">
             {formatTime(song.snippetStart)}–{formatTime(song.snippetEnd)} of the full recording
@@ -61,7 +61,7 @@ function PreviewControls({ song, fetching, transferring, onMake, onEdit, onResto
             disabled={busy}
             className="border border-gray-500 bg-gray-200 px-3 py-1 text-sm disabled:opacity-50"
           >
-            {fetching === 'edit' ? 'Loading your recording…' : 'Change the preview'}
+            {fetching === 'edit' ? 'Loading your recording…' : 'Change the snapshot'}
           </button>
           <button
             type="button"
@@ -89,7 +89,7 @@ function PreviewControls({ song, fetching, transferring, onMake, onEdit, onResto
         disabled={busy}
         className="border border-gray-500 bg-gray-200 px-3 py-1 text-sm disabled:opacity-50"
       >
-        {fetching === 'preview' ? 'Loading the audio…' : 'Put only a preview on the website'}
+        {fetching === 'preview' ? 'Loading the audio…' : 'Put only a snapshot on the website'}
       </button>
       <p className="mt-2 text-xs text-gray-600">
         You choose which part. Only that part goes on the website, so nobody can download the
@@ -418,7 +418,7 @@ function SongForm({
                 <div className="mb-3">
                   {song.isSnippet && (
                     <p className="mb-1 text-xs text-gray-600">
-                      This is the preview. Your full recording is safe.
+                      This is the snapshot. Your full recording is safe.
                     </p>
                   )}
                   <AudioPlayer
@@ -547,9 +547,9 @@ function SongForm({
               checked={draft.showSnippetTag}
               onChange={(event) => set({ showSnippetTag: event.currentTarget.checked })}
             />
-            <span className="font-bold">Mark it as a preview</span>
+            <span className="font-bold">Mark it as a snapshot</span>
             <span className="text-xs text-gray-600">
-              shows a small “Preview” label beside the title
+              shows a small “Snapshot” label beside the title
             </span>
           </label>
         )}

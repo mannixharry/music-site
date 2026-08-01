@@ -160,7 +160,7 @@ function SongList({ songs, albums = [], selectedId, onSelect, onMove, busy }) {
                   >
                     {song.title}
                     {!song.webKey && <span className="ml-2 text-xs text-gray-500">no audio</span>}
-                    {song.isSnippet && <span className="ml-2 text-xs text-gray-500">preview</span>}
+                    {song.isSnippet && <span className="ml-2 text-xs text-gray-500">snapshot</span>}
                   </button>
 
                   <span className="shrink-0 font-mono text-xs text-gray-600">

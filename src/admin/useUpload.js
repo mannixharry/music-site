@@ -102,7 +102,7 @@ export function useUpload({ songId, capabilities, patch }) {
         setStatus({
           phase: 'transcoding',
           ratio: 0,
-          message: snippet ? 'Cutting the preview…' : 'Converting…',
+          message: snippet ? 'Cutting the snapshot…' : 'Converting…',
           error: null,
         })
         const { blob, duration, range } = await transcode(
@@ -134,7 +134,7 @@ export function useUpload({ songId, capabilities, patch }) {
         setStatus({
           phase: 'done',
           ratio: 1,
-          message: range ? 'Preview uploaded — the master is kept whole.' : 'Uploaded and converted.',
+          message: range ? 'Snapshot uploaded — the master is kept whole.' : 'Uploaded and converted.',
           error: null,
         })
       } catch (error) {

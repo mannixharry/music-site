@@ -64,7 +64,7 @@ function StoragePanel({ storage, onChanged }) {
 
   const drafts = database.songs - database.published
   const breakdown = [`${database.published} on the website`, plural(drafts, 'draft')]
-  if (database.previews) breakdown.push(plural(database.previews, 'preview'))
+  if (database.previews) breakdown.push(plural(database.previews, 'snapshot'))
 
   async function tidy() {
     // eslint-disable-next-line no-alert
