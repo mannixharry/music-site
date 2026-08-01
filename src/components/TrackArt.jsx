@@ -28,6 +28,20 @@ const SIZES = {
     label: 'text-[8px] p-1 pb-4',
     badge: 'h-4 w-4 [&_svg]:h-2.5 [&_svg]:w-2.5',
   },
+  // The one song in a list that is playing. Double the row, which makes the
+  // record you are hearing the largest picture on the page and answers "which
+  // of these is it" without a word being read — the question a show with nine
+  // demos actually raises.
+  //
+  // Only ever reached from `row`. The song's own page is already showing its
+  // sleeve as the illustration, and there is nothing there to tell apart.
+  playing: {
+    tile: 'w-28',
+    // Room for four lines rather than three, and legible rather than merely
+    // present: at 112px the typographic fallback is the sleeve, not a marker.
+    label: 'text-xs p-2 pb-6 [&>span]:line-clamp-4',
+    badge: 'h-6 w-6 [&_svg]:h-3.5 [&_svg]:w-3.5',
+  },
   // One song with a page to itself, where the sleeve is the illustration
   // rather than a marker in a column.
   // No extra bottom padding here, unlike the row: at 160px a title is one or
@@ -56,7 +70,12 @@ function Sleeve({ song, size, children }) {
   const s = SIZES[size]
 
   return (
-    <span className={`relative block aspect-square shrink-0 border border-gray-300 ${s.tile}`}>
+    <span
+      // The width is the only thing that changes between `row` and `playing`,
+      // so it is worth easing rather than cutting: pressing through a list
+      // otherwise makes the rows below jump by 56px on every track.
+      className={`relative block aspect-square shrink-0 border border-gray-300 transition-[width] duration-200 motion-reduce:transition-none ${s.tile}`}
+    >
       {song.coverSrc ? (
         // Decorative: the title is beside it and the button naming this song is
         // around it, so describing the image here reads the same words twice.
@@ -90,10 +109,13 @@ function Sleeve({ song, size, children }) {
 
 function TrackArt({ song, queue, size = 'row' }) {
   const playback = usePlayback()
-  const s = SIZES[size]
 
   const isActive = playback.track?.id === song.id
   const isPlaying = isActive && playback.playing
+
+  // A row grows into the loaded song's sleeve; every other size is left alone.
+  const drawn = size === 'row' && isActive ? 'playing' : size
+  const s = SIZES[drawn]
 
   // What to hand the provider. Taken from the queue where there is one, so the
   // album and artwork a lock screen shows travel with the track; memoised
@@ -122,7 +144,15 @@ function TrackArt({ song, queue, size = 'row' }) {
 
   // No recording yet, so nothing to press. The sleeve still draws — a single
   // announced before its audio arrives is still a release.
-  if (!song.audioSrc) return <Sleeve song={song} size={size} />
+  if (!song.audioSrc) return <Sleeve song={song} size={drawn} />
+
+  // The accent wash marks the loaded song everywhere it is drawn small. On the
+  // row that has grown it would cover the whole of the thing the growing was
+  // for, so there the picture stays and the corner badge — which is showing a
+  // pause glyph, and is the size of the old sleeve's quarter — says what state
+  // it is in instead. Hovering still brings the wash, where it means press to
+  // pause rather than "this is playing".
+  const washed = isActive && drawn !== 'playing'
 
   return (
     <button
@@ -131,7 +161,7 @@ function TrackArt({ song, queue, size = 'row' }) {
       aria-label={`${isPlaying ? 'Pause' : 'Play'} ${song.title}`}
       className="group/art shrink-0"
     >
-      <Sleeve song={song} size={size}>
+      <Sleeve song={song} size={drawn}>
         {/* Two states over the picture, and the small one is not decoration.
             A sleeve with the glyph only on hover is, on a phone, a photograph
             with no sign that it does anything — there is no hover to find it
@@ -139,7 +169,7 @@ function TrackArt({ song, queue, size = 'row' }) {
             wash is what hovering adds. */}
         <span
           className={`absolute bottom-0 left-0 grid place-items-center bg-gray-900/70 text-white transition-opacity ${s.badge} ${
-            isActive ? 'opacity-0' : 'opacity-100 group-hover/art:opacity-0'
+            washed ? 'opacity-0' : 'opacity-100 group-hover/art:opacity-0'
           }`}
         >
           {isPlaying ? <PauseIcon /> : <PlayIcon />}
@@ -153,7 +183,7 @@ function TrackArt({ song, queue, size = 'row' }) {
           className={`absolute inset-0 grid place-items-center text-white transition-opacity ${
             song.coverSrc ? 'bg-accent/85' : 'bg-accent'
           } ${
-            isActive
+            washed
               ? 'opacity-100'
               : 'opacity-0 group-hover/art:opacity-100 group-focus-visible/art:opacity-100'
           }`}
