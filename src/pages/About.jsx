@@ -14,13 +14,22 @@ import { usePageMeta } from '../usePageMeta'
 // Below the breakpoint there is no second column to sit in, so they stack in
 // the order they are written; `side` only decides which way round they sit
 // once there is room, and never changes the reading order.
-function WithPhoto({ name, side = 'right', children }) {
+//
+// `stretch` also foots it level with the last line: `self-stretch` overrides
+// `items-start` for that one child, so the frame takes the row's height — which
+// is the paragraph's — and `object-cover` scales the photograph up to fill it,
+// trimming the sides. A fixed larger width could not do this. The paragraph's
+// height depends on how wide the picture leaves the column, so any width that
+// happened to line up at one viewport would be short or long at the next; this
+// lines up at every width, and the cost is a crop that varies with it.
+function WithPhoto({ name, side = 'right', stretch = false, children }) {
   return (
     <div className="sm:flex sm:items-start sm:gap-6">
       <div className={`sm:flex-1 ${side === 'left' ? 'sm:order-2' : ''}`}>{children}</div>
       <PagePhoto
         name={name}
-        className={`mt-4 sm:mt-0 sm:w-52 sm:shrink-0 ${side === 'left' ? 'sm:order-1' : ''}`}
+        className={`mt-4 sm:mt-0 sm:w-52 sm:shrink-0 ${stretch ? 'sm:self-stretch' : ''} ${side === 'left' ? 'sm:order-1' : ''}`}
+        imgClassName={stretch ? 'sm:h-full sm:object-cover' : ''}
       />
     </div>
   )
@@ -51,7 +60,7 @@ function About() {
 
         <p>{theatre}</p>
 
-        <WithPhoto name="about-then" side="left">
+        <WithPhoto name="about-then" side="left" stretch>
           <p>{projects}</p>
         </WithPhoto>
       </div>

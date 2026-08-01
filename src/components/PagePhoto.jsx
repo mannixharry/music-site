@@ -60,7 +60,16 @@ const PHOTOS = {
 // viewport and fetches the larger file for a phone. The default describes a
 // picture set into the text at a fixed width on a desktop and running the full
 // column on a phone; Contact overrides it, being the width of the column.
-function PagePhoto({ name, sizes = '(min-width: 40rem) 224px, calc(100vw - 2rem)', className = '' }) {
+// `imgClassName` reaches the <img> itself rather than the <picture> around it,
+// which is the only way to change how the picture fills its box — a caller that
+// stretches the frame to a height the photograph does not have needs to say what
+// happens to the overflow, and that is a property of the image, not the frame.
+function PagePhoto({
+  name,
+  sizes = '(min-width: 40rem) 224px, calc(100vw - 2rem)',
+  className = '',
+  imgClassName = '',
+}) {
   const photo = PHOTOS[name]
   if (!photo) return null
 
@@ -76,7 +85,7 @@ function PagePhoto({ name, sizes = '(min-width: 40rem) 224px, calc(100vw - 2rem)
         height={photo.height}
         loading="lazy"
         decoding="async"
-        className="w-full border border-gray-300"
+        className={`w-full border border-gray-300 ${imgClassName}`}
       />
     </picture>
   )

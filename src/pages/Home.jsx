@@ -74,20 +74,28 @@ function Home() {
       {/* The About page opens with these same words — its first paragraph is
           this one, minus the closing clause about the site. Left alone as copy
           and framed instead: this reads as a repeat only while nothing says it
-          is an opening. The link says it, and it is the same "go deeper" close
-          the two sections above already have, which the bio was missing.
+          is an opening. The heading and the link say it, and the link is the
+          same "go deeper" close the two sections above already have, which the
+          bio was missing.
 
           It sits after the work rather than before it: the page now opens on
           the songs and the musicals, and the bio is what you read once one of
-          them has caught you. */}
-      {/* Slightly above body copy, which is how a publication sets an
-          introduction apart. It also takes the line length from 88 characters
-          to 77, which is the better read of the two on its own merits. Not
-          italic — Literata's italic is a 47 kB file this site otherwise never
-          fetches, and italic at this length is slower to read than it is
-          worth. */}
-      <section className={`${SECTION} text-base leading-relaxed`}>
-        <div className="space-y-3">
+          them has caught you.
+
+          Named "About", the word in the nav and at the top of the page it leads
+          to, so the section and its destination are recognisably the same
+          thing. It was the one section here running without a heading, which
+          left a slab of prose starting under a rule with nothing to say what it
+          was. */}
+      <section className={SECTION}>
+        <h2 className={HEADING}>About</h2>
+        {/* Slightly above body copy, which is how a publication sets an
+            introduction apart. It also takes the line length from 88 characters
+            to 77, which is the better read of the two on its own merits. Not
+            italic — Literata's italic is a 47 kB file this site otherwise never
+            fetches, and italic at this length is slower to read than it is
+            worth. */}
+        <div className="mt-3 space-y-3 text-base leading-relaxed">
           {profile.paragraphs.map((paragraph, i) => (
             <p key={i}>{paragraph}</p>
           ))}
