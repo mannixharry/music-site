@@ -5,8 +5,6 @@
 // bare title rather than a composed one. Both are resolved here, so moving the
 // audio to R2 (or renaming a musical) touches one file.
 
-import { songSlug } from './slug'
-
 // A leading slash means a file still sitting in public/; anything else is an R2
 // object key to be hung off the media domain. This is what lets the same
 // snapshot survive the move to R2 without a flag day.
@@ -26,7 +24,6 @@ function toSong(row, mediaBase = '', albums = new Map()) {
 
   return {
     id: row.id,
-    slug: songSlug(row),
     // `title` carries the album's name, for everywhere a song is named away
     // from its album: a lock screen, the now-playing strip, a tab title, and
     // the search on /songs, where it is what makes typing "Pigs" find all five
@@ -110,13 +107,11 @@ export function toQueue(songs) {
       id: song.id,
       src: song.audioSrc,
       title: song.title,
-      // The bare title and the song's own address, for the strip's drawer,
-      // which names a record the way a listing does — under its album rather
-      // than with the album's name folded into the title — and offers the way
-      // through to it. Carried here for the same reason `album` and `artwork`
+      // The bare title, for the strip's drawer, which names a record the way a
+      // listing does — under its album rather than with the album's name folded
+      // into the title. Carried here for the same reason `album` and `artwork`
       // are: by the time the strip is asked, the page that knew has gone.
       shortTitle: song.shortTitle,
-      slug: song.slug,
       duration: song.duration,
       album: song.album?.title ?? null,
       artwork: song.coverSrc ?? null,

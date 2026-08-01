@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import TrackArt from './TrackArt'
 import SnippetTag from './SnippetTag'
 import { formatTime } from '../format'
@@ -24,13 +23,11 @@ function SongItem({ song, queue }) {
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          {/* The title is the way in to the song's own page. A heading that is
-              also a link is how a list of things becomes a set of addresses. */}
-          <h3 className="text-lg font-bold">
-            <Link to={`/songs/${song.slug}`} className="underline">
-              {song.shortTitle}
-            </Link>
-          </h3>
+          {/* Plain text. The title was the way in to a page per song; those are
+              gone, and an underlined heading that goes nowhere is worse than a
+              heading. This list and the sleeve beside it are now the whole of
+              how a song is reached. */}
+          <h3 className="text-lg font-bold">{song.shortTitle}</h3>
           {song.isSnippet && song.showSnippetTag && <SnippetTag title={song.title} />}
         </div>
 

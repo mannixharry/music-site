@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-A portfolio/website for artist Frank Kirwan (see `<title>` in `index.html`). Built on Vite's `react` template. Six routes — five pages plus `/songs/:slug`, a page per song — a custom audio player wired to the Media Session API, and no tests or component library.
+A portfolio/website for artist Frank Kirwan (see `<title>` in `index.html`). Built on Vite's `react` template. Five pages, a custom audio player wired to the Media Session API, and no tests or component library.
 
 The site is staged. `index.html` carries `noindex, nofollow` and `public/robots.txt` carries a matching `Disallow: /`; **both come off together to go public**, and nothing else does. Descriptions, Open Graph tags, canonicals, structured data and a generated sitemap are already in place.
 
@@ -14,6 +14,7 @@ Settled deliberately, so they are not reopened by accident:
 
 - **Assets are served without invoking the Worker**, which is why an unknown address returns HTTP 200 with the not-found page rather than a real 404. Chosen over routing page requests through the Worker.
 - **The musicals stay on one page**, navigated by the pinned section row.
+- **A song has no page of its own.** `/songs/:slug` and `src/pages/Song.jsx` existed and were removed on Frank's instruction. A song is reached through `/songs`, the home page's singles and a musical's demo list, and it is played from the sleeve in place — there is nowhere to go. So a title in a listing is plain text, not a link, and `src/content/slug.js` is gone with the addresses it built. Reinstating any of it means reinstating all three.
 - **No dark mode.** The design is committed to paper, ink and one oxblood accent.
 
 It is mid-migration to a self-hosted admin CMS — see "Content" below.
@@ -42,7 +43,7 @@ Miniflare persists its emulated cache to `.wrangler/state/v3/cache`, and `/api/c
 - **Build tool**: Vite (`vite.config.js`), using `@vitejs/plugin-react` (Oxc-based, not SWC).
 - **Styling**: Tailwind CSS v4 via the `@tailwindcss/vite` plugin — imported with a single `@import "tailwindcss";` in `src/index.css`. There is no `tailwind.config.js`; v4 is configured through CSS/Vite plugin, not a JS config file.
 - **Entry point**: `src/main.jsx` mounts `<App />` into `#root` (defined in `index.html`) inside `React.StrictMode`, wrapped in `<ContentProvider>`.
-- **Routing**: `react-router-dom` (v7). `App.jsx` defines `/`, `/songs`, `/musicals`, `/about`, `/contact`, all nested under a pathless `<Route element={<Layout />}>`. There is no `*` catch-all. The musicals are anchored sections on one page (`id={musical.slug}`), not per-musical routes.
+- **Routing**: `react-router-dom` (v7). `App.jsx` defines `/`, `/songs`, `/musicals`, `/about`, `/contact` and a `*` catch-all rendering `NotFound`, all nested under a pathless `<Route element={<Layout />}>`. The musicals are anchored sections on one page (`id={musical.slug}`), not per-musical routes; songs have no routes at all (see above).
 - **Navigation**: `src/nav.js` is the single list of pages, read by both `Header` and `Footer`. The header is `sticky top-0 z-20`, and that is coupled to the `scroll-mt-20` on every in-page anchor target (`#top`, the musicals' sections, the `/songs` groups) — without it a hash jump lands with the heading underneath the header. Change the header's height and those have to follow. In-page links are `<Link to="#slug">`, not bare `<a href>`, so they go through `ScrollToTop`'s hash handling rather than around the router.
 - **Grey rules**: `src/rules.js` owns them. `SECTION` (gray-300) separates the major blocks of a page; `LIST`/`LIST_ITEM` (gray-200, via `divide-y`) separate repeated items inside one. `divide-y` rather than a border per item on purpose — it draws lines *between* children only, which is the rule that kept getting broken by hand and put a line directly under a heading. `HEADING` is the one size every public section heading uses. Reach for these rather than writing another `border-t`.
 - **Deployment**: a Cloudflare Worker at `frankkirwan.com` (attached via the dashboard, not `wrangler.jsonc`), deployed manually with `npm run deploy`. There is no CI.

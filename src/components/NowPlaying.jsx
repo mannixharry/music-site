@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { formatTime } from '../format'
 import { usePlayback } from '../context/playbackContext'
 import { PauseIcon, PlayIcon } from './AudioPlayer'
@@ -55,6 +54,10 @@ const BUTTON = `${TRANSPORT} h-7 w-7`
 const SLEEVE = 'h-12 w-12'
 const OPEN_ART = 'w-44 sm:w-52'
 
+// Named once: two controls point at it, and an aria-controls naming nothing is
+// worse than none at all.
+const DRAWER = 'now-playing-sleeve'
+
 function NowPlaying() {
   const {
     track,
@@ -76,6 +79,7 @@ function NowPlaying() {
   // across a change of track: moving through a list with it open is exactly
   // when seeing the next sleeve is the point. Only closing the strip resets it.
   const [open, setOpen] = useState(false)
+  const toggle = () => setOpen((shut) => !shut)
 
   if (!track) return null
 
@@ -102,9 +106,9 @@ function NowPlaying() {
         {art && (
           <button
             type="button"
-            onClick={() => setOpen((shut) => !shut)}
+            onClick={toggle}
             aria-expanded={open}
-            aria-controls="now-playing-sleeve"
+            aria-controls={DRAWER}
             aria-label={`${open ? 'Hide' : 'Show'} the cover for ${track.title}`}
             className={`group/sleeve relative shrink-0 border-r border-gray-300 ${SLEEVE}`}
           >
@@ -163,10 +167,32 @@ function NowPlaying() {
             <SkipIcon />
           </button>
 
-          <p className="min-w-0 flex-1 truncate text-xs">
-            <span className="text-gray-600">Playing</span>{' '}
-            <span className="font-bold">{track.title}</span>
-          </p>
+          {/* The title opens the record too. It is the largest thing in the bar
+              and the thing you are already looking at to find out what is
+              playing, so making the sleeve the only way in put the affordance
+              on the smallest target in the strip. Both drive the one piece of
+              state, and both say so, which is what lets either be pressed to
+              close it again.
+
+              A plain paragraph when there is no artwork, because then there is
+              nothing to open. */}
+          {art ? (
+            <button
+              type="button"
+              onClick={toggle}
+              aria-expanded={open}
+              aria-controls={DRAWER}
+              className="min-w-0 flex-1 truncate text-left text-xs hover:underline"
+            >
+              <span className="text-gray-600">Playing</span>{' '}
+              <span className="font-bold">{track.title}</span>
+            </button>
+          ) : (
+            <p className="min-w-0 flex-1 truncate text-xs">
+              <span className="text-gray-600">Playing</span>{' '}
+              <span className="font-bold">{track.title}</span>
+            </p>
+          )}
 
           {/* On a phone it wraps to a line of its own, full width — the title is
               what the first line is for, and a scrubber squeezed in beside it at
@@ -221,7 +247,7 @@ function NowPlaying() {
           Its height is picked up by the ResizeObserver in Layout and published
           as --chrome, so every anchor on the site follows it open and shut. */}
       {open && art && (
-        <div id="now-playing-sleeve" className="border-t border-gray-300">
+        <div id={DRAWER} className="border-t border-gray-300">
           <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 px-4 pb-5 pt-4 text-center sm:flex-row sm:items-start sm:text-left">
             <img
               src={art}
@@ -240,18 +266,6 @@ function NowPlaying() {
                   <span className="tabular-nums"> · {formatTime(track.duration)}</span>
                 )}
               </p>
-
-              {/* The way out of a bar that otherwise only ever stops things.
-                  Guarded because a session stored before this existed has no
-                  slug on its track, and a link to /songs/undefined is worse
-                  than no link. */}
-              {track.slug && (
-                <p className="mt-3 text-sm">
-                  <Link to={`/songs/${track.slug}`} className="underline">
-                    Open this song
-                  </Link>
-                </p>
-              )}
             </div>
           </div>
         </div>

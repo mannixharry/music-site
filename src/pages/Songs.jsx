@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import Placeholder from '../components/Placeholder'
 import SongItem from '../components/SongItem'
 import AlbumCover from '../components/AlbumCover'
@@ -214,11 +213,6 @@ function Songs() {
               <h2 className={HEADING}>{group.title}</h2>
               {group.album?.subtitle && (
                 <p className="mt-1 text-sm text-gray-600">{group.album.subtitle}</p>
-              )}
-              {group.album?.isMusical && (
-                <Link to={`/musicals#${group.album.id}`} className="mt-1 inline-block text-sm underline">
-                  About this musical
-                </Link>
               )}
             </div>
           </div>
