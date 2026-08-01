@@ -91,6 +91,11 @@ statements.push(...songs.map((song) => {
     song.showSnippetTag ? '1' : '0',
     quote(JSON.stringify(song.links ?? [])),
     number(song.sortOrder),
+    // A snapshot taken before 0007 has no such field, so fall back to the rule
+    // that column replaced — the home page showed whatever was in no album.
+    // Same fallback as toSong() in src/content/normalise.js, and for the same
+    // reason: a reset must reproduce the site the snapshot was taken from.
+    (song.onHomepage ?? !song.albumId) ? '1' : '0',
     song.published === false ? '0' : '1',
     quote(now),
     quote(now),
@@ -106,7 +111,7 @@ statements.push(...songs.map((song) => {
   id, title, description, kind, album_id, status,
   web_key, web_bytes, master_key, master_bytes, master_mime, duration_s,
   cover_key, cover_bytes, is_snippet, show_snippet_tag,
-  links_json, sort_order, published, created_at, updated_at
+  links_json, sort_order, on_homepage, published, created_at, updated_at
 ) VALUES (${columns.join(', ')});`
 }))
 

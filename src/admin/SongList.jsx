@@ -159,6 +159,13 @@ function SongList({ songs, albums = [], selectedId, onSelect, onMove, busy }) {
                     className="min-w-0 flex-1 truncate text-left text-sm hover:underline"
                   >
                     {song.title}
+                    {/* Which songs the front page draws. It used to be exactly
+                        the first section here, so the grouping said it; since
+                        0007 a song in any album can be on the home page, and
+                        nothing else in this list would show it. */}
+                    {song.onHomepage && (
+                      <span className="ml-2 text-xs text-gray-500">home page</span>
+                    )}
                     {!song.webKey && <span className="ml-2 text-xs text-gray-500">no audio</span>}
                     {song.isSnippet && <span className="ml-2 text-xs text-gray-500">snapshot</span>}
                   </button>

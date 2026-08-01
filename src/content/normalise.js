@@ -54,6 +54,11 @@ function toSong(row, mediaBase = '', albums = new Map()) {
     status: row.status ?? 'released',
     kind: row.kind,
     albumId: row.albumId ?? null,
+    // Whether the home page shows it, which is now a question of its own rather
+    // than "belongs to no album" — see migrations/0007_home_page.sql. The
+    // fallback is the rule it replaced, so a snapshot taken before that column
+    // existed still draws the home page it was taken from.
+    onHomepage: row.onHomepage ?? !row.albumId,
     // The whole album, so a caller has its title and kind without a second
     // lookup — and null for a single, which is a state worth being able to test
     // for directly.

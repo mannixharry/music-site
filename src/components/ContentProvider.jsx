@@ -71,9 +71,12 @@ function ContentProvider({ children }) {
       songs,
       albums,
       version: data.version,
-      // The home page's five: songs belonging to no album. "Single" is not a
-      // property a song carries any more — it is what being in no album means.
-      singles: songs.filter((song) => !song.albumId),
+      // What the home page's Music section draws. A flag on the song rather
+      // than "belongs to no album": a track from a record can be put on the
+      // front page without being taken out of the record to do it. Flat
+      // sort_order still decides the running order, so a song's place here is
+      // the place it has in the admin's list.
+      homeSongs: songs.filter((song) => song.onHomepage),
       songsIn: (albumId) => songs.filter((song) => song.albumId === albumId),
       refresh,
     }

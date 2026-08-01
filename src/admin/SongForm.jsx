@@ -9,6 +9,10 @@ import { isUploading } from './upload'
 import { useUpload } from './useUpload'
 import { useCoverUpload } from './useCoverUpload'
 
+// A new song starts on the home page. Every song added to this site so far has
+// been one, the tick box is right there to clear, and defaulting it off would
+// mean adding a single and then wondering why the front page had not changed.
+// An existing song's own value always wins — this is only the blank slate.
 const BLANK = {
   title: '',
   kind: 'single',
@@ -16,6 +20,7 @@ const BLANK = {
   description: '',
   status: 'released',
   links: [],
+  onHomepage: true,
   published: false,
   showSnippetTag: false,
 }
@@ -266,6 +271,7 @@ function SongForm({
         description: draft.description,
         status: draft.status,
         links: draft.links.filter((link) => link.label && link.href),
+        onHomepage: draft.onHomepage,
         published: draft.published,
         showSnippetTag: draft.showSnippetTag,
       }
@@ -325,17 +331,18 @@ function SongForm({
           />
         </Field>
 
-        {/* One question where there were two. A song used to carry a type as
-            well as a musical, which were two ways of saying the same thing and
-            could disagree; now it belongs to an album or it does not, and
-            "single" is what belonging to none is called. */}
-        <Field label="Album" hint="a musical is an album too — leave it as a single for a standalone song">
+        {/* What the song belongs to, and only that. It used to be the answer to
+            two questions — the home page showed whatever was in no album — so
+            putting a track from a record on the front page meant taking it out
+            of the record. "Show on the home page" below is now the other
+            question, and the two no longer have to agree. */}
+        <Field label="Album" hint="a musical is an album too — leave it blank for a standalone song">
           <select
             className={inputClass}
             value={draft.albumId}
             onChange={(event) => set({ albumId: event.currentTarget.value })}
           >
-            <option value="">A single — no album</option>
+            <option value="">No album — a song on its own</option>
             {albums.map((album) => (
               <option key={album.id} value={album.id}>
                 {album.title}
@@ -355,7 +362,11 @@ function SongForm({
           />
         </Field>
 
-        {draft.kind === 'single' && (
+        {/* "Coming soon" is drawn by the home page's rows and nowhere else, so
+            this follows the home page rather than the album — it used to be
+            gated on `kind === 'single'`, which was the same set of songs until
+            0007 and is not any more. */}
+        {draft.onHomepage && (
           <Field label="Status">
             <select
               className={inputClass}
@@ -480,16 +491,12 @@ function SongForm({
           )}
         </Block>
 
-        {/* Offered whatever the song's type is, and the hint says why: only the
-            home page draws covers, but art uploaded now survives a song being
-            changed into a single later. */}
+        {/* Offered whatever the song belongs to: every listing on the site
+            draws a sleeve now, so there is no longer a type of song for which
+            this would go unused. Without one, the album's cover is shown. */}
         <Field
           label="Cover art"
-          hint={
-            draft.kind === 'single'
-              ? 'optional — appears beside the song on the home page'
-              : 'optional — saved now, and shown if you make this a single'
-          }
+          hint="optional — a song without its own uses its album's"
         >
           {song ? (
             <>
@@ -525,6 +532,21 @@ function SongForm({
             </p>
           )}
         </Field>
+
+        {/* Where the song is shown, which is no longer decided by what it
+            belongs to. A track from a record can be on the front page and stay
+            in the record — /songs still files it under the album either way. */}
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={draft.onHomepage}
+            onChange={(event) => set({ onHomepage: event.currentTarget.checked })}
+          />
+          <span className="font-bold">Show on the home page</span>
+          <span className="text-xs text-gray-600">
+            in the Music list, whatever album it is in
+          </span>
+        </label>
 
         <label className="flex items-center gap-2 text-sm">
           <input

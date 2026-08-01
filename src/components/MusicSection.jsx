@@ -6,17 +6,17 @@ import { toQueue } from '../content/normalise'
 import { HEADING, LIST, LIST_ITEM, SECTION_LINK } from '../rules'
 
 function MusicSection() {
-  const { singles } = useContent()
-  // The five singles play on from one to the next, in the order shown.
-  const queue = useMemo(() => toQueue(singles), [singles])
+  const { homeSongs } = useContent()
+  // The home page's songs play on from one to the next, in the order shown.
+  const queue = useMemo(() => toQueue(homeSongs), [homeSongs])
 
   return (
     <section>
       <h2 className={HEADING}>Music</h2>
       <div className={`mt-2 ${LIST}`}>
-        {singles.map((single) => (
-          <div key={single.id} className={LIST_ITEM}>
-            <ReleaseItem release={single} queue={queue} />
+        {homeSongs.map((song) => (
+          <div key={song.id} className={LIST_ITEM}>
+            <ReleaseItem release={song} queue={queue} />
           </div>
         ))}
       </div>

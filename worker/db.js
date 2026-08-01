@@ -31,6 +31,11 @@ function toRow(record) {
     showSnippetTag: record.show_snippet_tag === 1,
     links: Array.isArray(links) ? links : [],
     sortOrder: record.sort_order,
+    // Whether the home page shows it. Separate from album_id since 0007: what a
+    // song belongs to and where it is shown are two questions, and answering
+    // both with one column meant the only way onto the front page was to leave
+    // the record.
+    onHomepage: record.on_homepage === 1,
     published: record.published === 1,
   }
 }
@@ -43,7 +48,7 @@ function toRow(record) {
 const PUBLIC_COLUMNS = `
   id, title, description, kind, album_id, status,
   web_key, cover_key, duration_s, is_snippet, show_snippet_tag,
-  links_json, sort_order, published
+  links_json, sort_order, on_homepage, published
 `
 
 export async function listPublishedSongs(env) {
@@ -203,10 +208,11 @@ const WRITABLE = {
   showSnippetTag: 'show_snippet_tag',
   snippetStart: 'snippet_start_s',
   snippetEnd: 'snippet_end_s',
+  onHomepage: 'on_homepage',
   published: 'published',
 }
 
-const BOOLEAN_FIELDS = new Set(['published', 'isSnippet', 'showSnippetTag'])
+const BOOLEAN_FIELDS = new Set(['published', 'isSnippet', 'showSnippetTag', 'onHomepage'])
 
 function serialise(field, value) {
   if (BOOLEAN_FIELDS.has(field)) return value ? 1 : 0
@@ -237,8 +243,8 @@ export async function createSong(env, input) {
        web_key, web_bytes, master_key, master_bytes, master_mime, duration_s,
        cover_key, cover_bytes, cover_master_key, cover_master_bytes, cover_master_mime,
        is_snippet, show_snippet_tag, snippet_start_s, snippet_end_s,
-       links_json, sort_order, published, created_at, updated_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       links_json, sort_order, on_homepage, published, created_at, updated_at
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       input.id,
@@ -264,6 +270,7 @@ export async function createSong(env, input) {
       input.snippetEnd ?? null,
       JSON.stringify(input.links ?? []),
       sortOrder,
+      input.onHomepage ? 1 : 0,
       input.published ? 1 : 0,
       now,
       now,
@@ -492,8 +499,10 @@ export async function updateAlbum(env, id, patch) {
 
 // Soft, like a song's — and it releases the songs rather than taking them with
 // it. An album is a grouping; deleting the grouping should not delete the work.
-// The songs land back among the singles, which is a state the site already
-// knows how to show.
+// The songs land back among the singles on /songs, which is a state the site
+// already knows how to show. `on_homepage` is deliberately left alone: since
+// 0007 it is an editorial choice of its own, so dissolving an album must not
+// silently move five demos onto the front page.
 export async function deleteAlbum(env, id) {
   const now = new Date().toISOString()
 

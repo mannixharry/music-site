@@ -3,13 +3,17 @@ import TrackArt from './TrackArt'
 import SnippetTag from './SnippetTag'
 import { formatTime } from '../format'
 
-// A single, on the home page. The sleeve is the play button and the only thing
-// on the left, which is what the row used to spend a full transport on.
+// A song on the home page. The sleeve is the play button and the only thing on
+// the left, which is what the row used to spend a full transport on.
 //
-// Every single draws a sleeve now, where before a song with no art rendered
+// Every one draws a sleeve now, where before a song with no art rendered
 // nothing rather than an empty frame — a column of dashed rectangles read as a
 // page that had failed to load. What changed is that the fallback is no longer
 // an empty frame: see Sleeve in TrackArt.
+//
+// `title` and not `shortTitle`, and that matters more than it used to: since
+// 0007 a song here may belong to a record, and this list has no album heading
+// above it to say which. The composed title carries the album's name itself.
 function ReleaseItem({ release, queue }) {
   return (
     <div className="flex gap-3">

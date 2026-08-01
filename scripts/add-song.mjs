@@ -72,6 +72,10 @@ Usage: node scripts/add-song.mjs [audio-file] [options]
   --description <text>
   --status <s>            released | coming-soon     (default: released)
   --link "Label|https://…"  Repeatable.
+  --home / --no-home      Show it in the home page's Music list, or don't.
+                          Independent of the album since 0007. Defaults to on
+                          for a new single, off for a new demo; an existing
+                          song keeps whatever it has.
   --draft                 published = 0. Visible in /admin and nowhere else.
   --remote                Act on the REAL database and bucket. Off by default.
   --dry-run               Print the SQL and the R2 key, change nothing.
@@ -101,6 +105,8 @@ function parseArgs(argv) {
     if (arg === '--help' || arg === '-h') return { help: true }
     else if (arg === '--remote') options.remote = true
     else if (arg === '--draft') options.draft = true
+    else if (arg === '--home') options.home = true
+    else if (arg === '--no-home') options.home = false
     else if (arg === '--dry-run') options.dryRun = true
     else if (arg === '--title') options.title = value()
     else if (arg === '--id') options.id = value()
@@ -215,6 +221,12 @@ async function main() {
   const kind = options.kind ?? existing?.kind ?? 'single'
   const status = options.status ?? existing?.status ?? 'released'
   const musical = options.musical ?? existing?.musical_slug ?? null
+  // Where it is shown, which since 0007 is no longer implied by what it belongs
+  // to. Carried through for an existing song — the INSERT OR REPLACE below
+  // rebuilds the whole row, so a column left out of the list does not keep its
+  // value, it goes back to the default and quietly drops the song off the front
+  // page. The default for a new one is the rule the column replaced.
+  const onHomepage = options.home ?? (existing ? existing.on_homepage === 1 : kind === 'single')
 
   // The schema's own CHECK does not cover this pairing, so it is enforced here.
   if (kind === 'demo' && !musical) throw new Error('--kind demo needs --musical <slug>')
@@ -326,6 +338,7 @@ async function main() {
     snippet_end_s: number(options.file ? null : (existing?.snippet_end_s ?? null)),
     links_json: quote(JSON.stringify(links.length ? links : JSON.parse(existing?.links_json ?? '[]'))),
     sort_order: number(sortOrder),
+    on_homepage: onHomepage ? '1' : '0',
     published: options.draft ? '0' : String(existing?.published ?? 1),
     created_at: quote(existing?.created_at ?? now),
     updated_at: quote(now),

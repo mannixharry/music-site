@@ -309,8 +309,8 @@ function AlbumRow({
 
           {confirming ? (
             <p className="text-sm">
-              Delete <span className="font-bold">{album.title}</span>? Its songs are kept and become
-              singles.{' '}
+              Delete <span className="font-bold">{album.title}</span>? Its songs are kept and are
+              listed under Singles. Whether each one is on the home page does not change.{' '}
               <button
                 type="button"
                 disabled={busy || transferring}
