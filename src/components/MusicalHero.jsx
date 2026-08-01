@@ -21,7 +21,7 @@ import guyana256jpg from '../images/heroes/guyana-skies-256.jpg'
 import guyana672jpg from '../images/heroes/guyana-skies-672.jpg'
 import guyana1344jpg from '../images/heroes/guyana-skies-1344.jpg'
 
-// The title artwork at the head of each musical.
+// The artwork at the head of each musical.
 //
 // Keyed by the show's slug and imported statically, which is the whole reason
 // this is a component rather than a field in musicals.js: Vite has to see the
@@ -36,17 +36,17 @@ const HEROES = {
   pigs: {
     webp: [pigs256webp, pigs672webp, pigs1344webp],
     jpg: [pigs256jpg, pigs672jpg, pigs1344jpg],
-    alt: 'Title artwork: an engraved black pig standing below the show’s name in red, above the words “the musical”.',
+    alt: 'An engraving on aged paper of seven pigs dancing upright in a farmyard, with a fence, a barn and a silo behind them.',
   },
   'copperfield-co': {
     webp: [copperfield256webp, copperfield672webp, copperfield1344webp],
     jpg: [copperfield256jpg, copperfield672jpg, copperfield1344jpg],
-    alt: 'Title artwork: silhouettes of a boy and a gentleman in a top hat standing either side of a Victorian London skyline with the dome of St Paul’s.',
+    alt: 'An engraving in dark blue of a boy and a gentleman in a top hat facing each other across a Victorian London skyline with the dome of St Paul’s.',
   },
   'guyana-skies': {
     webp: [guyana256webp, guyana672webp, guyana1344webp],
     jpg: [guyana256jpg, guyana672jpg, guyana1344jpg],
-    alt: 'Title artwork: a man holding a suitcase looks out from a riverbank of palms and stilt houses towards the Empire Windrush and the Houses of Parliament.',
+    alt: 'A man holding a suitcase stands on a riverbank of palms and stilt houses under a high yellow sun, looking across the water to Big Ben and the Houses of Parliament.',
   },
 }
 
