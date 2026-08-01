@@ -10,8 +10,7 @@ import RefreshOnNavigate from './RefreshOnNavigate'
 import ScrollToTop from './ScrollToTop'
 import SectionNav from './SectionNav'
 import { SectionNavContext } from '../context/sectionNavContext'
-import { useHideOnScroll } from '../useHideOnScroll'
-import { ANCHOR, COLUMN, SLIDE } from '../rules'
+import { ANCHOR, COLUMN } from '../rules'
 
 function Layout() {
   // Set by whichever page has sections worth listing; null on the ones that do
@@ -27,9 +26,6 @@ function Layout() {
   // the header itself when the phone menu opens — so the only number right in
   // all of those is the one taken from the block.
   const chrome = useRef(null)
-
-  // Slid out of the way while the page is being scrolled down, on a phone.
-  const hidden = useHideOnScroll()
 
   useEffect(() => {
     const node = chrome.current
@@ -79,20 +75,11 @@ function Layout() {
             would need to know the height of the ones above it, and the strip is
             only there some of the time.
 
-            Which is also what makes it one thing to slide away: -translate-y-full
-            is the block's own height, whatever it currently consists of, so the
-            header, the strip and an open sleeve go up together and none of them
-            has to be measured to do it. `max-md:` because it is a phone that
-            wants the room back — see useHideOnScroll.
-
-            It moves by transform rather than by `top`, so nothing reflows and
-            the sticky position it returns to is never recalculated. */}
-        <div
-          ref={chrome}
-          className={`sticky top-0 z-20 transition-transform ${SLIDE} ${
-            hidden ? 'max-md:-translate-y-full' : ''
-          }`}
-        >
+            It stays put for the whole of a page. What gets out of the way when
+            the reader scrolls is the two panels that drop out of it — the menu
+            and the open sleeve — and not the bars themselves; see
+            useCloseOnScroll. */}
+        <div ref={chrome} className="sticky top-0 z-20">
           <Header />
           <NowPlaying />
           {sections && <SectionNav items={sections} />}

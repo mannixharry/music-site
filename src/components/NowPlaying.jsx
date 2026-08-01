@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { formatTime } from '../format'
 import { usePlayback } from '../context/playbackContext'
 import { PRESS, SLIDE } from '../rules'
+import { useCloseOnScroll } from '../useCloseOnScroll'
 import { PauseIcon, PlayIcon } from './AudioPlayer'
 import { TRANSPORT, TRANSPORT_ACTIVE, TRANSPORT_IDLE, scrubberTrack } from './transport'
 
@@ -97,6 +98,12 @@ function NowPlaying() {
     setOpened(true)
     setOpen((shut) => !shut)
   }
+
+  // Scrolling the page is the reader going back to it, and the sleeve is a
+  // third of a phone's screen sat on top of what they are going back to. The
+  // strip itself stays where it is — the transport is what it is pinned for.
+  const shut = useCallback(() => setOpen(false), [])
+  useCloseOnScroll(open, shut)
 
   if (!track) return null
 

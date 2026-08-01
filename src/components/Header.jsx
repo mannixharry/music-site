@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { navItems } from '../nav'
 import { profile } from '../content/profile'
 import { PRESS, SLIDE } from '../rules'
+import { useCloseOnScroll } from '../useCloseOnScroll'
 
 // The active page gets weight and colour as well as an underline. On a phone the
 // menu is a plain column of five links and an underline on its own is easy to
@@ -41,13 +42,18 @@ function MenuIcon({ open }) {
 
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
-  const closeMenu = () => setMenuOpen(false)
+  // Stable, because it is an effect dependency in the hook below.
+  const closeMenu = useCallback(() => setMenuOpen(false), [])
   const { key } = useLocation()
 
   // Every link in the menu closes it on the way out, but the back button does
   // not go through one — and a menu still covering the page you have just
   // returned to looks like the site has locked up.
   useEffect(() => setMenuOpen(false), [key])
+
+  // And scrolling the page behind it is the other way of being finished with
+  // it without having chosen anything.
+  useCloseOnScroll(menuOpen, closeMenu)
 
   return (
     // Not sticky itself: Layout pins this and the now-playing strip together,
