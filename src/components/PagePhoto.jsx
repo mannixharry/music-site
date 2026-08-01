@@ -1,7 +1,7 @@
 import then672webp from '../images/pages/about-then-672.webp'
-import then1300webp from '../images/pages/about-then-1300.webp'
+import then1192webp from '../images/pages/about-then-1192.webp'
 import then672jpg from '../images/pages/about-then-672.jpg'
-import then1300jpg from '../images/pages/about-then-1300.jpg'
+import then1192jpg from '../images/pages/about-then-1192.jpg'
 
 import now672webp from '../images/pages/about-now-672.webp'
 import now1122webp from '../images/pages/about-now-1122.webp'
@@ -28,11 +28,14 @@ import guitar1344jpg from '../images/pages/contact-guitar-1344.jpg'
 // The alt text says what is in the picture rather than naming the page again.
 const PHOTOS = {
   'about-then': {
-    webp: [`${then672webp} 672w`, `${then1300webp} 1300w`],
-    jpg: [`${then672jpg} 672w`, `${then1300jpg} 1300w`],
+    webp: [`${then672webp} 672w`, `${then1192webp} 1192w`],
+    jpg: [`${then672jpg} 672w`, `${then1192jpg} 1192w`],
     fallback: then672jpg,
-    width: 1300,
-    height: 1209,
+    // The scanned print's paper border is cropped off by the crop recorded in
+    // the make-hero-images command, so these are the picture's own dimensions
+    // rather than the scan's.
+    width: 1192,
+    height: 1150,
     alt: 'A young Frank Kirwan singing and playing a Fender acoustic guitar, perched on the arm of a patterned armchair in a front room.',
   },
   'about-now': {

@@ -2,20 +2,27 @@ import PagePhoto from '../components/PagePhoto'
 import { about } from '../content/about'
 import { usePageMeta } from '../usePageMeta'
 
-// A caption in the same small-caps vocabulary as the snapshot tag and the
-// download buttons, so a photograph set into the text reads as part of the page
-// rather than as something pasted onto it.
-// `width` is per-picture rather than shared because the two are different
-// shapes: a floated figure taller than the paragraph beside it drops that
-// paragraph's last line on its own underneath the picture.
-function Figure({ name, caption, className, width = 'sm:w-56' }) {
+// A paragraph with a photograph beside it.
+//
+// Side by side rather than floated, which is the whole point: text wrapped
+// around a float runs on underneath the picture once it passes the bottom of
+// it, and a closing line stranded under a photograph is what this page looked
+// like before. Two columns cannot do that — the text has its own column and
+// stays in it however long it runs.
+//
+// `items-start` tops the picture level with the first line of the paragraph.
+// Below the breakpoint there is no second column to sit in, so they stack in
+// the order they are written; `side` only decides which way round they sit
+// once there is room, and never changes the reading order.
+function WithPhoto({ name, side = 'right', children }) {
   return (
-    <figure className={`my-4 sm:my-1 ${width} ${className}`}>
-      <PagePhoto name={name} />
-      <figcaption className="mt-1 text-[10px] font-bold uppercase tracking-wider text-gray-600">
-        {caption}
-      </figcaption>
-    </figure>
+    <div className="sm:flex sm:items-start sm:gap-6">
+      <div className={`sm:flex-1 ${side === 'left' ? 'sm:order-2' : ''}`}>{children}</div>
+      <PagePhoto
+        name={name}
+        className={`mt-4 sm:mt-0 sm:w-52 sm:shrink-0 ${side === 'left' ? 'sm:order-1' : ''}`}
+      />
+    </div>
   )
 }
 
@@ -32,34 +39,21 @@ function About() {
     <div className="py-8">
       <h1 className="text-4xl font-bold">About</h1>
 
-      {/* The pictures float only once there is a column wide enough to wrap
-          text around them — below that they are full-width blocks in the order
-          they are read, which is why each <figure> carries its own margin for
-          the stacked case and a tighter one for the floated case.
+      {/* One picture to a paragraph, on alternating sides: the man today
+          against what he writes today, and the photograph from the theatre
+          years against the paragraph about them. The middle paragraph runs the
+          full column, which is what keeps the two from facing each other
+          across it. */}
+      <div className="mt-6 space-y-4 text-sm leading-relaxed">
+        <WithPhoto name="about-now" side="right">
+          <p>{opening}</p>
+        </WithPhoto>
 
-          Now on the right against the opening, then on the left against the
-          musicals — one picture per paragraph rather than two facing each other
-          across the column, which leaves the paragraph between them starting in
-          a two-word gutter. Each float also begins at the top of its own
-          paragraph, so neither lands mid-sentence and strands a short line.
+        <p>{theatre}</p>
 
-          The trailing pseudo-element clears both, so a picture cannot hang past
-          the end of the text it belongs to. */}
-      <div className="mt-6 text-sm leading-relaxed after:block after:clear-both after:content-['']">
-        <Figure name="about-now" caption="Now" className="sm:float-right sm:ml-6" />
-        <p>{opening}</p>
-
-        <p className="mt-4">{theatre}</p>
-
-        {/* Narrower than the portrait above it: this one is nearly square, so
-            at the same width it stands taller than the paragraph beside it. */}
-        <Figure
-          name="about-then"
-          caption="Then"
-          className="sm:float-left sm:mr-6 sm:clear-both"
-          width="sm:w-48"
-        />
-        <p className="mt-4">{projects}</p>
+        <WithPhoto name="about-then" side="left">
+          <p>{projects}</p>
+        </WithPhoto>
       </div>
     </div>
   )

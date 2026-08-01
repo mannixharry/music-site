@@ -2,6 +2,9 @@
 //
 //   node scripts/make-hero-images.mjs pigs=~/art/pigs.png "guyana-skies=~/art/gs.png"
 //   node scripts/make-hero-images.mjs --out=pages "about-now=~/photos/now.jpg"
+//   node scripts/make-hero-images.mjs --out=pages "about-then=~/photos/then.jpg@56,46,1184,1144"
+//
+// The optional `@x,y,w,h` after a path crops in source pixels before resizing.
 //
 // The name before the `=` is the musical's slug, and it becomes the filename,
 // so the import in MusicalSection does not have to be renamed when artwork is
@@ -59,12 +62,27 @@ const jobs = args.filter((arg) => !arg.startsWith('--')).map((arg) => {
   if (at === -1) throw new Error(`expected <slug>=<path>, got "${arg}"`)
 
   const slug = arg.slice(0, at)
+  // An optional `@x,y,w,h` in source pixels, for a photograph that arrives with
+  // something around it — a scanned print keeps the paper border it was cut
+  // with. Written here rather than cropped once in an image editor because the
+  // originals are not committed: the command is the only record of how a file
+  // in src/images came to look the way it does, so the crop belongs in it.
+  const spec = arg.slice(at + 1)
+  const cropAt = spec.lastIndexOf('@')
+  const cropText = cropAt === -1 ? null : spec.slice(cropAt + 1)
+  const crop = cropText?.match(/^\d+,\d+,\d+,\d+$/)
+    ? Object.fromEntries(
+        ['x', 'y', 'width', 'height'].map((k, i) => [k, Number(cropText.split(',')[i])]),
+      )
+    : null
+  if (cropText && !crop) throw new Error(`expected @x,y,w,h, got "@${cropText}"`)
+
   // `~` is the shell's, not Node's, and an unexpanded one here is a path that
   // does not exist rather than an error anyone can read.
-  const file = arg.slice(at + 1).replace(/^~(?=\/)/, homedir())
+  const file = (crop ? spec.slice(0, cropAt) : spec).replace(/^~(?=\/)/, homedir())
   if (!existsSync(file)) throw new Error(`no such file: ${file}`)
 
-  return { slug, file }
+  return { slug, file, crop }
 })
 
 function findChromium() {
@@ -90,25 +108,29 @@ mkdirSync(outDir, { recursive: true })
 const browser = await chromium.launch({ executablePath: findChromium() })
 const page = await browser.newPage()
 
-for (const { slug, file } of jobs) {
+for (const { slug, file, crop } of jobs) {
   const source = `data:image/png;base64,${readFileSync(file).toString('base64')}`
 
   const results = await page.evaluate(
-    async ({ source, widths, quality }) => {
+    async ({ source, widths, quality, crop }) => {
       const bitmap = await createImageBitmap(
         await (await fetch(source)).blob(),
       )
 
+      // Everything below measures the picture being kept, not the file it came
+      // out of, so a crop narrows what "never upscale" is allowed to reach.
+      const src = crop ?? { x: 0, y: 0, width: bitmap.width, height: bitmap.height }
+
       const out = []
       for (const want of widths) {
         // Never upscale.
-        const width = Math.min(want, bitmap.width)
-        const height = Math.round((width / bitmap.width) * bitmap.height)
+        const width = Math.min(want, src.width)
+        const height = Math.round((width / src.width) * src.height)
 
         const canvas = new OffscreenCanvas(width, height)
         const ctx = canvas.getContext('2d')
         ctx.imageSmoothingQuality = 'high'
-        ctx.drawImage(bitmap, 0, 0, width, height)
+        ctx.drawImage(bitmap, src.x, src.y, src.width, src.height, 0, 0, width, height)
 
         for (const [type, ext] of [
           ['image/webp', 'webp'],
@@ -126,10 +148,12 @@ for (const { slug, file } of jobs) {
         }
       }
 
+      // Read before closing: a closed bitmap reports zero for both.
+      const intrinsic = { width: src.width, height: src.height }
       bitmap.close()
-      return { intrinsic: { width: bitmap.width, height: bitmap.height }, out }
+      return { intrinsic, out }
     },
-    { source, widths: WIDTHS, quality: QUALITY },
+    { source, widths: WIDTHS, quality: QUALITY, crop },
   )
 
   for (const { ext, width, height, bytes } of results.out) {
