@@ -1,5 +1,5 @@
 {
-  "version": "ms9864qd-6fb125fd",
+  "version": "ms9phqqq-582967b9",
   "mediaBase": "https://media.frankkirwan.com",
   "albums": [
     {
@@ -44,7 +44,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 14,
+      "sortOrder": 10,
       "published": true
     },
     {
@@ -60,7 +60,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 28,
+      "sortOrder": 20,
       "published": true
     },
     {
@@ -76,39 +76,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 36,
-      "published": true
-    },
-    {
-      "id": "pigs-snapshot",
-      "title": "Musical snapshot",
-      "description": "",
-      "kind": "demo",
-      "albumId": "pigs",
-      "status": "released",
-      "webKey": "web/pigs-snapshot/aac61a17.mp3",
-      "coverKey": null,
-      "duration": 131.13469387755103,
-      "isSnippet": false,
-      "showSnippetTag": false,
-      "links": [],
-      "sortOrder": 53,
-      "published": true
-    },
-    {
-      "id": "copperfield-and-co-snapshot",
-      "title": "Musical snapshot",
-      "description": "",
-      "kind": "demo",
-      "albumId": "copperfield-co",
-      "status": "released",
-      "webKey": "web/copperfield-and-co-snapshot/64dcf1ff.mp3",
-      "coverKey": null,
-      "duration": 286.014693877551,
-      "isSnippet": false,
-      "showSnippetTag": false,
-      "links": [],
-      "sortOrder": 70,
+      "sortOrder": 30,
       "published": true
     },
     {
@@ -124,7 +92,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 80,
+      "sortOrder": 40,
       "published": true
     },
     {
@@ -140,7 +108,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 85,
+      "sortOrder": 50,
       "published": true
     },
     {
@@ -156,7 +124,39 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 87,
+      "sortOrder": 60,
+      "published": true
+    },
+    {
+      "id": "pigs-snapshot",
+      "title": "Pigs",
+      "description": "",
+      "kind": "single",
+      "albumId": null,
+      "status": "released",
+      "webKey": "web/pigs-snapshot/79458900.mp3",
+      "coverKey": "covers/pigs-snapshot/2950b5d9.webp",
+      "duration": 131.13469387755103,
+      "isSnippet": true,
+      "showSnippetTag": true,
+      "links": [],
+      "sortOrder": 80,
+      "published": true
+    },
+    {
+      "id": "copperfield-and-co-snapshot",
+      "title": "Copperfield & Co.",
+      "description": "",
+      "kind": "single",
+      "albumId": null,
+      "status": "released",
+      "webKey": "web/copperfield-and-co-snapshot/06af1736.mp3",
+      "coverKey": "covers/copperfield-and-co-snapshot/9fb91397.webp",
+      "duration": 286.0408163265306,
+      "isSnippet": true,
+      "showSnippetTag": true,
+      "links": [],
+      "sortOrder": 85,
       "published": true
     },
     {
@@ -204,7 +204,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 120,
+      "sortOrder": 110,
       "published": true
     },
     {
@@ -220,7 +220,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 130,
+      "sortOrder": 120,
       "published": true
     },
     {
@@ -236,7 +236,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 140,
+      "sortOrder": 130,
       "published": true
     },
     {
@@ -252,7 +252,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 150,
+      "sortOrder": 140,
       "published": true
     },
     {
@@ -268,7 +268,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 160,
+      "sortOrder": 150,
       "published": true
     },
     {
@@ -284,7 +284,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 170,
+      "sortOrder": 160,
       "published": true
     },
     {
@@ -300,7 +300,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 180,
+      "sortOrder": 170,
       "published": true
     },
     {
@@ -316,7 +316,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 190,
+      "sortOrder": 180,
       "published": true
     },
     {
@@ -332,7 +332,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 200,
+      "sortOrder": 190,
       "published": true
     },
     {
@@ -348,7 +348,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 210,
+      "sortOrder": 200,
       "published": true
     },
     {
@@ -364,7 +364,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 220,
+      "sortOrder": 210,
       "published": true
     },
     {
@@ -380,7 +380,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 230,
+      "sortOrder": 220,
       "published": true
     },
     {
@@ -396,7 +396,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 240,
+      "sortOrder": 230,
       "published": true
     },
     {
@@ -412,7 +412,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 250,
+      "sortOrder": 240,
       "published": true
     },
     {
@@ -428,7 +428,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 260,
+      "sortOrder": 250,
       "published": true
     },
     {
@@ -444,7 +444,7 @@
       "isSnippet": false,
       "showSnippetTag": true,
       "links": [],
-      "sortOrder": 270,
+      "sortOrder": 260,
       "published": true
     }
   ]
