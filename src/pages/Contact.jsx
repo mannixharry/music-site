@@ -1,5 +1,5 @@
-import PageImages from '../components/PageImages'
-import { contact, contactImages, instagramUrl, mailtoUrl } from '../content/contact'
+import PagePhoto from '../components/PagePhoto'
+import { contact, instagramUrl, mailtoUrl } from '../content/contact'
 import { usePageMeta } from '../usePageMeta'
 
 function Contact() {
@@ -34,7 +34,13 @@ function Contact() {
         </div>
       </dl>
 
-      <PageImages images={contactImages} />
+      {/* Landscape, so it runs the width of the column rather than sitting in
+          the half-width slot the portrait placeholder used to hold. */}
+      <PagePhoto
+        name="contact-guitar"
+        className="mt-10"
+        sizes="(min-width: 44rem) 672px, calc(100vw - 2rem)"
+      />
     </div>
   )
 }

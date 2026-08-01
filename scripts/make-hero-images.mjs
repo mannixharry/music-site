@@ -1,6 +1,7 @@
 // Turns a musical's artwork into the files the site actually serves.
 //
 //   node scripts/make-hero-images.mjs pigs=~/art/pigs.png "guyana-skies=~/art/gs.png"
+//   node scripts/make-hero-images.mjs --out=pages "about-now=~/photos/now.jpg"
 //
 // The name before the `=` is the musical's slug, and it becomes the filename,
 // so the import in MusicalSection does not have to be renamed when artwork is
@@ -37,15 +38,23 @@ const WIDTHS = [672, 1344]
 const QUALITY = { webp: 0.86, jpeg: 0.86 }
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const outDir = path.join(root, 'src/images/heroes')
 
 const args = process.argv.slice(2)
 if (args.length === 0) {
-  console.error('usage: node scripts/make-hero-images.mjs <slug>=<path-to-image> ...')
+  console.error(
+    'usage: node scripts/make-hero-images.mjs [--out=<dir under src/images>] <slug>=<path-to-image> ...',
+  )
   process.exit(1)
 }
 
-const jobs = args.map((arg) => {
+// `--out` is what lets the About and Contact photographs through here rather
+// than growing a second copy of this: same two widths, same two formats, same
+// reason for both. It is relative to src/images so a caller cannot aim the
+// output at somewhere Vite will not hash.
+const outArg = args.find((arg) => arg.startsWith('--out='))
+const outDir = path.join(root, 'src/images', outArg ? outArg.slice('--out='.length) : 'heroes')
+
+const jobs = args.filter((arg) => !arg.startsWith('--')).map((arg) => {
   const at = arg.indexOf('=')
   if (at === -1) throw new Error(`expected <slug>=<path>, got "${arg}"`)
 
@@ -134,4 +143,4 @@ for (const { slug, file } of jobs) {
 }
 
 await browser.close()
-console.log(`\nWrote ${jobs.length * WIDTHS.length * 2} files to src/images/heroes/`)
+console.log(`\nWrote ${jobs.length * WIDTHS.length * 2} files to ${path.relative(root, outDir)}/`)
