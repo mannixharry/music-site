@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { formatBytes } from '../format'
 import { ACCEPTED, canUseDirectly, isUploading } from './upload'
 import { ACCEPTED_IMAGES, TARGET_SIZE } from './cover'
@@ -76,6 +76,9 @@ function UploadDropzone({
   const { accept, prompt, hint, describe } = VARIANTS[variant]
 
   const inputRef = useRef(null)
+  // Two dropzones sit on the same page — audio and artwork — so the id that
+  // ties this label to its input has to be unique per instance.
+  const inputId = useId()
   const [over, setOver] = useState(false)
   const [pending, setPending] = useState(null)
   const [note, setNote] = useState('')
@@ -94,7 +97,35 @@ function UploadDropzone({
 
   return (
     <div>
-      <div
+      {/* A label pointing at the input, rather than a div calling .click() on
+          it, and the difference is not cosmetic — it is the whole of a bug that
+          was deleting artwork.
+
+          Opening the picker from inside a click handler splits the gesture:
+          Chrome delivers the mousedown, the handler opens a modal dialog, and
+          the mouseup is held until that dialog closes. Dismissing it releases
+          the mouseup, which becomes a SECOND trusted click at the same
+          coordinates — by which time the form has reflowed and those
+          coordinates are over the Remove button beside the artwork. Its handler
+          clears cover_key and cover_master_key, and the Worker then deletes
+          both objects. Pressing Cancel in the file picker destroyed the cover
+          and the original behind it, with no confirmation and nothing to
+          restore from.
+
+          A label opens the picker as part of the browser's own handling of the
+          gesture, so there is no second click to land anywhere. Verified: one
+          trusted click, no stray dispatch, artwork intact. */}
+      <input
+        ref={inputRef}
+        id={inputId}
+        type="file"
+        accept={accept}
+        className="hidden"
+        onChange={(event) => choose(event.currentTarget.files[0])}
+      />
+
+      <label
+        htmlFor={busy ? undefined : inputId}
         onDragOver={(event) => {
           event.preventDefault()
           setOver(true)
@@ -105,19 +136,10 @@ function UploadDropzone({
           setOver(false)
           if (!busy) choose(event.dataTransfer.files[0])
         }}
-        onClick={() => !busy && inputRef.current?.click()}
-        className={`cursor-pointer border border-dashed p-4 text-center text-sm ${
+        className={`block cursor-pointer border border-dashed p-4 text-center text-sm ${
           over ? 'border-gray-600 bg-gray-200' : 'border-gray-400 bg-gray-100'
         } ${busy ? 'cursor-wait opacity-60' : ''}`}
       >
-        <input
-          ref={inputRef}
-          type="file"
-          accept={accept}
-          className="hidden"
-          onChange={(event) => choose(event.currentTarget.files[0])}
-        />
-
         {busy ? (
           <>
             <p>{status.message}</p>
@@ -130,7 +152,7 @@ function UploadDropzone({
             <p className="mt-1 text-xs text-gray-600">{hint}</p>
           </>
         )}
-      </div>
+      </label>
 
       {pending && !busy && (
         <p className="mt-2 font-mono text-xs">
