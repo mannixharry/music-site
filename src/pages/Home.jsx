@@ -98,8 +98,18 @@ function Home() {
                   are 256px files, and past 128 a 2× screen is being shown
                   something stretched. It takes a third of the column, which
                   costs the teaser about a line and closes most of the gap from
-                  both ends at once. */}
-              <Link to={`/musicals#${musical.slug}`} className="group flex gap-3">
+                  both ends at once.
+
+                  What is left of the gap is put where it can be seen from both
+                  sides: `items-center`. On a desktop the two columns are within
+                  a pixel of each other and this does nothing, which is why the
+                  row already looked right there. On a phone the words run half
+                  as tall again as the picture, and a picture hung from the top
+                  of that leaves all of the difference in one lump underneath
+                  it — which reads as the artwork having come loose from its
+                  own row rather than as a margin. Split in two it reads as air
+                  around a picture. */}
+              <Link to={`/musicals#${musical.slug}`} className="group flex items-center gap-3">
                 <MusicalHero musical={musical} size="thumb" className="w-32 shrink-0 sm:w-24" />
                 <div className="min-w-0 flex-1">
                   <h3 className="text-sm font-bold underline">{musical.title}</h3>
