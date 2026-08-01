@@ -4,6 +4,7 @@
 //   node scripts/make-hero-images.mjs --out=pages "about-now=~/photos/now.jpg"
 //   node scripts/make-hero-images.mjs --out=pages "about-then=~/photos/then.jpg@56,46,1184,1144"
 //   node scripts/make-hero-images.mjs --widths=256 pigs=src/images/heroes/pigs-1344.jpg
+//   node scripts/make-hero-images.mjs --out=thumbs --widths=256 --square pigs=~/art/pigs.png
 //
 // The optional `@x,y,w,h` after a path crops in source pixels before resizing.
 //
@@ -59,7 +60,7 @@ const outArg = args.find((arg) => arg.startsWith('--out='))
 const outDir = path.join(root, 'src/images', outArg ? outArg.slice('--out='.length) : 'heroes')
 
 // `--widths` is for a picture drawn at a size the two defaults are wrong for —
-// the home page's thumbnails are 112px wide, and 672 is six times more file
+// the home page's thumbnails are 96px wide, and 672 is seven times more file
 // than that can show. The output is named from the width like everything else,
 // so a narrow file simply joins the wider ones in the same directory and the
 // component decides which to ask for.
@@ -78,6 +79,21 @@ const WIDTHS = widthsArg
         return n
       })
   : DEFAULT_WIDTHS
+
+// `--square` pads a wider-than-tall source out to a square, for the home page's
+// icons — where 16:9 beside a paragraph leaves the picture shorter than the
+// words next to it. It does not crop: everything in the picture survives, on
+// more of its own paper.
+//
+// The padding is the source's own top row stretched over the canvas, not a flat
+// colour sampled from a corner. Both of these illustrations are ink on paper
+// with a vignette across it, and a flat fill butted against that reads as two
+// different papers; the stretched row carries the left-to-right shading into
+// the padding and the join cannot be found.
+//
+// A source that is already square passes through untouched, so one flag covers
+// a set where only some of the artwork needs it.
+const SQUARE = args.includes('--square')
 
 const jobs = args.filter((arg) => !arg.startsWith('--')).map((arg) => {
   const at = arg.indexOf('=')
@@ -134,14 +150,30 @@ for (const { slug, file, crop } of jobs) {
   const source = `data:image/png;base64,${readFileSync(file).toString('base64')}`
 
   const results = await page.evaluate(
-    async ({ source, widths, quality, crop }) => {
-      const bitmap = await createImageBitmap(
+    async ({ source, widths, quality, crop, square }) => {
+      let bitmap = await createImageBitmap(
         await (await fetch(source)).blob(),
       )
 
       // Everything below measures the picture being kept, not the file it came
       // out of, so a crop narrows what "never upscale" is allowed to reach.
-      const src = crop ?? { x: 0, y: 0, width: bitmap.width, height: bitmap.height }
+      let src = crop ?? { x: 0, y: 0, width: bitmap.width, height: bitmap.height }
+
+      // Padded before anything else, so the square is what gets resized and
+      // what "never upscale" is measured against.
+      if (square && src.height < src.width) {
+        const padded = new OffscreenCanvas(src.width, src.width)
+        const ctx = padded.getContext('2d')
+        ctx.imageSmoothingQuality = 'high'
+        // The background: the kept picture's own top row, blown up to fill.
+        ctx.drawImage(bitmap, src.x, src.y, src.width, 1, 0, 0, src.width, src.width)
+        const top = Math.round((src.width - src.height) / 2)
+        ctx.drawImage(bitmap, src.x, src.y, src.width, src.height, 0, top, src.width, src.height)
+
+        bitmap.close()
+        bitmap = padded.transferToImageBitmap()
+        src = { x: 0, y: 0, width: bitmap.width, height: bitmap.height }
+      }
 
       const out = []
       for (const want of widths) {
@@ -175,7 +207,7 @@ for (const { slug, file, crop } of jobs) {
       bitmap.close()
       return { intrinsic, out }
     },
-    { source, widths: WIDTHS, quality: QUALITY, crop },
+    { source, widths: WIDTHS, quality: QUALITY, crop, square: SQUARE },
   )
 
   for (const { ext, width, height, bytes } of results.out) {

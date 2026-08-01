@@ -78,11 +78,18 @@ function Home() {
 
                   The whole row is the link, not the title alone: the picture
                   and the teaser are about the show as much as its name is, and
-                  a 112px picture that does nothing when pressed is a picture
+                  a 96px picture that does nothing when pressed is a picture
                   that looks broken on a phone. Only the title is underlined —
-                  underlining all of it would draw a line under a paragraph. */}
+                  underlining all of it would draw a line under a paragraph.
+
+                  96px because the square icon is as tall as it is wide, and the
+                  title, the status line and a two-line teaser come to 95px on a
+                  desktop: the picture ends where the words do rather than
+                  hanging below them. It does not grow at sm — a wider screen
+                  makes the teaser shorter, not longer, so the step it used to
+                  take was the picture pulling away from the text. */}
               <Link to={`/musicals#${musical.slug}`} className="group flex gap-3">
-                <MusicalHero musical={musical} size="thumb" className="w-24 shrink-0 sm:w-28" />
+                <MusicalHero musical={musical} size="thumb" className="w-24 shrink-0" />
                 <div className="min-w-0 flex-1">
                   <h3 className="text-sm font-bold underline">{musical.title}</h3>
                   <p className="text-xs text-gray-600">{musical.status}</p>
