@@ -1,5 +1,5 @@
 {
-  "version": "msaoocmi-a912cd06",
+  "version": "homepage-1785608632",
   "mediaBase": "https://media.frankkirwan.com",
   "albums": [
     {
@@ -54,6 +54,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 10,
+      "onHomepage": true,
       "published": true
     },
     {
@@ -70,6 +71,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 20,
+      "onHomepage": true,
       "published": true
     },
     {
@@ -86,6 +88,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 30,
+      "onHomepage": true,
       "published": true
     },
     {
@@ -102,6 +105,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 40,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -118,6 +122,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 50,
+      "onHomepage": true,
       "published": true
     },
     {
@@ -134,6 +139,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 60,
+      "onHomepage": true,
       "published": true
     },
     {
@@ -150,6 +156,7 @@
       "showSnippetTag": true,
       "links": [],
       "sortOrder": 80,
+      "onHomepage": true,
       "published": true
     },
     {
@@ -166,6 +173,7 @@
       "showSnippetTag": true,
       "links": [],
       "sortOrder": 85,
+      "onHomepage": true,
       "published": true
     },
     {
@@ -182,6 +190,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 90,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -198,6 +207,7 @@
       "showSnippetTag": true,
       "links": [],
       "sortOrder": 100,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -214,6 +224,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 110,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -230,6 +241,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 120,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -246,6 +258,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 130,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -262,6 +275,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 140,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -278,6 +292,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 150,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -294,6 +309,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 160,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -310,6 +326,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 170,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -326,6 +343,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 180,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -342,6 +360,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 190,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -358,6 +377,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 200,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -374,6 +394,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 210,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -390,6 +411,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 220,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -406,6 +428,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 230,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -422,6 +445,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 240,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -438,6 +462,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 250,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -454,6 +479,7 @@
       "showSnippetTag": true,
       "links": [],
       "sortOrder": 260,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -470,6 +496,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 270,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -486,6 +513,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 280,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -502,6 +530,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 300,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -518,6 +547,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 310,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -534,6 +564,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 320,
+      "onHomepage": false,
       "published": true
     }
   ]
