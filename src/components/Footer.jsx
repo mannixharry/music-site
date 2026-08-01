@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { contact, instagramUrl, mailtoUrl } from '../content/contact'
 import { navItems } from '../nav'
-import { COLUMN } from '../rules'
+import { COLUMN, PRESS } from '../rules'
 
 // The bottom of a long page is the other place you want the site's index, and
 // the header is a scroll away even sticky — on a phone it is behind a tap.
@@ -46,7 +46,9 @@ function Footer() {
                   // See NAV_TARGET in Header.jsx for the padding: a big
                   // enough tap target, taken back out of the layout.
                   className={({ isActive }) =>
-                    `inline-block py-1 -my-1 underline${isActive ? ' font-bold text-accent' : ''}`
+                    `inline-block py-1 -my-1 underline ${PRESS}${
+                      isActive ? ' font-bold text-accent' : ''
+                    }`
                   }
                 >
                   {item.label}

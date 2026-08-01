@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { usePlayback } from '../context/playbackContext'
+import { PRESS, SLIDE } from '../rules'
 import { PauseIcon, PlayIcon } from './AudioPlayer'
 
 // A song drawn as its sleeve, and the sleeve is the button.
@@ -74,7 +75,7 @@ function Sleeve({ song, size, children }) {
       // The width is the only thing that changes between `row` and `playing`,
       // so it is worth easing rather than cutting: pressing through a list
       // otherwise makes the rows below jump by 56px on every track.
-      className={`relative block aspect-square shrink-0 border border-gray-300 transition-[width] duration-200 motion-reduce:transition-none ${s.tile}`}
+      className={`relative block aspect-square shrink-0 border border-gray-300 transition-[width] ${SLIDE} ${s.tile}`}
     >
       {song.coverSrc ? (
         // Decorative: the title is beside it and the button naming this song is
@@ -159,7 +160,10 @@ function TrackArt({ song, queue, size = 'row' }) {
       type="button"
       onClick={() => (isPlaying ? playback.pause() : playback.play(entry, queue))}
       aria-label={`${isPlaying ? 'Pause' : 'Play'} ${song.title}`}
-      className="group/art shrink-0"
+      // The press, on the sleeve rather than on the tile inside it: the tile is
+      // already animating its width when a row becomes the loaded one, and two
+      // transforms on one element fight over the same property.
+      className={`group/art shrink-0 ${PRESS} active:scale-95`}
     >
       <Sleeve song={song} size={drawn}>
         {/* Two states over the picture, and the small one is not decoration.
@@ -168,7 +172,7 @@ function TrackArt({ song, queue, size = 'row' }) {
             with. So the badge is always there, and giving way to the full
             wash is what hovering adds. */}
         <span
-          className={`absolute bottom-0 left-0 grid place-items-center bg-gray-900/70 text-white transition-opacity ${s.badge} ${
+          className={`absolute bottom-0 left-0 grid place-items-center bg-gray-900/70 text-white ${PRESS} ${s.badge} ${
             washed ? 'opacity-0' : 'opacity-100 group-hover/art:opacity-0'
           }`}
         >
@@ -180,7 +184,7 @@ function TrackArt({ song, queue, size = 'row' }) {
           // the wash — and solid over the fallback, where what is underneath is
           // the title in grey and showing it through leaves the same words
           // twice, one of them upside down in tone.
-          className={`absolute inset-0 grid place-items-center text-white transition-opacity ${
+          className={`absolute inset-0 grid place-items-center text-white ${PRESS} ${
             song.coverSrc ? 'bg-accent/85' : 'bg-accent'
           } ${
             washed

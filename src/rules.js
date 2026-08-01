@@ -52,6 +52,32 @@ export const COLUMN = 'px-4'
 // and a third at another, on the same screen.
 export const HEADING = 'text-xl font-bold'
 
+// How everything on this site moves, in one place for the same reason the grey
+// lines are: the four things that already animated had picked up three
+// different speeds and two different curves between them.
+//
+// One curve. `ease-out` starts at full speed and settles, which is what a
+// control that is answering a press should do — the reader has already decided,
+// and the movement is confirmation rather than suspense. The symmetrical
+// default reads as a slight delay before anything happens.
+//
+// Two speeds, and the difference is how far the thing travels. PRESS is a
+// colour or an opacity changing in place and is nearly subliminal; anything
+// slower on a hover feels like the page is thinking about it. SLIDE is for
+// something crossing a distance — a bar leaving the screen, a drawer opening —
+// where the same 100ms would be a jump-cut and the point is to be followed by
+// the eye.
+//
+// Neither is longer than a fifth of a second. Every one of these is on the path
+// between a press and what it does, and an animation there is a wait.
+//
+// There is no `motion-reduce:` on any of them: index.css turns every transition
+// and animation on the site off at once for a reader who has asked for that,
+// which is one rule rather than a modifier per class that has to be remembered.
+export const EASE = 'ease-out'
+export const PRESS = `transition duration-100 ${EASE}`
+export const SLIDE = `duration-200 ${EASE}`
+
 // How far an in-page anchor holds off the top, so a hash jump does not land
 // with its heading under the pinned header.
 //

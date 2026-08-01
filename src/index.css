@@ -146,6 +146,29 @@ summary:focus-visible,
   --color-accent: #8a3b32;
 }
 
+/* Nothing on this site moves for a reader who has asked their system for that.
+   Written once, here, rather than as a `motion-reduce:` on each of the couple
+   of dozen classes that animate — which is a thing to remember on every new
+   one, and the ones that were forgotten are exactly the ones a reader who set
+   this preference for a medical reason would be hurt by.
+
+   Not `animation: none`. A keyframe animation that never runs is one that never
+   fires its end event either, and something waiting on that never happens; a
+   step function's worth of duration runs it to completion within a frame.
+
+   `scroll-behavior` goes with them: the smooth scroll on a hash link is the
+   longest movement the site makes. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Holds an anchor target clear of the pinned header, whatever that header
    currently consists of. See ANCHOR in src/rules.js, which is what components
    import; this is only where the arithmetic lives.

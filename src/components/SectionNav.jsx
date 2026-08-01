@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { PRESS } from '../rules'
 
 // A row of links to the sections of the page you are on, pinned under the
 // header, with the one you are inside marked. /musicals is three sections and
@@ -103,7 +104,7 @@ function SectionNav({ items }) {
                 // The marking the site nav uses, one level down. Weight and an
                 // underline carry it; colour is the third signal, not the only
                 // one.
-                className={`inline-block py-1 -my-1 underline${current ? ' font-bold text-accent' : ''}`}
+                className={`inline-block py-1 -my-1 underline ${PRESS}${current ? ' font-bold text-accent' : ''}`}
                 // Announced, not just drawn: a screen reader gets this from
                 // aria-current or not at all.
                 aria-current={current ? 'true' : undefined}

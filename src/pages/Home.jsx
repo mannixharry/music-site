@@ -82,14 +82,25 @@ function Home() {
                   that looks broken on a phone. Only the title is underlined —
                   underlining all of it would draw a line under a paragraph.
 
-                  96px because the square icon is as tall as it is wide, and the
-                  title, the status line and a two-line teaser come to 95px on a
-                  desktop: the picture ends where the words do rather than
-                  hanging below them. It does not grow at sm — a wider screen
-                  makes the teaser shorter, not longer, so the step it used to
-                  take was the picture pulling away from the text. */}
+                  The picture is sized to the words beside it, and that is why
+                  it gets *smaller* as the screen gets wider — which looks
+                  backwards written down and is the only thing that holds the
+                  row together. A square is as tall as it is wide, and the text
+                  it stands next to is a heading, a status line and a teaser: on
+                  a desktop those come to 95px on two lines, and 96px of picture
+                  ends level with them. Give the same words a 393px phone and
+                  the teaser wraps to five lines and the block is over 200px
+                  tall, so the same 96px square hangs at the top of a column of
+                  empty paper — which is how it was reported.
+
+                  128px is the answer on a phone rather than anything larger
+                  because it is the width the artwork actually has: the icons
+                  are 256px files, and past 128 a 2× screen is being shown
+                  something stretched. It takes a third of the column, which
+                  costs the teaser about a line and closes most of the gap from
+                  both ends at once. */}
               <Link to={`/musicals#${musical.slug}`} className="group flex gap-3">
-                <MusicalHero musical={musical} size="thumb" className="w-24 shrink-0" />
+                <MusicalHero musical={musical} size="thumb" className="w-32 shrink-0 sm:w-24" />
                 <div className="min-w-0 flex-1">
                   <h3 className="text-sm font-bold underline">{musical.title}</h3>
                   <p className="text-xs text-gray-600">{musical.status}</p>

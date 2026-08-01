@@ -1,7 +1,15 @@
+import { PRESS } from '../rules'
+
 // The look of every transport button on the site — the row players and the four
 // in the now-playing strip. Size is left to the caller, because the strip's are
 // smaller than a row's.
-export const TRANSPORT = 'grid shrink-0 place-items-center border transition-colors'
+//
+// `active:scale-95` is the only thing here a phone ever sees: there is no hover
+// on a touch screen, so without it the entire feedback for pressing play is
+// whatever the audio does a moment later, and on a slow connection that is
+// nothing at all for a second or two. It is 5% and a tenth of a second, which
+// is enough to have felt something and not enough to have watched it.
+export const TRANSPORT = `grid shrink-0 place-items-center border ${PRESS} active:scale-95`
 export const TRANSPORT_IDLE =
   'border-gray-400 bg-white text-gray-600 hover:bg-gray-200 hover:text-gray-900'
 export const TRANSPORT_ACTIVE = 'border-gray-500 bg-gray-300 text-gray-900'

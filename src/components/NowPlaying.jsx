@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { formatTime } from '../format'
 import { usePlayback } from '../context/playbackContext'
+import { PRESS, SLIDE } from '../rules'
 import { PauseIcon, PlayIcon } from './AudioPlayer'
 import { TRANSPORT, TRANSPORT_ACTIVE, TRANSPORT_IDLE, scrubberTrack } from './transport'
 
@@ -43,15 +44,22 @@ const BUTTON = `${TRANSPORT} h-7 w-7`
 
 // The sleeve at the head of the strip, and how far it opens.
 //
-// Flush: no padding above, below or to the left of it, so it reads as a record
-// slotted into the bar rather than an icon floating on it. That is also what
-// sets the strip's height — 48px against the 40px the transports alone came to,
-// which is the whole of what this costs a page that never opens it.
+// It used to run flush into the corner of the bar — no padding above, below or
+// to its left — on the idea that it would read as a record slotted in rather
+// than an icon floating on. On a phone it read as neither. The bar is 60px tall
+// there, because the scrubber wraps to a line of its own, and a 48px square
+// pinned to the top of it with nothing either side is a picture stuck to the
+// corner of the screen: it lines up with no edge the page has, and the page has
+// a very obvious one four pixels away.
 //
-// The strip is otherwise the size it always was, and deliberately: the artwork
-// worth looking at is a press away, and until it is asked for nothing has been
-// taken from the page.
-const SLEEVE = 'h-12 w-12'
+// So it sits in the column with everything else — the same px-4 the content and
+// the footer use, which puts its left edge exactly under the sleeves in the
+// list below — bordered on all four sides, and centred in whatever height the
+// bar comes to rather than hanging from the top of it.
+//
+// 44px rather than 48 because the gutter has to come from somewhere and 44 is
+// still a comfortable target; the bar itself is the height it always was.
+const SLEEVE = 'h-11 w-11'
 const OPEN_ART = 'w-44 sm:w-52'
 
 // Named once: two controls point at it, and an aria-controls naming nothing is
@@ -79,7 +87,16 @@ function NowPlaying() {
   // across a change of track: moving through a list with it open is exactly
   // when seeing the next sleeve is the point. Only closing the strip resets it.
   const [open, setOpen] = useState(false)
-  const toggle = () => setOpen((shut) => !shut)
+
+  // Whether the drawer has ever been opened, which is what decides if its
+  // contents exist at all. Separate from `open` because it never goes back:
+  // see the drawer below.
+  const [opened, setOpened] = useState(false)
+
+  const toggle = () => {
+    setOpened(true)
+    setOpen((shut) => !shut)
+  }
 
   if (!track) return null
 
@@ -102,7 +119,7 @@ function NowPlaying() {
       // a state the site is in rather than a part of the site.
       className="border-b border-gray-300 bg-gray-200"
     >
-      <div className="mx-auto flex max-w-2xl items-stretch">
+      <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-1.5">
         {art && (
           <button
             type="button"
@@ -110,7 +127,7 @@ function NowPlaying() {
             aria-expanded={open}
             aria-controls={DRAWER}
             aria-label={`${open ? 'Hide' : 'Show'} the cover for ${track.title}`}
-            className={`group/sleeve relative shrink-0 border-r border-gray-300 ${SLEEVE}`}
+            className={`group/sleeve relative shrink-0 border border-gray-300 ${SLEEVE} ${PRESS} active:scale-95`}
           >
             <img src={art} alt="" width={1000} height={1000} className="h-full w-full object-cover" />
 
@@ -118,19 +135,22 @@ function NowPlaying() {
                 on a phone there is no hover to discover with, so the marker
                 that says this picture does something has to be there without
                 one. */}
-            <span className="absolute bottom-0 right-0 grid h-4 w-4 place-items-center bg-gray-900/70 text-white transition-transform group-hover/sleeve:bg-gray-900">
-              <span className={`transition-transform ${open ? 'rotate-180' : ''}`}>
+            <span
+              className={`absolute bottom-0 right-0 grid h-4 w-4 place-items-center bg-gray-900/70 text-white group-hover/sleeve:bg-gray-900 ${PRESS}`}
+            >
+              {/* Turned over rather than swapped for a second glyph, so the
+                  thing that says which way this opens is the thing that moves.
+                  Slower than a press: it is travelling half a turn. */}
+              <span
+                className={`transition-transform ${SLIDE} ${open ? 'rotate-180' : ''}`}
+              >
                 <ChevronIcon />
               </span>
             </span>
           </button>
         )}
 
-        <div
-          className={`flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 py-1.5 pr-4 ${
-            art ? 'pl-3' : 'pl-4'
-          }`}
-        >
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
           {/* Back to the start of this track, or to the one before it if you are
               barely into it. Never disabled: at the top of a list it restarts. */}
           <button
@@ -194,31 +214,40 @@ function NowPlaying() {
             </p>
           )}
 
-          {/* On a phone it wraps to a line of its own, full width — the title is
-              what the first line is for, and a scrubber squeezed in beside it at
-              forty pixels is not a control. Above that it takes a share of the
-              row rather than a fixed width: it was sized when this bar ran the
-              full width of the screen, and left stranded in the middle of a
-              narrower column. Capped so it cannot crowd out the title, which is
-              the more important half. */}
-          <input
-            type="range"
-            min="0"
-            max={scrubber.max}
-            // Exact value, proportional keyboard step — see transport.js, which
-            // this shares with the admin's AudioPlayer.
-            step="any"
-            value={currentTime}
-            disabled={!seekable}
-            aria-label={`Seek within ${track.title}`}
-            style={scrubber.style}
-            className="scrubber order-last h-4 w-full basis-full sm:order-none sm:w-auto sm:min-w-0 sm:flex-1 sm:basis-auto sm:max-w-xs"
-            onChange={(event) => seek(Number(event.currentTarget.value))}
-          />
+          {/* The bar and the numbers it is counting, kept together — which is
+              what puts them both on the second line on a phone.
 
-          <span className="shrink-0 text-xs tabular-nums text-gray-600">
-            {formatTime(currentTime)} / {formatTime(duration)}
-          </span>
+              They used to be two items in the wrap, and only the bar carried
+              `basis-full`: the clock stayed up on the first line and took 68
+              pixels of it, which on a 393px screen is most of the room the
+              title had. "Playing Chérie je t'aime trop" was drawn as "Playing
+              …". The clock is a caption to the bar rather than to the title, so
+              it belongs on the line the bar went to.
+
+              Above that they take a share of the row rather than a fixed width:
+              it was sized when this bar ran the full width of the screen, and
+              left stranded in the middle of a narrower column. Capped so it
+              cannot crowd out the title, which is the more important half. */}
+          <div className="order-last flex w-full min-w-0 basis-full items-center gap-3 sm:order-none sm:w-auto sm:max-w-xs sm:flex-1 sm:basis-auto">
+            <input
+              type="range"
+              min="0"
+              max={scrubber.max}
+              // Exact value, proportional keyboard step — see transport.js,
+              // which this shares with the admin's AudioPlayer.
+              step="any"
+              value={currentTime}
+              disabled={!seekable}
+              aria-label={`Seek within ${track.title}`}
+              style={scrubber.style}
+              className="scrubber h-4 min-w-0 flex-1"
+              onChange={(event) => seek(Number(event.currentTarget.value))}
+            />
+
+            <span className="shrink-0 text-xs tabular-nums text-gray-600">
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </span>
+          </div>
 
           <button
             type="button"
@@ -239,34 +268,61 @@ function NowPlaying() {
         </div>
       </div>
 
-      {/* The record itself. Only ever rendered open, so a page that is never
-          asked pays nothing for it — not even the request for the full-size
-          image, which is the same object the sleeve above already holds and so
-          costs nothing the second time either.
+      {/* The record itself, opening and shutting rather than appearing and
+          vanishing — it is a third of a phone's screen arriving, and arriving
+          instantly reads as the page having jumped.
+
+          The frame is a one-row grid whose row goes 0fr → 1fr, which is the one
+          way to transition a height that is `auto` at one end: the row is
+          measured from the content, and the fraction of it that is drawn is
+          what animates. Hence the overflow-hidden on both halves — the outer
+          clips what the closed row cannot show, the inner needs min-h-0 or a
+          grid item refuses to be shorter than its content.
+
+          What is *inside* it is still only built once it has been asked for, so
+          a strip that is never opened is two empty elements rather than a
+          record's worth of markup. After the first open it stays, because a
+          drawer that empties itself on the way shut has nothing to animate
+          shut. Nothing is fetched either way: the image here is the same object
+          the sleeve above is already showing.
+
+          `inert` while shut, so a keyboard does not tab into a drawer of zero
+          height and nothing the reader can see takes focus.
 
           Its height is picked up by the ResizeObserver in Layout and published
-          as --chrome, so every anchor on the site follows it open and shut. */}
-      {open && art && (
-        <div id={DRAWER} className="border-t border-gray-300">
-          <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 px-4 pb-5 pt-4 text-center sm:flex-row sm:items-start sm:text-left">
-            <img
-              src={art}
-              alt=""
-              width={1000}
-              height={1000}
-              className={`aspect-square shrink-0 border border-gray-300 object-cover ${OPEN_ART}`}
-            />
+          as --chrome, so every anchor on the site follows it open and shut —
+          now continuously, through the animation, which is why that observer
+          may not do anything expensive. */}
+      {art && (
+        <div
+          id={DRAWER}
+          className={`grid overflow-hidden transition-[grid-template-rows] ${SLIDE} ${
+            open ? 'grid-rows-[1fr] border-t border-gray-300' : 'grid-rows-[0fr]'
+          }`}
+        >
+          <div className="min-h-0 overflow-hidden" inert={!open}>
+            {opened && (
+              <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 px-4 pb-5 pt-4 text-center sm:flex-row sm:items-start sm:text-left">
+                <img
+                  src={art}
+                  alt=""
+                  width={1000}
+                  height={1000}
+                  className={`aspect-square shrink-0 border border-gray-300 object-cover ${OPEN_ART}`}
+                />
 
-            <div className="min-w-0">
-              <h2 className="text-xl font-bold leading-tight">{name}</h2>
+                <div className="min-w-0">
+                  <h2 className="text-xl font-bold leading-tight">{name}</h2>
 
-              <p className="text-sm text-gray-600">
-                {track.album ?? 'Single'}
-                {Number.isFinite(track.duration) && track.duration > 0 && (
-                  <span className="tabular-nums"> · {formatTime(track.duration)}</span>
-                )}
-              </p>
-            </div>
+                  <p className="text-sm text-gray-600">
+                    {track.album ?? 'Single'}
+                    {Number.isFinite(track.duration) && track.duration > 0 && (
+                      <span className="tabular-nums"> · {formatTime(track.duration)}</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

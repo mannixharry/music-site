@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { navItems } from '../nav'
 import { profile } from '../content/profile'
+import { PRESS, SLIDE } from '../rules'
 
 // The active page gets weight and colour as well as an underline. On a phone the
 // menu is a plain column of five links and an underline on its own is easy to
@@ -12,7 +13,7 @@ import { profile } from '../content/profile'
 // pixels tall here, one under the 24 a touch target is meant to be; the padding
 // makes the box big enough to hit and the equal negative margin takes the extra
 // height back out of the layout, so nothing moves.
-const NAV_TARGET = 'inline-block py-1 -my-1'
+const NAV_TARGET = `inline-block py-1 -my-1 ${PRESS}`
 
 const navLinkClass = ({ isActive }) =>
   isActive
@@ -71,7 +72,7 @@ function Header() {
 
         <button
           type="button"
-          className="flex items-center gap-2 border border-gray-400 bg-white px-3 py-1 text-sm md:hidden"
+          className={`flex items-center gap-2 border border-gray-400 bg-white px-3 py-1 text-sm hover:bg-gray-200 active:scale-95 md:hidden ${PRESS}`}
           aria-expanded={menuOpen}
           aria-controls="site-menu"
           onClick={() => setMenuOpen((open) => !open)}
@@ -81,25 +82,43 @@ function Header() {
         </button>
       </div>
 
-      {menuOpen && (
-        <nav
-          id="site-menu"
-          aria-label="Site"
-          className="mx-auto flex max-w-2xl flex-col items-start gap-3 border-t border-gray-300 px-4 py-4 md:hidden"
-        >
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/'}
-              className={navLinkClass}
-              onClick={closeMenu}
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-      )}
+      {/* Opens and shuts rather than appearing and vanishing, by the same
+          0fr → 1fr row as the now-playing drawer — this is a phone's whole
+          navigation dropping into the page, and it arriving in one frame is
+          what makes a menu feel like a page change rather than a panel.
+
+          Always in the markup now, which it has to be for the closing half to
+          animate at all: five links is nothing to carry, unlike the drawer's
+          picture. `inert` while shut, so those five are not five tab stops in
+          front of the content on a wide screen — where this is display:none
+          anyway — or on a narrow one where they cannot be seen. */}
+      <nav
+        id="site-menu"
+        aria-label="Site"
+        inert={!menuOpen}
+        className={`grid overflow-hidden transition-[grid-template-rows] md:hidden ${SLIDE} ${
+          menuOpen ? 'grid-rows-[1fr] border-t border-gray-300' : 'grid-rows-[0fr]'
+        }`}
+      >
+        {/* min-h-0 or a grid item refuses to be shorter than its contents, and
+            the row never reaches nothing; the padding goes on the layer inside
+            it, which would otherwise be 32px of menu left showing while shut. */}
+        <div className="min-h-0 overflow-hidden">
+          <div className="mx-auto flex max-w-2xl flex-col items-start gap-3 px-4 py-4">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === '/'}
+                className={navLinkClass}
+                onClick={closeMenu}
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </div>
+        </div>
+      </nav>
     </header>
   )
 }
