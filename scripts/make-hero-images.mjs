@@ -3,6 +3,7 @@
 //   node scripts/make-hero-images.mjs pigs=~/art/pigs.png "guyana-skies=~/art/gs.png"
 //   node scripts/make-hero-images.mjs --out=pages "about-now=~/photos/now.jpg"
 //   node scripts/make-hero-images.mjs --out=pages "about-then=~/photos/then.jpg@56,46,1184,1144"
+//   node scripts/make-hero-images.mjs --widths=256 pigs=src/images/heroes/pigs-1344.jpg
 //
 // The optional `@x,y,w,h` after a path crops in source pixels before resizing.
 //
@@ -36,7 +37,7 @@ import path from 'node:path'
 // is what a 2× screen wants. Both are downscales from the artwork supplied so
 // far, and this never upscales: a source narrower than a target is written at
 // its own width, because inventing pixels only makes the file bigger.
-const WIDTHS = [672, 1344]
+const DEFAULT_WIDTHS = [672, 1344]
 
 const QUALITY = { webp: 0.86, jpeg: 0.86 }
 
@@ -56,6 +57,27 @@ if (args.length === 0) {
 // output at somewhere Vite will not hash.
 const outArg = args.find((arg) => arg.startsWith('--out='))
 const outDir = path.join(root, 'src/images', outArg ? outArg.slice('--out='.length) : 'heroes')
+
+// `--widths` is for a picture drawn at a size the two defaults are wrong for —
+// the home page's thumbnails are 112px wide, and 672 is six times more file
+// than that can show. The output is named from the width like everything else,
+// so a narrow file simply joins the wider ones in the same directory and the
+// component decides which to ask for.
+//
+// It is also what lets a thumbnail be made without the original: this never
+// upscales and the committed 1344 is a legitimate source for a 256, which
+// matters because the artwork itself is not in the repo.
+const widthsArg = args.find((arg) => arg.startsWith('--widths='))
+const WIDTHS = widthsArg
+  ? widthsArg
+      .slice('--widths='.length)
+      .split(',')
+      .map((width) => {
+        const n = Number(width)
+        if (!Number.isInteger(n) || n < 1) throw new Error(`expected a width, got "${width}"`)
+        return n
+      })
+  : DEFAULT_WIDTHS
 
 const jobs = args.filter((arg) => !arg.startsWith('--')).map((arg) => {
   const at = arg.indexOf('=')

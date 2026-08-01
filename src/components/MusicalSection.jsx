@@ -90,7 +90,10 @@ function MusicalSection({ musical }) {
       {demos.length > 0 && (
         <>
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <h3 className="font-bold">Demos</h3>
+            {/* "Demos" is only right for a show still being written. Pigs and
+                Copperfield & Co. were recorded properly and say so, which is
+                why the word is the musical's rather than this file's. */}
+            <h3 className="font-bold">{musical.songsLabel ?? 'Demos'}</h3>
 
             {/* Nine demos is a show, and hearing it should not be nine
                 decisions. Only offered above one demo, where it would otherwise

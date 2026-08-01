@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom'
 import MusicSection from '../components/MusicSection'
+import MusicalHero from '../components/MusicalHero'
 import Portrait from '../components/Portrait'
 import { profile } from '../content/profile'
 import { musicals } from '../content/musicals'
 import { instagramUrl } from '../content/contact'
-import { HEADING, SECTION, SECTION_LINK } from '../rules'
+import { HEADING, LIST, LIST_ITEM, SECTION, SECTION_LINK } from '../rules'
 import { usePageMeta } from '../usePageMeta'
 
 function Home() {
@@ -49,23 +50,48 @@ function Home() {
         <MusicSection />
       </div>
 
+      {/* Three shows drawn the way the five songs above them are drawn: a
+          picture, a name, a line of small grey type, and the rule between one
+          and the next. It was a bulleted list of three long sentences, each
+          opening with an underlined title and an em dash — the same information
+          with nothing to hold it apart, directly under a section that had a
+          sleeve on every row. Two lists of things to look at, one of them
+          looking like a paragraph that had lost its way.
+
+          The artwork is why this is worth doing at all. It exists, it is the
+          best thing on the musicals page, and the home page was sending people
+          to it with three underlined words.
+
+          A row carries what the show's own section opens with — title, status,
+          teaser — so following the link lands you on the same three lines set
+          large, with the same picture above them. The standfirst that used to
+          sit here said the Warner Chappell part once for two shows; the status
+          lines say it on the two it is true of, and say what the third is
+          instead, which the standfirst had no room for. */}
       <section className={SECTION}>
         <h2 className={HEADING}>Musicals</h2>
-        <p className="mt-2 text-sm">
-          Two of Frank&apos;s musicals were previously published by Warner Chappell.
-        </p>
-        <ul className="mt-4 space-y-1 text-sm">
+        <div className={`mt-2 ${LIST}`}>
           {musicals.map((musical) => (
-            <li key={musical.slug}>
+            <div key={musical.slug} className={LIST_ITEM}>
               {/* Straight to that show's section rather than to the top of a
-                  page you would then have to find it on. */}
-              <Link to={`/musicals#${musical.slug}`} className="font-bold underline">
-                {musical.title}
-              </Link>{' '}
-              &mdash; {musical.teaser}
-            </li>
+                  page you would then have to find it on.
+
+                  The whole row is the link, not the title alone: the picture
+                  and the teaser are about the show as much as its name is, and
+                  a 112px picture that does nothing when pressed is a picture
+                  that looks broken on a phone. Only the title is underlined —
+                  underlining all of it would draw a line under a paragraph. */}
+              <Link to={`/musicals#${musical.slug}`} className="group flex gap-3">
+                <MusicalHero musical={musical} size="thumb" className="w-24 shrink-0 sm:w-28" />
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-sm font-bold underline">{musical.title}</h3>
+                  <p className="text-xs text-gray-600">{musical.status}</p>
+                  <p className="mt-1 text-sm leading-relaxed">{musical.teaser}</p>
+                </div>
+              </Link>
+            </div>
           ))}
-        </ul>
+        </div>
         <Link to="/musicals" className={SECTION_LINK}>
           Explore the musicals
         </Link>

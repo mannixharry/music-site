@@ -32,6 +32,9 @@ export const musicals = [
     heroLabel: 'Pigs — hero image',
     heroDims: '1600×900px',
     resumeLabel: 'Resume',
+    // Not demos: these were recorded properly. See songsLabel's default in
+    // MusicalSection.
+    songsLabel: 'Songs',
     resume: [
       'As Cerebrus, our narrator tells us, “it was an ordinary pig farm until one day a group of scientists decided to start an experiment that would have consequences beyond their very dreams, or, perhaps, their very nightmares.” Farmer Giles is a rough, vindictive bully who takes easy money in return for letting the said scientists experiment with his pigs’ hormones. The pigs gradually come to realize that their brains, in some cases, are becoming more developed than those of the humans who have controlled them for so long. Unfortunately, in other cases, the effects of the experiment have been more unpredictable, with pigs who think they’re cows and pigs who think they’re sheep, giving much opportunity for humour.',
       'The two principal pigs, Cedric and Frederick, work together to galvanize the others into action in order to take over the farm from Giles. They are aided and abetted by Giles’ two bulldogs, Bazza and Gazza, a couple of cockneys who think they know it all and have also eaten contaminated food. While much of the action is comic, Cerebrus eases the musical into the area of ecological comment by his continuous interventions and dark threats to mankind. These threats are realized in a dream sequence when, in Cedric’s nightmare, all the pigs who in the play are pleasant and good-humoured, turn into a nasty bunch who threaten to slaughter the whole of mankind. In this sequence the “Pig sheep” behave like daleks, and the pigs mirror a Hitler like regime in their vow to destroy all that is human or all that is different from their established norms.',
@@ -49,6 +52,7 @@ export const musicals = [
     heroLabel: 'Copperfield & Co. — hero image',
     heroDims: '1600×900px',
     resumeLabel: 'Synopsis',
+    songsLabel: 'Songs',
     // One paragraph in Frank's document, and left as one here.
     resume: [
       '“Copperfield and Co.” is a quick paced two hour musical based loosely on Dickens’ “David Copperfield” and following the path of David from his early, troubled childhood through to the tribulations of adulthood, where we also chart the villainous path of Uriah Heep. In the course of this journey we encounter many classic Dickens characters. The bullying Murdstones haunt David’s early life, sending him first to the fearsome Mr Creakle’s school and then to their bottle factory, from where he lodges with the inimitable Micawber family. From them, he passes into the care of the eccentric Aunt Betsy and Mr Dick, who chase away the returning Murdstones, to the audience’s great delight. In adulthood, David then comes under the tutelage of Mr Wickfield, who employs the “greasy, oily rogue” Uriah. In the second act, we see Uriah, via much interaction with the audience, wielding more and more power, before his ultimate demise. Mr Micawber, employed by Uriah, also becomes increasingly involved in the drama and collaborates with David and Mr Wickfield to bring about Uriah’s downfall. David, in the meanwhile, suffers the loss of his wife, Dora, through illness, but in a popular denouement gains the love of Agnes Wickfield. Uriah, as the show comes to a close, repents in song for his evil ways. “Copperfield and Co.” is narrated in old age by David Copperfield and, unusually, a now benevolent Uriah Heep.',

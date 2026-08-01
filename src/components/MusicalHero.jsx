@@ -1,17 +1,23 @@
 import Placeholder from './Placeholder'
 
+import pigs256webp from '../images/heroes/pigs-256.webp'
 import pigs672webp from '../images/heroes/pigs-672.webp'
 import pigs1344webp from '../images/heroes/pigs-1344.webp'
+import pigs256jpg from '../images/heroes/pigs-256.jpg'
 import pigs672jpg from '../images/heroes/pigs-672.jpg'
 import pigs1344jpg from '../images/heroes/pigs-1344.jpg'
 
+import copperfield256webp from '../images/heroes/copperfield-co-256.webp'
 import copperfield672webp from '../images/heroes/copperfield-co-672.webp'
 import copperfield1344webp from '../images/heroes/copperfield-co-1344.webp'
+import copperfield256jpg from '../images/heroes/copperfield-co-256.jpg'
 import copperfield672jpg from '../images/heroes/copperfield-co-672.jpg'
 import copperfield1344jpg from '../images/heroes/copperfield-co-1344.jpg'
 
+import guyana256webp from '../images/heroes/guyana-skies-256.webp'
 import guyana672webp from '../images/heroes/guyana-skies-672.webp'
 import guyana1344webp from '../images/heroes/guyana-skies-1344.webp'
+import guyana256jpg from '../images/heroes/guyana-skies-256.jpg'
 import guyana672jpg from '../images/heroes/guyana-skies-672.jpg'
 import guyana1344jpg from '../images/heroes/guyana-skies-1344.jpg'
 
@@ -28,52 +34,79 @@ import guyana1344jpg from '../images/heroes/guyana-skies-1344.jpg'
 // the second time. What it says instead is what someone looking at it sees.
 const HEROES = {
   pigs: {
-    webp: [pigs672webp, pigs1344webp],
-    jpg: [pigs672jpg, pigs1344jpg],
+    webp: [pigs256webp, pigs672webp, pigs1344webp],
+    jpg: [pigs256jpg, pigs672jpg, pigs1344jpg],
     alt: 'Title artwork: an engraved black pig standing below the show’s name in red, above the words “the musical”.',
   },
   'copperfield-co': {
-    webp: [copperfield672webp, copperfield1344webp],
-    jpg: [copperfield672jpg, copperfield1344jpg],
+    webp: [copperfield256webp, copperfield672webp, copperfield1344webp],
+    jpg: [copperfield256jpg, copperfield672jpg, copperfield1344jpg],
     alt: 'Title artwork: silhouettes of a boy and a gentleman in a top hat standing either side of a Victorian London skyline with the dome of St Paul’s.',
   },
   'guyana-skies': {
-    webp: [guyana672webp, guyana1344webp],
-    jpg: [guyana672jpg, guyana1344jpg],
+    webp: [guyana256webp, guyana672webp, guyana1344webp],
+    jpg: [guyana256jpg, guyana672jpg, guyana1344jpg],
     alt: 'Title artwork: a man holding a suitcase looks out from a riverbank of palms and stilt houses towards the Empire Windrush and the Houses of Parliament.',
   },
 }
 
-// What the browser should assume it is drawing into before it has any layout.
-// The content column is max-w-2xl (42rem) with 1rem of the page's own padding
-// either side of it. Told the truth in both cases, because the alternative is
-// the browser assuming the full viewport and fetching the 1344 for a phone.
-const SIZES = '(min-width: 44rem) 672px, calc(100vw - 2rem)'
+// The two sizes this artwork is drawn at, and what the browser should assume it
+// is drawing into before it has any layout.
+//
+// `hero` runs the content column, which is max-w-2xl (42rem) with 1rem of the
+// page's own padding either side of it — told the truth in both cases, because
+// the alternative is the browser assuming the full viewport and fetching the
+// 1344 for a phone.
+//
+// `thumb` is the home page's list, where the picture is 112px wide and the 672
+// would be six times more file than it can show. It offers the 256 alone: one
+// candidate needs no `sizes` to choose between, and at 112px a 2× screen is
+// still asking for less than 256.
+const SIZES = {
+  hero: {
+    widths: [672, 1344],
+    from: 1,
+    sizes: '(min-width: 44rem) 672px, calc(100vw - 2rem)',
+  },
+  thumb: {
+    widths: [256],
+    from: 0,
+    sizes: undefined,
+  },
+}
 
-function MusicalHero({ musical, className = '' }) {
+function MusicalHero({ musical, size = 'hero', className = '' }) {
   const hero = HEROES[musical.slug]
+  const s = SIZES[size]
 
   // A show whose artwork has not arrived keeps the dashed box that says what is
-  // wanted, which is what all three of these had until it did.
+  // wanted, which is what all three of these had until it did. The thumbnail is
+  // too small to say it in words, so there it is the empty frame alone.
   if (!hero) {
     return (
       <Placeholder
-        label={musical.heroLabel}
-        dims={musical.heroDims}
+        label={size === 'hero' ? musical.heroLabel : undefined}
+        dims={size === 'hero' ? musical.heroDims : undefined}
         aspect="aspect-video"
         className={className}
       />
     )
   }
 
+  const srcSet = (files) => s.widths.map((width, i) => `${files[s.from + i]} ${width}w`).join(', ')
+
   return (
     <picture className={`block ${className}`}>
-      <source type="image/webp" srcSet={`${hero.webp[0]} 672w, ${hero.webp[1]} 1344w`} sizes={SIZES} />
+      <source type="image/webp" srcSet={srcSet(hero.webp)} sizes={s.sizes} />
       <img
-        src={hero.jpg[0]}
-        srcSet={`${hero.jpg[0]} 672w, ${hero.jpg[1]} 1344w`}
-        sizes={SIZES}
-        alt={hero.alt}
+        src={hero.jpg[s.from]}
+        srcSet={srcSet(hero.jpg)}
+        sizes={s.sizes}
+        // Decorative at thumbnail size: the link around it names the show and
+        // its title is the line beside it, so describing the picture there puts
+        // a paragraph inside the link's announcement to say what the next two
+        // words already say.
+        alt={size === 'hero' ? hero.alt : ''}
         // The real 16:9 of the generated files, so the space is held before the
         // picture lands and the page does not jump as three of them arrive.
         width={1344}
