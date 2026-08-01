@@ -110,6 +110,13 @@ export function toQueue(songs) {
       id: song.id,
       src: song.audioSrc,
       title: song.title,
+      // The bare title and the song's own address, for the strip's drawer,
+      // which names a record the way a listing does — under its album rather
+      // than with the album's name folded into the title — and offers the way
+      // through to it. Carried here for the same reason `album` and `artwork`
+      // are: by the time the strip is asked, the page that knew has gone.
+      shortTitle: song.shortTitle,
+      slug: song.slug,
       duration: song.duration,
       album: song.album?.title ?? null,
       artwork: song.coverSrc ?? null,
