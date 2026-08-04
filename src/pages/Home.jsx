@@ -93,28 +93,73 @@ function Home() {
                   tall, so the same 96px square hangs at the top of a column of
                   empty paper — which is how it was reported.
 
-                  128px is the answer on a phone rather than anything larger
-                  because it is the width the artwork actually has: the icons
-                  are 256px files, and past 128 a 2× screen is being shown
-                  something stretched. It takes a third of the column, which
-                  costs the teaser about a line and closes most of the gap from
-                  both ends at once.
+                  On a phone the picture is therefore 160px and stretched to
+                  whatever the words beside it measure, and the words are
+                  clamped so that measurement lands on 160 — see the teaser
+                  below. From 360px up the two are within two pixels of each
+                  other, which is a square that fills the row exactly and is not
+                  cropped at all.
 
-                  What is left of the gap is put where it can be seen from both
-                  sides: `items-center`. On a desktop the two columns are within
-                  a pixel of each other and this does nothing, which is why the
-                  row already looked right there. On a phone the words run half
-                  as tall again as the picture, and a picture hung from the top
-                  of that leaves all of the difference in one lump underneath
-                  it — which reads as the artwork having come loose from its
-                  own row rather than as a margin. Split in two it reads as air
-                  around a picture. */}
-              <Link to={`/musicals#${musical.slug}`} className="group flex items-center gap-3">
-                <MusicalHero musical={musical} size="thumb" className="w-32 shrink-0 sm:w-24" />
+                  Two things about that are worth keeping.
+
+                  The size cannot be a fraction of the row, and could not be
+                  found by measuring either. The picture and the text share one
+                  width, so every pixel given to the picture is taken from the
+                  text, which makes the text taller, which makes a square that
+                  matches it wider again — a loop that diverges rather than
+                  settles (128 → 186 → 209 → 231 …, and a text column of 90px).
+                  What breaks it is the clamp: with the words held to a known
+                  number of lines their height is about 162px on every phone,
+                  and a fixed 160 is simply that number written down.
+
+                  `items-stretch` is what closes the last two pixels, and it is
+                  the whole of what keeps this honest at a width nobody
+                  measured: the row is as tall as the words, the picture fills
+                  it, and where a square cannot the artwork covers instead. At
+                  320px, where the status line takes a third line and the
+                  column is 116px, that is a 10–20% trim off the sides rather
+                  than a picture hanging clear of the text again.
+
+                  160 rather than more is also what keeps the icon close to what
+                  it holds: these are 256px files, so a 2× phone is already
+                  being shown a little less than it asked for — see the note in
+                  MusicalHero.
+
+                  None of this reaches a desktop, where the two columns were
+                  already within a pixel of each other: there the picture goes
+                  back to 96px square, the teaser is whole, and the row is
+                  centred as it was. */}
+              <Link
+                to={`/musicals#${musical.slug}`}
+                className="group flex items-stretch gap-3 sm:items-center"
+              >
+                <MusicalHero musical={musical} size="thumb" className="w-40 shrink-0 sm:w-24" />
                 <div className="min-w-0 flex-1">
                   <h3 className="text-sm font-bold underline">{musical.title}</h3>
                   <p className="text-xs text-gray-600">{musical.status}</p>
-                  <p className="mt-1 text-sm leading-relaxed">{musical.teaser}</p>
+                  {/* Four lines on a phone, whole everywhere else. This is
+                      what bounds the picture beside it: the row is as tall as
+                      these words, the picture is stretched to that, and what
+                      the picture cannot fill squarely it covers. Left to run,
+                      a teaser in a 132px column on a 320px phone is eleven
+                      lines and 550px, and covering that from a 144px-wide
+                      square means throwing away three quarters of the width of
+                      the artwork — which on Copperfield & Co. is both figures,
+                      leaving a skyline and nothing else.
+
+                      Four is what makes the picture's 160px the right number:
+                      clamped, these words come to 162px on every phone from
+                      360 up, so the picture is square, uncropped, and level
+                      with them to within two pixels. Below that the clamp is
+                      what keeps the trimming to a tenth or two rather than
+                      most of it.
+
+                      Nothing is lost by it. This row is a link to the show's
+                      own section, which opens with the same three lines and
+                      the teaser in full. */}
+                  <p className="mt-1 line-clamp-4 text-sm leading-relaxed sm:line-clamp-none">
+                    {musical.teaser}
+                  </p>
                 </div>
               </Link>
             </div>

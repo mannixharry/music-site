@@ -68,25 +68,39 @@ const HEROES = {
 // the alternative is the browser assuming the full viewport and fetching the
 // 1344 for a phone.
 //
-// `thumb` is the home page's list, where the picture is 96px wide and the 672
-// would be seven times more file than it can show. It offers the 256 alone: one
-// candidate needs no `sizes` to choose between, and at 96px a 2× screen is still
-// asking for less than 256.
+// `thumb` is the home page's list, where the picture is 96px wide on a desktop
+// and the 672 would be seven times more file than it can show. It offers the 256
+// alone: one candidate needs no `sizes` to choose between.
+//
+// On a phone that icon is 160px, so a 2× screen is asking for 320 of a 256 and
+// a 3× one rather more. That is the price of the row being level with the words
+// beside it, and it is paid knowingly: see the note on the row in Home.jsx.
+// Two of the three icons are the show's own hero padded out square and could be
+// regenerated larger from the committed 1344 (see make-hero-images.mjs);
+// Guyana Skies' is separate square artwork whose original is not in the repo,
+// which is the one that would still need Frank.
 //
 // `ratio` is the shape of the files that size actually names, so the space is
 // held before the picture lands and the page does not jump as three arrive. The
 // two sizes are two different shapes, so this cannot be one pair of numbers on
 // the img.
+//
+// `fit` is how the picture meets the box it is given. The hero is always drawn
+// at its own shape and simply fills the width. The thumb is stretched to the
+// height of the words beside it on a phone, which is a box the artwork's own
+// square does not match, so it covers rather than distorts — see Home.jsx.
 const SIZES = {
   hero: {
     widths: [672, 1344],
     sizes: '(min-width: 44rem) 672px, calc(100vw - 2rem)',
     ratio: { width: 1344, height: 756 },
+    fit: 'w-full',
   },
   thumb: {
     widths: [256],
     sizes: undefined,
     ratio: { width: 256, height: 256 },
+    fit: 'h-full w-full object-cover',
   },
 }
 
@@ -130,7 +144,7 @@ function MusicalHero({ musical, size = 'hero', className = '' }) {
         // portrait, which is fetched eagerly for the opposite reason.
         loading="lazy"
         decoding="async"
-        className="w-full border border-gray-300"
+        className={`border border-gray-300 ${s.fit}`}
       />
     </picture>
   )
