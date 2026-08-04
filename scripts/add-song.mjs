@@ -53,8 +53,11 @@ const EXTENSION_TYPES = {
 // whether re-encoding is worth it, and this script cannot re-encode anyway.
 const STREAMABLE = new Set(['audio/mpeg', 'audio/mp4'])
 
-const KINDS = new Set(['single', 'demo', 'other'])
 const STATUSES = new Set(['released', 'coming-soon'])
+
+// Mirrors kindFor() in worker/index.js. A song in an album is a demo, a song in
+// none is a single. Derived rather than asked for, so the two cannot disagree.
+const kindFor = (albumId) => (albumId ? 'demo' : 'single')
 
 // ---------------------------------------------------------------------------
 
@@ -67,8 +70,9 @@ Usage: node scripts/add-song.mjs [audio-file] [options]
   --master <file>         Archive this as the master instead of the audio file.
                           Any format — it is never served. Use it alone to
                           attach a master to a song that already has audio.
-  --kind <k>              single | demo | other      (default: single)
-  --musical <slug>        Required when kind is demo.
+  --album <id>            The album or musical it belongs to. A song in one is
+                          a demo, a song in none is a single — so this decides
+                          --kind, which is why there is no --kind.
   --description <text>
   --status <s>            released | coming-soon     (default: released)
   --link "Label|https://…"  Repeatable.
@@ -88,7 +92,7 @@ as the way to attach audio to a song that already exists.
 // Nothing is defaulted here. An option left unset has to stay distinguishable
 // from one set to its default value, or updating an existing song would quietly
 // reset every field the caller did not mention — turning a demo into a single
-// because --kind was not repeated.
+// because --album was not repeated.
 function parseArgs(argv) {
   const options = { links: [] }
   const rest = []
@@ -110,8 +114,7 @@ function parseArgs(argv) {
     else if (arg === '--dry-run') options.dryRun = true
     else if (arg === '--title') options.title = value()
     else if (arg === '--id') options.id = value()
-    else if (arg === '--kind') options.kind = value()
-    else if (arg === '--musical') options.musical = value()
+    else if (arg === '--album') options.album = value()
     else if (arg === '--description') options.description = value()
     else if (arg === '--master') options.master = value()
     else if (arg === '--status') options.status = value()
@@ -200,9 +203,6 @@ async function main() {
   const options = parseArgs(process.argv.slice(2))
   if (options.help) return usage()
 
-  if (options.kind !== undefined && !KINDS.has(options.kind)) {
-    throw new Error(`--kind must be one of ${[...KINDS].join(', ')}`)
-  }
   if (options.status !== undefined && !STATUSES.has(options.status)) {
     throw new Error(`--status must be one of ${[...STATUSES].join(', ')}`)
   }
@@ -215,12 +215,12 @@ async function main() {
   if (!existing && !options.title) throw new Error(`"${id}" does not exist yet, so --title is required`)
 
   // What the row will actually hold: the flag if given, else what is already
-  // there, else the default for a brand-new song. The consistency rules below
-  // have to be checked against these rather than against the flags, or updating
-  // a demo without repeating --musical would look like a violation.
-  const kind = options.kind ?? existing?.kind ?? 'single'
+  // there, else the default for a brand-new song. The checks below have to be
+  // made against these rather than against the flags, or updating a demo
+  // without repeating --album would look like a violation.
   const status = options.status ?? existing?.status ?? 'released'
-  const musical = options.musical ?? existing?.musical_slug ?? null
+  const album = options.album ?? existing?.album_id ?? null
+  const kind = kindFor(album)
   // Where it is shown, which since 0007 is no longer implied by what it belongs
   // to. Carried through for an existing song — the INSERT OR REPLACE below
   // rebuilds the whole row, so a column left out of the list does not keep its
@@ -228,10 +228,11 @@ async function main() {
   // page. The default for a new one is the rule the column replaced.
   const onHomepage = options.home ?? (existing ? existing.on_homepage === 1 : kind === 'single')
 
-  // The schema's own CHECK does not cover this pairing, so it is enforced here.
-  if (kind === 'demo' && !musical) throw new Error('--kind demo needs --musical <slug>')
-  if (kind !== 'demo' && musical) {
-    throw new Error(`"${id}" would be a ${kind} carrying musical_slug "${musical}"`)
+  // Whether the album exists is a question only the database can answer, and
+  // asking it matters: a song filed under an album that is not there is shown
+  // nowhere at all. Same check albumRefProblem() makes in worker/index.js.
+  if (album && !query(`SELECT id FROM albums WHERE id = ${quote(album)}`, remote)[0]) {
+    throw new Error(`there is no album called "${album}"`)
   }
 
   console.log(`${existing ? 'Updating' : 'Creating'} "${id}" in the ${remote ? 'REMOTE' : 'local'} database`)
@@ -308,7 +309,12 @@ async function main() {
     title: quote(options.title ?? existing?.title),
     description: quote(options.description ?? existing?.description ?? ''),
     kind: quote(kind),
-    musical_slug: quote(musical),
+    // The column the site actually reads. `musical_slug` is what this held
+    // before migration 0005, and nothing has read or written it since; it is
+    // absent from this list, so the INSERT OR REPLACE below leaves it NULL. The
+    // rows 0005 backfilled still carry their old copy, which is untidy and
+    // inert — the same state seeding leaves them in.
+    album_id: quote(album),
     status: quote(status),
     web_key: quote(audio?.key ?? existing?.web_key ?? null),
     web_bytes: number(audio?.size ?? existing?.web_bytes ?? null),
