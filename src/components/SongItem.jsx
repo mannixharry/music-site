@@ -1,4 +1,5 @@
 import TrackArt from './TrackArt'
+import TrackTitle from './TrackTitle'
 import SnippetTag from './SnippetTag'
 import { formatTime } from '../format'
 
@@ -23,11 +24,16 @@ function SongItem({ song, queue }) {
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          {/* Plain text. The title was the way in to a page per song; those are
-              gone, and an underlined heading that goes nowhere is worse than a
-              heading. This list and the sleeve beside it are now the whole of
-              how a song is reached. */}
-          <h3 className="text-lg font-bold">{song.shortTitle}</h3>
+          {/* Not underlined, and still not a link. The title was once the way
+              in to a page per song; those are gone, and an underlined heading
+              that goes nowhere is worse than a heading. What it does now is
+              what the sleeve beside it does — it plays the song — which is why
+              it is a button wearing no decoration at all. */}
+          <h3 className="text-lg font-bold">
+            <TrackTitle song={song} queue={queue}>
+              {song.shortTitle}
+            </TrackTitle>
+          </h3>
           {song.isSnippet && song.showSnippetTag && <SnippetTag title={song.title} />}
         </div>
 

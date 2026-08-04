@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import Placeholder from './Placeholder'
 import TrackArt from './TrackArt'
+import TrackTitle from './TrackTitle'
 import MusicalHero from './MusicalHero'
 import Notice from './Notice'
 import SnippetTag from './SnippetTag'
@@ -123,7 +124,11 @@ function MusicalSection({ musical }) {
                       is enough — but the sleeve's label wants the full one,
                       which may be announced out of context. */}
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-sm font-bold">{demo.shortTitle}</p>
+                    <p className="text-sm font-bold">
+                      <TrackTitle song={demo} queue={queue}>
+                        {demo.shortTitle}
+                      </TrackTitle>
+                    </p>
                     {demo.isSnippet && demo.showSnippetTag && <SnippetTag title={demo.title} />}
                   </div>
                   {demo.audioSrc ? (

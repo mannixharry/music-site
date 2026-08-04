@@ -1,5 +1,6 @@
 import Placeholder from './Placeholder'
 import TrackArt from './TrackArt'
+import TrackTitle from './TrackTitle'
 import SnippetTag from './SnippetTag'
 import { formatTime } from '../format'
 
@@ -21,7 +22,15 @@ function ReleaseItem({ release, queue }) {
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <h3 className="truncate text-sm font-bold">{release.title}</h3>
+          {/* The truncation moves onto the button with the words, so the
+              ellipsis is still drawn by whatever is holding the text. The
+              heading keeps min-w-0 because that is what `truncate` was doing
+              for it as a flex item. */}
+          <h3 className="min-w-0 text-sm font-bold">
+            <TrackTitle song={release} queue={queue} className="truncate">
+              {release.title}
+            </TrackTitle>
+          </h3>
           {release.isSnippet && release.showSnippetTag && <SnippetTag title={release.title} />}
         </div>
 

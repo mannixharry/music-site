@@ -1,5 +1,5 @@
-import { useEffect, useMemo } from 'react'
-import { usePlayback } from '../context/playbackContext'
+import { useEffect } from 'react'
+import { useTrackControl } from './trackControl'
 import { PRESS, SLIDE } from '../rules'
 import { PauseIcon, PlayIcon } from './AudioPlayer'
 
@@ -109,35 +109,22 @@ function Sleeve({ song, size, children }) {
 }
 
 function TrackArt({ song, queue, size = 'row' }) {
-  const playback = usePlayback()
-
-  const isActive = playback.track?.id === song.id
-  const isPlaying = isActive && playback.playing
+  // Shared with the title beside it, so the two controls in a row are one
+  // press. See trackControl.js.
+  const { playback, isActive, isPlaying, entry, toggle, label } = useTrackControl(song, queue)
 
   // A row grows into the loaded song's sleeve; every other size is left alone.
   const drawn = size === 'row' && isActive ? 'playing' : size
   const s = SIZES[drawn]
 
-  // What to hand the provider. Taken from the queue where there is one, so the
-  // album and artwork a lock screen shows travel with the track; memoised
-  // because it is an effect dependency below.
-  const entry = useMemo(
-    () =>
-      queue?.find((item) => item.id === song.id) ?? {
-        id: song.id,
-        src: song.audioSrc,
-        title: song.title,
-        duration: song.duration,
-        album: song.album?.title ?? null,
-        artwork: song.coverSrc ?? null,
-      },
-    [queue, song],
-  )
-
   // A song's audio can be replaced while this row is the one loaded — making a
   // preview swaps the public file and leaves the id alone. The provider is
   // still describing the old file until something tells it, and the row is the
   // only thing that knows.
+  //
+  // It stays here rather than in the shared hook: the sleeve is drawn wherever
+  // a title is, so this runs exactly once per row either way, and two copies of
+  // it would be two components racing to re-describe the same track.
   const { replaceLoaded } = playback
   useEffect(() => {
     if (isActive) replaceLoaded(entry)
@@ -158,8 +145,8 @@ function TrackArt({ song, queue, size = 'row' }) {
   return (
     <button
       type="button"
-      onClick={() => (isPlaying ? playback.pause() : playback.play(entry, queue))}
-      aria-label={`${isPlaying ? 'Pause' : 'Play'} ${song.title}`}
+      onClick={toggle}
+      aria-label={label}
       // The press, on the sleeve rather than on the tile inside it: the tile is
       // already animating its width when a row becomes the loaded one, and two
       // transforms on one element fight over the same property.
