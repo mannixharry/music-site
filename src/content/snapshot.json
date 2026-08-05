@@ -1,5 +1,5 @@
 {
-  "version": "hide-in-album-1785944705",
+  "version": "msg9n3ci-f7078ebb",
   "mediaBase": "https://media.frankkirwan.com",
   "albums": [
     {
@@ -55,6 +55,7 @@
       "links": [],
       "sortOrder": 10,
       "onHomepage": true,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -72,6 +73,7 @@
       "links": [],
       "sortOrder": 20,
       "onHomepage": true,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -89,6 +91,7 @@
       "links": [],
       "sortOrder": 30,
       "onHomepage": true,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -106,6 +109,7 @@
       "links": [],
       "sortOrder": 40,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -123,6 +127,7 @@
       "links": [],
       "sortOrder": 50,
       "onHomepage": true,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -140,11 +145,12 @@
       "links": [],
       "sortOrder": 60,
       "onHomepage": true,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
       "id": "pigs-snapshot",
-      "title": "Pigs",
+      "title": "Pigs - Musical Snapshot",
       "description": "",
       "kind": "demo",
       "albumId": "pigs",
@@ -157,11 +163,12 @@
       "links": [],
       "sortOrder": 70,
       "onHomepage": true,
+      "hiddenInAlbum": true,
       "published": true
     },
     {
       "id": "copperfield-and-co-snapshot",
-      "title": "Copperfield & Co.",
+      "title": "Copperfield & Co. - Musical Snapshot",
       "description": "",
       "kind": "demo",
       "albumId": "copperfield-co",
@@ -174,6 +181,7 @@
       "links": [],
       "sortOrder": 80,
       "onHomepage": true,
+      "hiddenInAlbum": true,
       "published": true
     },
     {
@@ -191,6 +199,7 @@
       "links": [],
       "sortOrder": 90,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -200,14 +209,15 @@
       "kind": "demo",
       "albumId": "pigs",
       "status": "released",
-      "webKey": "web/lord-of-all-that-i-survey/989ba9b1.mp3",
+      "webKey": "web/lord-of-all-that-i-survey/400788f2.mp3",
       "coverKey": "covers/lord-of-all-that-i-survey/eb53b4f1.webp",
-      "duration": 159.7126530612245,
+      "duration": 159.77333333333334,
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 100,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -217,14 +227,15 @@
       "kind": "demo",
       "albumId": "pigs",
       "status": "released",
-      "webKey": "web/where-is-the-rainbow/e0e7b942.mp3",
+      "webKey": "web/where-is-the-rainbow/defa68f0.mp3",
       "coverKey": "covers/where-is-the-rainbow/d7e9cea1.webp",
-      "duration": 263.9673469387755,
+      "duration": 264.04,
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 110,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -234,14 +245,15 @@
       "kind": "demo",
       "albumId": "pigs",
       "status": "released",
-      "webKey": "web/pigs/6c92c44d.mp3",
+      "webKey": "web/pigs/62eab682.mp3",
       "coverKey": "covers/pigs/d4af702e.webp",
-      "duration": 318.9551020408163,
+      "duration": 319.02666666666664,
       "isSnippet": false,
       "showSnippetTag": true,
       "links": [],
       "sortOrder": 120,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -251,14 +263,15 @@
       "kind": "demo",
       "albumId": "pigs",
       "status": "released",
-      "webKey": "web/bulldog-stomp/e1f66e87.mp3",
+      "webKey": "web/bulldog-stomp/a2c611b5.mp3",
       "coverKey": "covers/bulldog-stomp/2205f3ae.webp",
-      "duration": 229.06775510204082,
+      "duration": 229.13333333333333,
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 130,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -268,14 +281,15 @@
       "kind": "demo",
       "albumId": "pigs",
       "status": "released",
-      "webKey": "web/dont-let-them-change-my-world/ea3f9567.mp3",
+      "webKey": "web/dont-let-them-change-my-world/48d05ded.mp3",
       "coverKey": "covers/dont-let-them-change-my-world/545d1090.webp",
-      "duration": 285.2832653061225,
+      "duration": 285.3466666666667,
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 140,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -285,14 +299,15 @@
       "kind": "demo",
       "albumId": "pigs",
       "status": "released",
-      "webKey": "web/elementary-my-son/3e44bb2c.mp3",
+      "webKey": "web/elementary-my-son/0d7cca5b.mp3",
       "coverKey": "covers/elementary-my-son/a697ac1c.webp",
-      "duration": 218.38367346938776,
+      "duration": 218.45333333333335,
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 150,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -302,14 +317,15 @@
       "kind": "demo",
       "albumId": "pigs",
       "status": "released",
-      "webKey": "web/animals-good-humans-are-bad/4ffb9e32.mp3",
+      "webKey": "web/animals-good-humans-are-bad/07542443.mp3",
       "coverKey": "covers/animals-good-humans-are-bad/c796492c.webp",
-      "duration": 156.89142857142858,
+      "duration": 156.94666666666666,
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 160,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -319,14 +335,15 @@
       "kind": "demo",
       "albumId": "pigs",
       "status": "released",
-      "webKey": "web/so-near-and-yet-so-far/49b84869.mp3",
+      "webKey": "web/so-near-and-yet-so-far/ccec3580.mp3",
       "coverKey": "covers/so-near-and-yet-so-far/9cbc85f7.webp",
-      "duration": 215.09224489795918,
+      "duration": 215.14666666666668,
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 170,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -336,14 +353,15 @@
       "kind": "demo",
       "albumId": "pigs",
       "status": "released",
-      "webKey": "web/consider-yourself-a-cow/8ecae05e.mp3",
+      "webKey": "web/consider-yourself-a-cow/23a938a0.mp3",
       "coverKey": "covers/consider-yourself-a-cow/2e774712.webp",
-      "duration": 190.48489795918368,
+      "duration": 190.56,
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 180,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -353,14 +371,15 @@
       "kind": "demo",
       "albumId": "pigs",
       "status": "released",
-      "webKey": "web/well-build-a-windmill/4a78d3e4.mp3",
+      "webKey": "web/well-build-a-windmill/6c9debd2.mp3",
       "coverKey": "covers/well-build-a-windmill/e7b9d341.webp",
-      "duration": 216.68571428571428,
+      "duration": 216.74666666666667,
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 190,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -370,14 +389,15 @@
       "kind": "demo",
       "albumId": "pigs",
       "status": "released",
-      "webKey": "web/animal-and-man/8edb47b9.mp3",
+      "webKey": "web/animal-and-man/e8c26432.mp3",
       "coverKey": "covers/animal-and-man/bad9c229.webp",
-      "duration": 199.9934693877551,
+      "duration": 204.17333333333335,
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 200,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -387,14 +407,15 @@
       "kind": "demo",
       "albumId": "pigs",
       "status": "released",
-      "webKey": "web/revolution-one/13e0483f.mp3",
+      "webKey": "web/revolution-one/b1fbfe3d.mp3",
       "coverKey": "covers/revolution-one/b66de01d.webp",
-      "duration": 201.43020408163267,
+      "duration": 201.49333333333334,
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 210,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -404,14 +425,15 @@
       "kind": "demo",
       "albumId": "pigs",
       "status": "released",
-      "webKey": "web/sometimes-i-wonder/1bc27939.mp3",
+      "webKey": "web/sometimes-i-wonder/e4737fdd.mp3",
       "coverKey": "covers/sometimes-i-wonder/d0d1e8e3.webp",
-      "duration": 254.19755102040816,
+      "duration": 254.25333333333333,
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 220,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -421,14 +443,15 @@
       "kind": "demo",
       "albumId": "pigs",
       "status": "released",
-      "webKey": "web/animals-rule/446b4181.mp3",
+      "webKey": "web/animals-rule/593fa6bf.mp3",
       "coverKey": "covers/animals-rule/e816115e.webp",
-      "duration": 229.7991836734694,
+      "duration": 229.85333333333332,
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 230,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -438,14 +461,15 @@
       "kind": "demo",
       "albumId": "pigs",
       "status": "released",
-      "webKey": "web/rainbow-reprise/b81be37b.mp3",
+      "webKey": "web/rainbow-reprise/5e3cc90b.mp3",
       "coverKey": "covers/rainbow-reprise/49b80173.webp",
-      "duration": 261.95591836734695,
+      "duration": 262.04,
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 240,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -463,6 +487,7 @@
       "links": [],
       "sortOrder": 250,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -480,6 +505,7 @@
       "links": [],
       "sortOrder": 260,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -497,6 +523,7 @@
       "links": [],
       "sortOrder": 270,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -514,6 +541,7 @@
       "links": [],
       "sortOrder": 280,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -531,6 +559,7 @@
       "links": [],
       "sortOrder": 290,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -548,6 +577,7 @@
       "links": [],
       "sortOrder": 300,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -565,6 +595,7 @@
       "links": [],
       "sortOrder": 310,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -582,6 +613,7 @@
       "links": [],
       "sortOrder": 320,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -599,6 +631,7 @@
       "links": [],
       "sortOrder": 330,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -616,6 +649,7 @@
       "links": [],
       "sortOrder": 340,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -633,6 +667,7 @@
       "links": [],
       "sortOrder": 350,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -650,6 +685,7 @@
       "links": [],
       "sortOrder": 360,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -667,6 +703,7 @@
       "links": [],
       "sortOrder": 370,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -684,6 +721,7 @@
       "links": [],
       "sortOrder": 380,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -701,6 +739,7 @@
       "links": [],
       "sortOrder": 390,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -718,6 +757,7 @@
       "links": [],
       "sortOrder": 410,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -735,6 +775,7 @@
       "links": [],
       "sortOrder": 420,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -752,6 +793,7 @@
       "links": [],
       "sortOrder": 430,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -769,6 +811,7 @@
       "links": [],
       "sortOrder": 440,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -786,6 +829,7 @@
       "links": [],
       "sortOrder": 450,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -803,6 +847,7 @@
       "links": [],
       "sortOrder": 460,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -820,6 +865,7 @@
       "links": [],
       "sortOrder": 470,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -837,6 +883,7 @@
       "links": [],
       "sortOrder": 480,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -854,6 +901,7 @@
       "links": [],
       "sortOrder": 490,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -871,6 +919,7 @@
       "links": [],
       "sortOrder": 500,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -888,6 +937,7 @@
       "links": [],
       "sortOrder": 510,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -905,6 +955,7 @@
       "links": [],
       "sortOrder": 520,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -922,6 +973,7 @@
       "links": [],
       "sortOrder": 530,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -939,6 +991,7 @@
       "links": [],
       "sortOrder": 540,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -956,6 +1009,7 @@
       "links": [],
       "sortOrder": 550,
       "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     },
     {
@@ -972,7 +1026,8 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 560,
-      "onHomepage": true,
+      "onHomepage": false,
+      "hiddenInAlbum": false,
       "published": true
     }
   ]
