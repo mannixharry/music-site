@@ -123,9 +123,37 @@ function SongList({ songs, albums = [], selectedId, onSelect, onMove, busy }) {
         </p>
       )}
 
-      {groups.map((section) => (
+      {/* The list scrolls inside itself rather than running the page down as
+          far as the catalogue happens to be long. That length was the problem:
+          the edit form sits beside this on a wide screen and below it on a
+          narrow one, so choosing the last of thirty songs meant scrolling back
+          up the page to edit it, and down again for the next one. Capped, the
+          page is about as tall as the form, and the form is where it was when
+          the song was chosen.
+
+          A share of the window rather than a number of rows, because the thing
+          being kept in view is the rest of the page, and how much of that fits
+          is a fact about the window. The search box is deliberately outside the
+          box — it filters what is in it, and a way of finding a song that has
+          to be found first is no way at all.
+
+          The gutter is `md:` and must stay that way. It is there to keep a
+          desktop scrollbar off the move arrows, which sit hard against the
+          right edge of every row; a phone draws its scrollbar over the content
+          and needs none. Eight pixels is also more than this page has to spare
+          down there — at 390px the column is already as wide as the window,
+          and giving the list any padding at all pushed the whole page into
+          scrolling sideways. */}
+      <div className="mt-1 max-h-[70vh] overflow-y-auto md:pr-2">
+        {groups.map((section) => (
           <section key={section.id ?? 'none'} className="mt-5">
-            <h3 className="flex items-baseline justify-between gap-2 border-b border-gray-300 pb-1 text-xs font-bold uppercase tracking-wide text-gray-600">
+            {/* Pinned to the top of the scroller, because a heading is what
+                says which record the row under the finger belongs to and this
+                is now a list you can be in the middle of. It needs the page's
+                own background — it has rows passing underneath it — and it is
+                the reason the sections have padding above rather than only
+                below. */}
+            <h3 className="sticky top-0 z-10 flex items-baseline justify-between gap-2 border-b border-gray-300 bg-white pb-1 pt-1 text-xs font-bold uppercase tracking-wide text-gray-600">
               <span className="min-w-0 truncate">{section.label}</span>
               {/* The count, and what the album is. Worth saying here because
                   the heading is now a title rather than a category, and
@@ -206,7 +234,8 @@ function SongList({ songs, albums = [], selectedId, onSelect, onMove, busy }) {
               ))}
             </ul>
           </section>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }
