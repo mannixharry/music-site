@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ContentContext } from '../context/contentContext'
-import { toAlbums, toSongs } from '../content/normalise'
+import { listedIn, toAlbums, toSongs } from '../content/normalise'
 import snapshot from '../content/snapshot.json'
 
 // The catalogue is committed to the repo as snapshot.json and bundled, so the
@@ -77,7 +77,10 @@ function ContentProvider({ children }) {
       // sort_order still decides the running order, so a song's place here is
       // the place it has in the admin's list.
       homeSongs: songs.filter((song) => song.onHomepage),
-      songsIn: (albumId) => songs.filter((song) => song.albumId === albumId),
+      // What an album lists rather than everything filed under it: a song shown
+      // on the home page can be held out of its own record — see 0008 — which
+      // is what keeps a snapshot off the demo list beside the whole track.
+      songsIn: (albumId) => listedIn(songs, albumId),
       refresh,
     }
   }, [data, refresh])

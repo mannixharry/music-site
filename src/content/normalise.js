@@ -59,6 +59,13 @@ function toSong(row, mediaBase = '', albums = new Map()) {
     // fallback is the rule it replaced, so a snapshot taken before that column
     // existed still draws the home page it was taken from.
     onHomepage: row.onHomepage ?? !row.albumId,
+    // Whether the album's own listing leaves it out — see 0008. The song still
+    // belongs to the album, is still named under it, and is still reachable
+    // from it; it is only held out of the list. A snapshot from a record can
+    // therefore sit on the home page without appearing beside the full track it
+    // was cut from. Absent from a snapshot taken before the column existed,
+    // which reads as false: everything was listed then.
+    hiddenInAlbum: row.hiddenInAlbum === true,
     // The whole album, so a caller has its title and kind without a second
     // lookup — and null for a single, which is a state worth being able to test
     // for directly.
@@ -95,6 +102,15 @@ export function toSongs(rows, mediaBase = '', albumRows = []) {
     .map((row) => toSong(row, mediaBase, albums))
 }
 
+// What an album lists, which since 0008 is not quite what it contains: a
+// snapshot put on the home page can be held out of the record it was cut from
+// while still belonging to it. Used by every view that draws an album's songs —
+// /songs and a musical's demos — so the two cannot disagree about which of them
+// a record has.
+export function listedIn(songs, albumId) {
+  return songs.filter((song) => song.albumId === albumId && !song.hiddenInAlbum)
+}
+
 // The playable part of a list of songs, in the order it is shown, which is what
 // PlaybackProvider needs to move from one to the next. Songs with no audio are
 // dropped rather than skipped over later — a queue entry that cannot be played
@@ -119,6 +135,15 @@ export function toQueue(songs) {
       shortTitle: song.shortTitle,
       duration: song.duration,
       album: song.album?.title ?? null,
+      // The record itself, so the strip can offer the way back to it. Two
+      // fields rather than the album object: everything in a queue entry is
+      // stored to sessionStorage on the way out of the page, so it is kept to
+      // what is actually read. `albumIsMusical` only decides the wording — a
+      // show is not "the album" in the site's own language — and both are
+      // absent from a session stored before this existed, which is why
+      // NowPlaying guards on the id rather than assuming one.
+      albumId: song.album?.id ?? null,
+      albumIsMusical: song.album?.isMusical ?? false,
       artwork: song.coverSrc ?? null,
     }))
 }

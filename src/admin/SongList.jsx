@@ -164,7 +164,15 @@ function SongList({ songs, albums = [], selectedId, onSelect, onMove, busy }) {
                         0007 a song in any album can be on the home page, and
                         nothing else in this list would show it. */}
                     {song.onHomepage && (
-                      <span className="ml-2 text-xs text-gray-500">home page</span>
+                      <span className="ml-2 text-xs text-gray-500">
+                        {/* Said in one label rather than two, because the
+                            second only ever qualifies the first: the song is
+                            on the front page, and this section it is listed
+                            under here is a section it is kept out of on the
+                            site. Without it the list would draw a song exactly
+                            where the site does not. */}
+                        {song.hiddenInAlbum ? 'home page only' : 'home page'}
+                      </span>
                     )}
                     {!song.webKey && <span className="ml-2 text-xs text-gray-500">no audio</span>}
                     {song.isSnippet && <span className="ml-2 text-xs text-gray-500">snapshot</span>}

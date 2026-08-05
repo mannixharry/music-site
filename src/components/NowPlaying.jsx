@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { formatTime } from '../format'
 import { usePlayback } from '../context/playbackContext'
 import { PRESS, SLIDE } from '../rules'
@@ -116,6 +117,15 @@ function NowPlaying() {
   const art = track.artwork
   // A track restored from a session stored before either field existed.
   const name = track.shortTitle ?? track.title
+  // The record it came from, which the drawer offers the way back to. Read from
+  // the queue entry rather than looked up: by the time the strip is asked, the
+  // page that knew about albums may be three navigations ago — and a session
+  // stored before this field existed simply has none, which is why the whole
+  // link hangs off it rather than off `track.album`.
+  const albumId = track.albumId ?? null
+  // A picture to look at, or a record to open. Either is worth a drawer; a song
+  // with neither has nothing to put in one, and the strip stays as it was.
+  const canOpen = Boolean(art) || Boolean(albumId)
 
   return (
     <div
@@ -201,9 +211,9 @@ function NowPlaying() {
               state, and both say so, which is what lets either be pressed to
               close it again.
 
-              A plain paragraph when there is no artwork, because then there is
-              nothing to open. */}
-          {art ? (
+              A plain paragraph when there is nothing to open — no artwork and
+              no record to go to. */}
+          {canOpen ? (
             <button
               type="button"
               onClick={toggle}
@@ -300,7 +310,7 @@ function NowPlaying() {
           as --chrome, so every anchor on the site follows it open and shut —
           now continuously, through the animation, which is why that observer
           may not do anything expensive. */}
-      {art && (
+      {canOpen && (
         <div
           id={DRAWER}
           className={`grid overflow-hidden transition-[grid-template-rows] ${SLIDE} ${
@@ -310,13 +320,15 @@ function NowPlaying() {
           <div className="min-h-0 overflow-hidden" inert={!open}>
             {opened && (
               <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 px-4 pb-5 pt-4 text-center sm:flex-row sm:items-start sm:text-left">
-                <img
-                  src={art}
-                  alt=""
-                  width={1000}
-                  height={1000}
-                  className={`aspect-square shrink-0 border border-gray-300 object-cover ${OPEN_ART}`}
-                />
+                {art && (
+                  <img
+                    src={art}
+                    alt=""
+                    width={1000}
+                    height={1000}
+                    className={`aspect-square shrink-0 border border-gray-300 object-cover ${OPEN_ART}`}
+                  />
+                )}
 
                 <div className="min-w-0">
                   <h2 className="text-xl font-bold leading-tight">{name}</h2>
@@ -327,6 +339,32 @@ function NowPlaying() {
                       <span className="tabular-nums"> · {formatTime(track.duration)}</span>
                     )}
                   </p>
+
+                  {/* The way out of the strip, and the one thing it has never
+                      had: it names the record on the line above and, until now,
+                      left you to go and find it. That gap was covered by the
+                      song's own page while songs had one — this is the same
+                      offer pointed at what actually exists, which is the
+                      record's section on /songs.
+
+                      Here rather than up in the bar. Every pixel spent on that
+                      row comes off the title, which is already the thing that
+                      truncates first on a phone, and this drawer is where the
+                      record is named and pictured — it is the answer to "what
+                      is this", which is the question that gets it opened.
+
+                      Shut on the way out. It is a third of a phone's screen and
+                      it would otherwise sit over the page it just sent you to;
+                      the same rule the phone menu follows on a nav link. */}
+                  {albumId && (
+                    <Link
+                      to={`/songs#${albumId}`}
+                      onClick={shut}
+                      className={`mt-3 inline-block border border-gray-400 bg-white px-3 py-1 text-sm hover:bg-gray-200 ${PRESS}`}
+                    >
+                      See the {track.albumIsMusical ? 'musical' : 'album'}
+                    </Link>
+                  )}
                 </div>
               </div>
             )}

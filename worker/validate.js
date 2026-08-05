@@ -222,8 +222,8 @@ export function validateSong(input, { partial = false } = {}) {
 
   // These only ever describe what is already stored, or where it is shown;
   // nothing here changes a file. See migrations/0003_snippets.sql,
-  // 0004_snippet_tag.sql and 0007_home_page.sql.
-  for (const flag of ['isSnippet', 'showSnippetTag', 'onHomepage', 'published']) {
+  // 0004_snippet_tag.sql, 0007_home_page.sql and 0008_hide_in_album.sql.
+  for (const flag of ['isSnippet', 'showSnippetTag', 'onHomepage', 'hiddenInAlbum', 'published']) {
     if (has(flag) && typeof input[flag] !== 'boolean') return `${flag} must be true or false`
   }
 

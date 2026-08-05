@@ -21,6 +21,7 @@ const BLANK = {
   status: 'released',
   links: [],
   onHomepage: true,
+  hiddenInAlbum: false,
   published: false,
   showSnippetTag: false,
 }
@@ -118,6 +119,12 @@ function Block({ label, hint, children }) {
 }
 
 const inputClass = 'w-full border border-gray-400 bg-white px-2 py-1 text-sm'
+
+// Whether "hide it inside the album" is a question worth asking. It only means
+// anything for a song that is in an album *and* shown somewhere else: hiding a
+// song from its record when the record is the only place it appears is simply
+// unpublishing it, by a name that does not say so.
+const canHide = (draft) => Boolean(draft.albumId) && draft.onHomepage
 
 function SongForm({
   song,
@@ -272,6 +279,13 @@ function SongForm({
         status: draft.status,
         links: draft.links.filter((link) => link.label && link.href),
         onHomepage: draft.onHomepage,
+        // Written out rather than left alone, for the reason NOT_A_SNIPPET
+        // exists in useUpload: the tick box below is only offered while the
+        // song is in an album and on the home page, so a song taken off the
+        // home page — or out of the album — would otherwise keep a flag saying
+        // its record leaves it out, and disappear from that record the day it
+        // was put back.
+        hiddenInAlbum: canHide(draft) && draft.hiddenInAlbum,
         published: draft.published,
         showSnippetTag: draft.showSnippetTag,
       }
@@ -547,6 +561,28 @@ function SongForm({
             in the Music list, whatever album it is in
           </span>
         </label>
+
+        {/* The other half of the question above, and only asked once the answer
+            to it is yes: a snapshot cut from a record can go on the front page
+            without appearing in the record beside the whole track it came from.
+            Indented under it because it is a qualification of that tick, not a
+            setting of its own — and it disappears with it, which is also what
+            the payload does with the value. The song still belongs to the
+            album, is still named under it, and the now-playing strip still
+            offers the way through. */}
+        {canHide(draft) && (
+          <label className="ml-6 flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={draft.hiddenInAlbum}
+              onChange={(event) => set({ hiddenInAlbum: event.currentTarget.checked })}
+            />
+            <span className="whitespace-nowrap font-bold">Hide it in the album</span>
+            <span className="text-xs text-gray-600">
+              keeps it out of the album’s own list of songs
+            </span>
+          </label>
+        )}
 
         <label className="flex items-center gap-2 text-sm">
           <input

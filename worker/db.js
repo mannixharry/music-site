@@ -36,6 +36,9 @@ function toRow(record) {
     // both with one column meant the only way onto the front page was to leave
     // the record.
     onHomepage: record.on_homepage === 1,
+    // Whether the album's own listing leaves it out — see 0008. Only ever
+    // meaningful for a song that is in an album and shown somewhere else.
+    hiddenInAlbum: record.hide_in_album === 1,
     published: record.published === 1,
   }
 }
@@ -48,7 +51,7 @@ function toRow(record) {
 const PUBLIC_COLUMNS = `
   id, title, description, kind, album_id, status,
   web_key, cover_key, duration_s, is_snippet, show_snippet_tag,
-  links_json, sort_order, on_homepage, published
+  links_json, sort_order, on_homepage, hide_in_album, published
 `
 
 export async function listPublishedSongs(env) {
@@ -209,10 +212,17 @@ const WRITABLE = {
   snippetStart: 'snippet_start_s',
   snippetEnd: 'snippet_end_s',
   onHomepage: 'on_homepage',
+  hiddenInAlbum: 'hide_in_album',
   published: 'published',
 }
 
-const BOOLEAN_FIELDS = new Set(['published', 'isSnippet', 'showSnippetTag', 'onHomepage'])
+const BOOLEAN_FIELDS = new Set([
+  'published',
+  'isSnippet',
+  'showSnippetTag',
+  'onHomepage',
+  'hiddenInAlbum',
+])
 
 function serialise(field, value) {
   if (BOOLEAN_FIELDS.has(field)) return value ? 1 : 0
@@ -243,8 +253,8 @@ export async function createSong(env, input) {
        web_key, web_bytes, master_key, master_bytes, master_mime, duration_s,
        cover_key, cover_bytes, cover_master_key, cover_master_bytes, cover_master_mime,
        is_snippet, show_snippet_tag, snippet_start_s, snippet_end_s,
-       links_json, sort_order, on_homepage, published, created_at, updated_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       links_json, sort_order, on_homepage, hide_in_album, published, created_at, updated_at
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       input.id,
@@ -271,6 +281,7 @@ export async function createSong(env, input) {
       JSON.stringify(input.links ?? []),
       sortOrder,
       input.onHomepage ? 1 : 0,
+      input.hiddenInAlbum ? 1 : 0,
       input.published ? 1 : 0,
       now,
       now,

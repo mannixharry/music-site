@@ -40,7 +40,16 @@ function Songs() {
       'The whole catalogue in one place — the singles, and everything that belongs to an album or a musical.',
   })
 
-  const { songs, albums } = useContent()
+  const { songs: catalogue, albums } = useContent()
+
+  // What this page shows, which since 0008 is not quite everything published: a
+  // song held out of its album's listing lives on the home page and nowhere
+  // else. Dropped once, here, rather than in each of the four places below —
+  // the grouping, the album counts, the narrowing and the search — which would
+  // otherwise disagree about how many songs there are, and could answer "1 of
+  // 40 songs match" with an empty page.
+  const songs = useMemo(() => catalogue.filter((song) => !song.hiddenInAlbum), [catalogue])
+
   const [query, setQuery] = useState('')
   // Which album to narrow to, or null for everything. The search finds an
   // album's songs by name, but only if a reader guesses that it will. This says

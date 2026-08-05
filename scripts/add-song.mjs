@@ -345,6 +345,12 @@ async function main() {
     links_json: quote(JSON.stringify(links.length ? links : JSON.parse(existing?.links_json ?? '[]'))),
     sort_order: number(sortOrder),
     on_homepage: onHomepage ? '1' : '0',
+    // Carried through, never decided here. This script has no flag for it —
+    // holding a song out of its own record is an editorial call the admin page
+    // asks about beside the home-page tick — but the INSERT OR REPLACE below
+    // rebuilds the whole row, so leaving the column out would quietly put a
+    // hidden snapshot back into the album on the next `--file` upload.
+    hide_in_album: String(existing?.hide_in_album ?? 0),
     published: options.draft ? '0' : String(existing?.published ?? 1),
     created_at: quote(existing?.created_at ?? now),
     updated_at: quote(now),

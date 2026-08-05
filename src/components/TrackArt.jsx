@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTrackControl } from './trackControl'
 import { PRESS, SLIDE } from '../rules'
 import { PauseIcon, PlayIcon } from './AudioPlayer'
@@ -108,6 +108,20 @@ function Sleeve({ song, size, children }) {
   )
 }
 
+// How long the accent sits over the sleeve when a song is started or stopped.
+//
+// A press has to answer, and on a phone this is the only thing that can: there
+// is no hover to bring the wash up, and on the row that has just grown to twice
+// its size, the whole of what changes under the finger is a 16px badge in a
+// corner it is probably covering. So the press flashes the accent over the
+// artwork and it fades out again — which is what the sleeve used to do and
+// hold, before the loaded row started growing instead.
+//
+// A quarter of a second, and no longer. Every animation on this site is on the
+// path between a press and what it does; this one is over before the audio
+// starts, which is when the row has other ways of saying so.
+const FLASH_MS = 260
+
 function TrackArt({ song, queue, size = 'row' }) {
   // Shared with the title beside it, so the two controls in a row are one
   // press. See trackControl.js.
@@ -130,6 +144,21 @@ function TrackArt({ song, queue, size = 'row' }) {
     if (isActive) replaceLoaded(entry)
   }, [isActive, replaceLoaded, entry])
 
+  // The press, showing. Cleared on a timer rather than on transitionend: the
+  // wash is off entirely under prefers-reduced-motion (index.css cuts every
+  // transition on the site), and an event that never fires would leave the
+  // accent sitting there permanently.
+  const [flash, setFlash] = useState(false)
+  const flashTimer = useRef(null)
+  useEffect(() => () => clearTimeout(flashTimer.current), [])
+
+  const press = () => {
+    clearTimeout(flashTimer.current)
+    setFlash(true)
+    flashTimer.current = setTimeout(() => setFlash(false), FLASH_MS)
+    toggle()
+  }
+
   // No recording yet, so nothing to press. The sleeve still draws — a single
   // announced before its audio arrives is still a release.
   if (!song.audioSrc) return <Sleeve song={song} size={drawn} />
@@ -142,10 +171,15 @@ function TrackArt({ song, queue, size = 'row' }) {
   // pause rather than "this is playing".
   const washed = isActive && drawn !== 'playing'
 
+  // Either reason to be showing it. The flash is the press answering back and
+  // is the one that reaches a phone, where the row that grows is exactly the
+  // row that stops being washed.
+  const lit = washed || flash
+
   return (
     <button
       type="button"
-      onClick={toggle}
+      onClick={press}
       aria-label={label}
       // The press, on the sleeve rather than on the tile inside it: the tile is
       // already animating its width when a row becomes the loaded one, and two
@@ -160,7 +194,7 @@ function TrackArt({ song, queue, size = 'row' }) {
             wash is what hovering adds. */}
         <span
           className={`absolute bottom-0 left-0 grid place-items-center bg-gray-900/70 text-white ${PRESS} ${s.badge} ${
-            washed ? 'opacity-0' : 'opacity-100 group-hover/art:opacity-0'
+            lit ? 'opacity-0' : 'opacity-100 group-hover/art:opacity-0'
           }`}
         >
           {isPlaying ? <PauseIcon /> : <PlayIcon />}
@@ -174,7 +208,7 @@ function TrackArt({ song, queue, size = 'row' }) {
           className={`absolute inset-0 grid place-items-center text-white ${PRESS} ${
             song.coverSrc ? 'bg-accent/85' : 'bg-accent'
           } ${
-            washed
+            lit
               ? 'opacity-100'
               : 'opacity-0 group-hover/art:opacity-100 group-focus-visible/art:opacity-100'
           }`}

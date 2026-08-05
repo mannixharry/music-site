@@ -28,6 +28,11 @@ export function useTrackControl(song, queue) {
         title: song.title,
         duration: song.duration,
         album: song.album?.title ?? null,
+        // The same fields toQueue builds, and this is the half that drifts if
+        // they are written twice — see above. Without them a song pressed
+        // outside any queue plays with no way back to its record.
+        albumId: song.album?.id ?? null,
+        albumIsMusical: song.album?.isMusical ?? false,
         artwork: song.coverSrc ?? null,
       },
     [queue, song],

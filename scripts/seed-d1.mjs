@@ -96,6 +96,10 @@ statements.push(...songs.map((song) => {
     // Same fallback as toSong() in src/content/normalise.js, and for the same
     // reason: a reset must reproduce the site the snapshot was taken from.
     (song.onHomepage ?? !song.albumId) ? '1' : '0',
+    // Whether the album's own listing leaves it out — 0008. Absent from a
+    // snapshot taken before that column, which reads as false: everything was
+    // listed then, so a reset reproduces the site the snapshot came from.
+    song.hiddenInAlbum ? '1' : '0',
     song.published === false ? '0' : '1',
     quote(now),
     quote(now),
@@ -111,7 +115,7 @@ statements.push(...songs.map((song) => {
   id, title, description, kind, album_id, status,
   web_key, web_bytes, master_key, master_bytes, master_mime, duration_s,
   cover_key, cover_bytes, is_snippet, show_snippet_tag,
-  links_json, sort_order, on_homepage, published, created_at, updated_at
+  links_json, sort_order, on_homepage, hide_in_album, published, created_at, updated_at
 ) VALUES (${columns.join(', ')});`
 }))
 
