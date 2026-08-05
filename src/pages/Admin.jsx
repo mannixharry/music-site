@@ -251,7 +251,15 @@ function Admin() {
         )}
 
         <div className="mt-4 grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-          <div>
+          {/* A column rather than a stack of blocks, so the list inside it can
+              be told to take whatever height is left over. A grid item is
+              stretched to its row by default and the row is as tall as the
+              taller column, which is nearly always the form — so this is how
+              the list ends up level with the bottom of the form instead of
+              stopping short of it and leaving a column of empty paper. See the
+              floor in SongList, which is what stops the same mechanism
+              collapsing the list to nothing when there is no form open. */}
+          <div className="flex flex-col">
             <button
               type="button"
               onClick={() => {
@@ -259,7 +267,10 @@ function Admin() {
                 setSelectedId(null)
                 setJustCreatedId(null)
               }}
-              className="mb-3 border border-gray-500 bg-gray-200 px-3 py-1 text-sm"
+              // `self-start` because the column above is a flex one now, and a
+              // flex item is stretched across it by default — without this the
+              // button runs the whole width of the list.
+              className="mb-3 self-start border border-gray-500 bg-gray-200 px-3 py-1 text-sm"
             >
               New song
             </button>

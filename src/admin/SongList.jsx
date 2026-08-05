@@ -109,132 +109,150 @@ function SongList({ songs, albums = [], selectedId, onSelect, onMove, busy }) {
   const canMove = (song, direction) => neighbourFor(songs, song, direction) !== undefined
 
   return (
-    <div>
-      <input
-        className="w-full border border-gray-400 bg-white px-2 py-1 text-sm"
-        placeholder={`Search ${songs.length} songs…`}
-        value={query}
-        onChange={(event) => setQuery(event.currentTarget.value)}
-      />
+    // The list is as tall as the form beside it, and this is the pair of rules
+    // that does it. Both are needed and neither is decoration:
+    //
+    // `flex-1` takes whatever height the column has to give, and the column is
+    // stretched to the row, and the row is as tall as the taller of the two
+    // columns. So the list ends level with the bottom of the form. A fixed
+    // height only ever matches by accident; the rest of the time it is short and
+    // leaves a strip of empty paper down the side of the page, which is what it
+    // did.
+    //
+    // The absolute layer inside is what makes that possible rather than
+    // circular. A grid row is as tall as its tallest item's *content*, and the
+    // content here is the whole catalogue — so left to itself this column asks
+    // for all 1500 pixels of it, the row obliges, and nothing ever scrolls or
+    // matches anything. Out of flow, the list has no say in how tall the row
+    // should be: the form decides, and the list is told. Capping it with a
+    // `max-h` instead is the other way to break the loop and is what this
+    // replaced — that is a list the right height by luck.
+    //
+    // `min-h-[70vh]` is the floor, for when there is nothing taller to match:
+    // no song open, so no form, only the dashed "choose a song" box.
+    <div className="relative min-h-[70vh] flex-1">
+      <div className="absolute inset-0 flex flex-col">
+        <input
+          className="w-full border border-gray-400 bg-white px-2 py-1 text-sm"
+          placeholder={`Search ${songs.length} songs…`}
+          value={query}
+          onChange={(event) => setQuery(event.currentTarget.value)}
+        />
 
-      {filtered.length === 0 && (
-        <p className="mt-4 border border-dashed border-gray-400 p-4 text-center text-sm">
-          Nothing matches “{query}”.
-        </p>
-      )}
+        {filtered.length === 0 && (
+          <p className="mt-4 border border-dashed border-gray-400 p-4 text-center text-sm">
+            Nothing matches “{query}”.
+          </p>
+        )}
 
-      {/* The list scrolls inside itself rather than running the page down as
-          far as the catalogue happens to be long. That length was the problem:
-          the edit form sits beside this on a wide screen and below it on a
-          narrow one, so choosing the last of thirty songs meant scrolling back
-          up the page to edit it, and down again for the next one. Capped, the
-          page is about as tall as the form, and the form is where it was when
-          the song was chosen.
+        {/* Where the catalogue actually scrolls, and it takes what is left of
+            the column after the search box — which stays outside it, because a
+            box that filters what is in it is no use to someone who has to find
+            it first.
 
-          A share of the window rather than a number of rows, because the thing
-          being kept in view is the rest of the page, and how much of that fits
-          is a fact about the window. The search box is deliberately outside the
-          box — it filters what is in it, and a way of finding a song that has
-          to be found first is no way at all.
+            `min-h-0` is what lets it shrink below the thirty songs inside it. A
+            flex item will not, by default, and the whole arrangement above is
+            an attempt to have this box be some size other than its contents.
 
-          The gutter is `md:` and must stay that way. It is there to keep a
-          desktop scrollbar off the move arrows, which sit hard against the
-          right edge of every row; a phone draws its scrollbar over the content
-          and needs none. Eight pixels is also more than this page has to spare
-          down there — at 390px the column is already as wide as the window,
-          and giving the list any padding at all pushed the whole page into
-          scrolling sideways. */}
-      <div className="mt-1 max-h-[70vh] overflow-y-auto md:pr-2">
-        {groups.map((section) => (
-          <section key={section.id ?? 'none'} className="mt-5">
-            {/* Pinned to the top of the scroller, because a heading is what
-                says which record the row under the finger belongs to and this
-                is now a list you can be in the middle of. It needs the page's
-                own background — it has rows passing underneath it — and it is
-                the reason the sections have padding above rather than only
-                below. */}
-            <h3 className="sticky top-0 z-10 flex items-baseline justify-between gap-2 border-b border-gray-300 bg-white pb-1 pt-1 text-xs font-bold uppercase tracking-wide text-gray-600">
-              <span className="min-w-0 truncate">{section.label}</span>
-              {/* The count, and what the album is. Worth saying here because
-                  the heading is now a title rather than a category, and
-                  "Pigs" alone does not say whether it is a show or a record. */}
-              <span className="shrink-0 font-normal normal-case">
-                {section.kind === 'musical' ? 'musical · ' : section.kind === 'album' ? 'album · ' : ''}
-                {section.songs.length}
-              </span>
-            </h3>
-            <ul>
-              {section.songs.map((song) => (
-                <li
-                  key={song.id}
-                  className={`flex items-center gap-2 border-b border-gray-200 py-2 ${
-                    song.id === selectedId ? 'bg-gray-200' : ''
-                  }`}
-                >
-                  {/* A filled square reads as "live" at a glance in a long
-                      list; an outline is a draft. */}
-                  <span
-                    aria-label={song.published ? 'Published' : 'Draft'}
-                    title={song.published ? 'Published' : 'Draft'}
-                    className={`h-2 w-2 shrink-0 border border-gray-600 ${
-                      song.published ? 'bg-gray-700' : 'bg-white'
+            The gutter is `md:` and must stay that way. It is there to keep a
+            desktop scrollbar off the move arrows, which sit hard against the
+            right edge of every row; a phone draws its scrollbar over the
+            content and needs none. Eight pixels is also more than this page has
+            to spare down there — at 390px the column is already as wide as the
+            window, and giving the list any padding at all pushed the whole page
+            into scrolling sideways. */}
+        <div className="mt-1 min-h-0 flex-1 overflow-y-auto md:pr-2">
+          {groups.map((section) => (
+            <section key={section.id ?? 'none'} className="mt-5">
+              {/* Pinned to the top of the scroller, because a heading is what
+                  says which record the row under the finger belongs to and this
+                  is now a list you can be in the middle of. It needs the page's
+                  own background — it has rows passing underneath it — and it is
+                  the reason the sections have padding above rather than only
+                  below. */}
+              <h3 className="sticky top-0 z-10 flex items-baseline justify-between gap-2 border-b border-gray-300 bg-white pb-1 pt-1 text-xs font-bold uppercase tracking-wide text-gray-600">
+                <span className="min-w-0 truncate">{section.label}</span>
+                {/* The count, and what the album is. Worth saying here because
+                    the heading is now a title rather than a category, and
+                    "Pigs" alone does not say whether it is a show or a record. */}
+                <span className="shrink-0 font-normal normal-case">
+                  {section.kind === 'musical' ? 'musical · ' : section.kind === 'album' ? 'album · ' : ''}
+                  {section.songs.length}
+                </span>
+              </h3>
+              <ul>
+                {section.songs.map((song) => (
+                  <li
+                    key={song.id}
+                    className={`flex items-center gap-2 border-b border-gray-200 py-2 ${
+                      song.id === selectedId ? 'bg-gray-200' : ''
                     }`}
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => onSelect(song.id)}
-                    className="min-w-0 flex-1 truncate text-left text-sm hover:underline"
                   >
-                    {song.title}
-                    {/* Which songs the front page draws. It used to be exactly
-                        the first section here, so the grouping said it; since
-                        0007 a song in any album can be on the home page, and
-                        nothing else in this list would show it. */}
-                    {song.onHomepage && (
-                      <span className="ml-2 text-xs text-gray-500">
-                        {/* Said in one label rather than two, because the
-                            second only ever qualifies the first: the song is
-                            on the front page, and this section it is listed
-                            under here is a section it is kept out of on the
-                            site. Without it the list would draw a song exactly
-                            where the site does not. */}
-                        {song.hiddenInAlbum ? 'home page only' : 'home page'}
-                      </span>
-                    )}
-                    {!song.webKey && <span className="ml-2 text-xs text-gray-500">no audio</span>}
-                    {song.isSnippet && <span className="ml-2 text-xs text-gray-500">snapshot</span>}
-                  </button>
+                    {/* A filled square reads as "live" at a glance in a long
+                        list; an outline is a draft. */}
+                    <span
+                      aria-label={song.published ? 'Published' : 'Draft'}
+                      title={song.published ? 'Published' : 'Draft'}
+                      className={`h-2 w-2 shrink-0 border border-gray-600 ${
+                        song.published ? 'bg-gray-700' : 'bg-white'
+                      }`}
+                    />
 
-                  <span className="shrink-0 font-mono text-xs text-gray-600">
-                    {formatTime(song.duration, { blank: '—' })}
-                  </span>
-
-                  <span className="flex shrink-0">
                     <button
                       type="button"
-                      aria-label={`Move ${song.title} up`}
-                      disabled={busy || !canMove(song, -1)}
-                      onClick={() => move(song, -1)}
-                      className="border border-gray-300 px-1 text-xs disabled:opacity-40"
+                      onClick={() => onSelect(song.id)}
+                      className="min-w-0 flex-1 truncate text-left text-sm hover:underline"
                     >
-                      ↑
+                      {song.title}
+                      {/* Which songs the front page draws. It used to be exactly
+                          the first section here, so the grouping said it; since
+                          0007 a song in any album can be on the home page, and
+                          nothing else in this list would show it. */}
+                      {song.onHomepage && (
+                        <span className="ml-2 text-xs text-gray-500">
+                          {/* Said in one label rather than two, because the
+                              second only ever qualifies the first: the song is
+                              on the front page, and this section it is listed
+                              under here is a section it is kept out of on the
+                              site. Without it the list would draw a song exactly
+                              where the site does not. */}
+                          {song.hiddenInAlbum ? 'home page only' : 'home page'}
+                        </span>
+                      )}
+                      {!song.webKey && <span className="ml-2 text-xs text-gray-500">no audio</span>}
+                      {song.isSnippet && <span className="ml-2 text-xs text-gray-500">snapshot</span>}
                     </button>
-                    <button
-                      type="button"
-                      aria-label={`Move ${song.title} down`}
-                      disabled={busy || !canMove(song, 1)}
-                      onClick={() => move(song, 1)}
-                      className="border border-l-0 border-gray-300 px-1 text-xs disabled:opacity-40"
-                    >
-                      ↓
-                    </button>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
+
+                    <span className="shrink-0 font-mono text-xs text-gray-600">
+                      {formatTime(song.duration, { blank: '—' })}
+                    </span>
+
+                    <span className="flex shrink-0">
+                      <button
+                        type="button"
+                        aria-label={`Move ${song.title} up`}
+                        disabled={busy || !canMove(song, -1)}
+                        onClick={() => move(song, -1)}
+                        className="border border-gray-300 px-1 text-xs disabled:opacity-40"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Move ${song.title} down`}
+                        disabled={busy || !canMove(song, 1)}
+                        onClick={() => move(song, 1)}
+                        className="border border-l-0 border-gray-300 px-1 text-xs disabled:opacity-40"
+                      >
+                        ↓
+                      </button>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
       </div>
     </div>
   )
