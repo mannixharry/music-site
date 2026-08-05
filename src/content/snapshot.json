@@ -1,5 +1,5 @@
 {
-  "version": "msf8llua-fa2a4f59",
+  "version": "hide-in-album-1785944705",
   "mediaBase": "https://media.frankkirwan.com",
   "albums": [
     {
@@ -758,8 +758,8 @@
       "id": "its-all-quiet-on-the-western-front-today",
       "title": "It's All Quiet on the Western Front Today",
       "description": "",
-      "kind": "single",
-      "albumId": null,
+      "kind": "demo",
+      "albumId": "read-between-the-lines",
       "status": "released",
       "webKey": "web/its-all-quiet-on-the-western-front-today/d41dd179.mp3",
       "coverKey": "covers/its-all-quiet-on-the-western-front-today/308ef2a5.webp",
@@ -768,7 +768,7 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 440,
-      "onHomepage": true,
+      "onHomepage": false,
       "published": true
     },
     {
@@ -956,6 +956,23 @@
       "links": [],
       "sortOrder": 550,
       "onHomepage": false,
+      "published": true
+    },
+    {
+      "id": "tell-me-once-duet",
+      "title": "Tell Me Once (Duet)",
+      "description": "",
+      "kind": "demo",
+      "albumId": "guyana-skies",
+      "status": "released",
+      "webKey": "web/tell-me-once-duet/9115ec16.mp3",
+      "coverKey": "covers/tell-me-once-duet/13263355.webp",
+      "duration": 171.738,
+      "isSnippet": false,
+      "showSnippetTag": false,
+      "links": [],
+      "sortOrder": 560,
+      "onHomepage": true,
       "published": true
     }
   ]
