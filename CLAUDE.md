@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A portfolio/website for artist Frank Kirwan (see `<title>` in `index.html`). Built on Vite's `react` template. Five pages, a custom audio player wired to the Media Session API, and no tests or component library.
 
-The site is staged. `index.html` carries `noindex, nofollow` and `public/robots.txt` carries a matching `Disallow: /`; **both come off together to go public**, and nothing else does. Descriptions, Open Graph tags, canonicals, structured data and a generated sitemap are already in place.
+The site is **public and open to search engines**. It was staged behind a `noindex, nofollow` in `index.html` and a matching `Disallow: /` in `public/robots.txt`; both came off together, which was always the rule, and nothing else changed with them. Descriptions, Open Graph tags, canonicals, structured data and a generated sitemap are already in place. `robots.txt` still refuses `/admin` and `/api/`, and always should.
 
 Outstanding, and all of it Frank's rather than code: the song descriptions (all 26 empty), cover art for the singles, the photographs on About and Contact, and streaming links — the placeholder `#` Spotify ones were removed rather than left dead, and Frank adds the real URLs from `/admin`. `contact.instagramHandle` has never been confirmed, which is why it is kept out of the structured data.
 
