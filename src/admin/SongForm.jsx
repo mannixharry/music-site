@@ -9,10 +9,17 @@ import { isUploading } from './upload'
 import { useUpload } from './useUpload'
 import { useCoverUpload } from './useCoverUpload'
 
-// A new song starts on the home page. Every song added to this site so far has
-// been one, the tick box is right there to clear, and defaulting it off would
-// mean adding a single and then wondering why the front page had not changed.
-// An existing song's own value always wins — this is only the blank slate.
+// A new song starts off the home page. It used to start on it, on the grounds
+// that every song added so far had been a single; the catalogue since filled up
+// with musicals' demos, so the common case is now a song that belongs in its
+// record and nowhere else. The two mistakes are not the same size either — a
+// song that should be on the front page and is not waits there quietly, while
+// one that should not be is published to the first thing every visitor sees.
+// The tick box is right there to set.
+//
+// An existing song's own value always wins — this is only the blank slate. Note
+// that the D1 column already defaults to 0, so this is now the same answer from
+// both ends rather than the form overriding the schema.
 const BLANK = {
   title: '',
   kind: 'single',
@@ -20,7 +27,7 @@ const BLANK = {
   description: '',
   status: 'released',
   links: [],
-  onHomepage: true,
+  onHomepage: false,
   hiddenInAlbum: false,
   published: false,
   showSnippetTag: false,
