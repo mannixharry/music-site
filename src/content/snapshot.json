@@ -1,5 +1,5 @@
 {
-  "version": "msq8a82w-3517bc0b",
+  "version": "msq9c8bi-1258ad77",
   "mediaBase": "https://media.frankkirwan.com",
   "albums": [
     {
@@ -1026,6 +1026,42 @@
       "showSnippetTag": false,
       "links": [],
       "sortOrder": 560,
+      "onHomepage": false,
+      "hiddenInAlbum": false,
+      "published": true
+    },
+    {
+      "id": "swallows",
+      "title": "Swallows",
+      "description": "",
+      "kind": "demo",
+      "albumId": "read-between-the-lines",
+      "status": "released",
+      "webKey": "web/swallows/c6774b72.mp3",
+      "coverKey": "covers/swallows/36a66915.webp",
+      "duration": 172.0505,
+      "isSnippet": false,
+      "showSnippetTag": false,
+      "links": [],
+      "sortOrder": 570,
+      "onHomepage": false,
+      "hiddenInAlbum": false,
+      "published": true
+    },
+    {
+      "id": "only-the-heartaches",
+      "title": "Only The Heartaches",
+      "description": "",
+      "kind": "demo",
+      "albumId": "read-between-the-lines",
+      "status": "released",
+      "webKey": "web/only-the-heartaches/b9522167.mp3",
+      "coverKey": "covers/only-the-heartaches/7d5bf64f.webp",
+      "duration": 186.56655,
+      "isSnippet": false,
+      "showSnippetTag": false,
+      "links": [],
+      "sortOrder": 580,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
