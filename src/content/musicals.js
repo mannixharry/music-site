@@ -81,7 +81,12 @@ export const musicals = [
     resume: [
       'An on-going project in the musical field, a Windrush-inspired show charting the development of the principal character from his early days in Guyana, through his departure after independence, to his early struggles — eventually overcome — on arrival in the U.K.',
     ],
-    downloads: [],
+    // Not a script — a sketch of one, and the label says so, because the notice
+    // directly below it is asking for a scriptwriter and a tile marked "Script"
+    // above that sentence reads as a contradiction.
+    downloads: [
+      { label: 'Potential storyline (PDF)', href: '/scripts/frank-kirwan-guyana-skies-storyline.pdf' },
+    ],
     // The one notice on the site, and the reason the mechanism exists at all.
     // Any show may carry one — <Notice> takes a heading and a body and knows
     // nothing about which musical it is drawing — but only this one does, and a

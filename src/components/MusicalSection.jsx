@@ -146,9 +146,11 @@ function MusicalSection({ musical }) {
       )}
 
       {/* Independent of each other, unlike the either/or this replaced: a show
-          can want a notice and still have a script to hand out. Guyana Skies is
-          the only one with a notice, and it is the only one with no downloads,
-          which is why the two never appeared together before. */}
+          can want a notice and still have something to hand out. Guyana Skies is
+          the only one with a notice and it now also has a download — the two do
+          appear together, and the order is deliberate: the notice asks for a
+          scriptwriter, the storyline below it is what they would be working
+          from. */}
       {musical.notice && (
         <div className="mt-6">
           <Notice notice={musical.notice} />
