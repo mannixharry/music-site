@@ -6,8 +6,9 @@ audio player, three musicals, and a self-hosted admin for adding to it.
 React and Vite on the front, a Cloudflare Worker with D1 and R2 behind. No
 CI — deploys are manual, from a laptop, with `npm run deploy`.
 
-The site is public and open to search engines. Some copy is still placeholder;
-`docs/cloudflare-setup.md` tracks what is left in its "Afterwards" section.
+The site is still staged: `index.html` carries a `noindex, nofollow` meta tag,
+and some copy is still placeholder. `docs/cloudflare-setup.md` tracks what is
+left in its "Afterwards" section.
 
 ## Getting started
 
