@@ -1,5 +1,5 @@
 {
-  "version": "msq9fxu0-57a920bb",
+  "version": "msq9u1yo-e6558f67",
   "mediaBase": "https://media.frankkirwan.com",
   "albums": [
     {
@@ -40,24 +40,6 @@
     }
   ],
   "songs": [
-    {
-      "id": "cherie-je-taime-trop",
-      "title": "Chérie je t’aime trop",
-      "description": "",
-      "kind": "single",
-      "albumId": null,
-      "status": "released",
-      "webKey": "web/cherie-je-taime-trop/8f98923d.mp3",
-      "coverKey": "covers/cherie-je-taime-trop/d0e6f02e.webp",
-      "duration": 27.724625850340136,
-      "isSnippet": true,
-      "showSnippetTag": true,
-      "links": [],
-      "sortOrder": 10,
-      "onHomepage": true,
-      "hiddenInAlbum": false,
-      "published": true
-    },
     {
       "id": "caught-in-the-wire",
       "title": "Caught in the Wire",
@@ -109,42 +91,6 @@
       "links": [],
       "sortOrder": 40,
       "onHomepage": false,
-      "hiddenInAlbum": false,
-      "published": true
-    },
-    {
-      "id": "leave-reality-behind",
-      "title": "Leave Reality Behind",
-      "description": "",
-      "kind": "single",
-      "albumId": null,
-      "status": "released",
-      "webKey": "web/leave-reality-behind/267c236c.mp3",
-      "coverKey": "covers/leave-reality-behind/6a869662.webp",
-      "duration": 34.411972789115644,
-      "isSnippet": true,
-      "showSnippetTag": true,
-      "links": [],
-      "sortOrder": 50,
-      "onHomepage": true,
-      "hiddenInAlbum": false,
-      "published": true
-    },
-    {
-      "id": "reasons",
-      "title": "Reasons",
-      "description": "",
-      "kind": "single",
-      "albumId": null,
-      "status": "released",
-      "webKey": "web/reasons/be82526a.mp3",
-      "coverKey": "covers/reasons/58f9676f.webp",
-      "duration": 32.182857142857145,
-      "isSnippet": true,
-      "showSnippetTag": true,
-      "links": [],
-      "sortOrder": 60,
-      "onHomepage": true,
       "hiddenInAlbum": false,
       "published": true
     },
@@ -1063,6 +1009,42 @@
       "links": [],
       "sortOrder": 580,
       "onHomepage": false,
+      "hiddenInAlbum": false,
+      "published": true
+    },
+    {
+      "id": "cherie-je-taime-trop-full",
+      "title": "Chérie je t’aime trop (full)",
+      "description": "",
+      "kind": "single",
+      "albumId": null,
+      "status": "released",
+      "webKey": "web/cherie-je-taime-trop-full/3b06b8ef.mp3",
+      "coverKey": null,
+      "duration": 26.519501133786846,
+      "isSnippet": true,
+      "showSnippetTag": true,
+      "links": [],
+      "sortOrder": 590,
+      "onHomepage": true,
+      "hiddenInAlbum": false,
+      "published": true
+    },
+    {
+      "id": "reasons-short",
+      "title": "Reasons (full)",
+      "description": "",
+      "kind": "single",
+      "albumId": null,
+      "status": "released",
+      "webKey": "web/reasons-short/25cb8005.mp3",
+      "coverKey": null,
+      "duration": 32.07151927437642,
+      "isSnippet": true,
+      "showSnippetTag": false,
+      "links": [],
+      "sortOrder": 595,
+      "onHomepage": true,
       "hiddenInAlbum": false,
       "published": true
     }
