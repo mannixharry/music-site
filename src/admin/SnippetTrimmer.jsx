@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { usePlayback } from '../context/playbackContext'
 import { formatTime } from '../format'
 import { decodeForWaveform, drawWaveform } from './waveform'
 
@@ -38,6 +39,17 @@ function Transport({ label, onClick, disabled }) {
 // the range it was cut at, so the bars open where they were left rather than at
 // a default the previous edit has to be found again from.
 function SnippetTrimmer({ file, initialRange = null, onCancel, onConfirm }) {
+  // The song's own player stays mounted directly above this while the trimmer
+  // is open, and it is a second <audio> element driven by the admin's
+  // PlaybackProvider. Two elements play over each other perfectly happily, so
+  // auditioning the published track and then dragging a handle down here left
+  // both running at once — and a scrub is unreadable underneath a whole song.
+  //
+  // Only `pause` and `playing` are taken, never the context object: its value
+  // changes identity every 80ms while that player runs, so depending on the
+  // whole of it would rebuild `play` sixty times a minute for nothing.
+  const { pause: pausePlayer, playing: playerPlaying } = usePlayback()
+
   const audioRef = useRef(null)
   const trackRef = useRef(null)
   const canvasRef = useRef(null)
@@ -130,19 +142,38 @@ function SnippetTrimmer({ file, initialRange = null, onCancel, onConfirm }) {
   useEffect(() => () => cancelAnimationFrame(frameRef.current), [])
 
   // `from` of null means "carry on from wherever it is".
-  const play = useCallback((from, stopAt = null) => {
-    const element = audioRef.current
-    if (!element) return
+  //
+  // Every way of starting audio in here funnels through this — the two Play
+  // buttons, a press on the track, and the scrub that begins each drag — which
+  // is why silencing the other player belongs here rather than on the buttons.
+  const play = useCallback(
+    (from, stopAt = null) => {
+      const element = audioRef.current
+      if (!element) return
 
-    stopAtRef.current = stopAt
-    if (from !== null) {
-      element.currentTime = from
-      setPlayhead(from)
-    }
-    // Rejects under autoplay policy and on rapid play/pause; both are
-    // recoverable by pressing the button again, and neither is worth a message.
-    element.play().catch(() => {})
-  }, [])
+      // Before this element starts, not after: the two overlapping even for a
+      // moment is the whole of what is being fixed. Pausing an element that is
+      // already paused, or has never been given a src, is a no-op.
+      pausePlayer()
+
+      stopAtRef.current = stopAt
+      if (from !== null) {
+        element.currentTime = from
+        setPlayhead(from)
+      }
+      // Rejects under autoplay policy and on rapid play/pause; both are
+      // recoverable by pressing the button again, and neither is worth a message.
+      element.play().catch(() => {})
+    },
+    [pausePlayer],
+  )
+
+  // And the other way round, so the rule holds whichever of the two is pressed
+  // rather than only when the trimmer is. No loop: this runs when that player
+  // starts, and the call above only ever stops it.
+  useEffect(() => {
+    if (playerPlaying) audioRef.current?.pause()
+  }, [playerPlaying])
 
   const pause = useCallback(() => audioRef.current?.pause(), [])
 
