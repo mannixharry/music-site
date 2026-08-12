@@ -1,5 +1,5 @@
 {
-  "version": "msq9u1yo-e6558f67",
+  "version": "msqajumt-b4d06ae3",
   "mediaBase": "https://media.frankkirwan.com",
   "albums": [
     {
@@ -41,42 +41,6 @@
   ],
   "songs": [
     {
-      "id": "caught-in-the-wire",
-      "title": "Caught in the Wire",
-      "description": "",
-      "kind": "single",
-      "albumId": null,
-      "status": "released",
-      "webKey": "web/caught-in-the-wire/910c0549.mp3",
-      "coverKey": "covers/caught-in-the-wire/acec25b6.webp",
-      "duration": 40.35628117913832,
-      "isSnippet": true,
-      "showSnippetTag": true,
-      "links": [],
-      "sortOrder": 20,
-      "onHomepage": true,
-      "hiddenInAlbum": false,
-      "published": true
-    },
-    {
-      "id": "halfway-back-to-my-dreams",
-      "title": "Halfway Back to My Dreams",
-      "description": "",
-      "kind": "single",
-      "albumId": null,
-      "status": "released",
-      "webKey": "web/halfway-back-to-my-dreams/88e5f341.mp3",
-      "coverKey": "covers/halfway-back-to-my-dreams/1640674e.webp",
-      "duration": 34.411972789115644,
-      "isSnippet": true,
-      "showSnippetTag": true,
-      "links": [],
-      "sortOrder": 30,
-      "onHomepage": true,
-      "hiddenInAlbum": false,
-      "published": true
-    },
-    {
       "id": "guyana-demo-1",
       "title": "Guyana Skies",
       "description": "",
@@ -89,7 +53,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 40,
+      "sortOrder": 10,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -107,7 +71,7 @@
       "isSnippet": true,
       "showSnippetTag": true,
       "links": [],
-      "sortOrder": 70,
+      "sortOrder": 20,
       "onHomepage": true,
       "hiddenInAlbum": true,
       "published": true
@@ -125,7 +89,7 @@
       "isSnippet": true,
       "showSnippetTag": true,
       "links": [],
-      "sortOrder": 80,
+      "sortOrder": 30,
       "onHomepage": true,
       "hiddenInAlbum": true,
       "published": true
@@ -143,7 +107,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 90,
+      "sortOrder": 40,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -161,7 +125,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 100,
+      "sortOrder": 50,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -179,7 +143,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 110,
+      "sortOrder": 60,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -197,7 +161,7 @@
       "isSnippet": false,
       "showSnippetTag": true,
       "links": [],
-      "sortOrder": 120,
+      "sortOrder": 70,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -215,7 +179,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 130,
+      "sortOrder": 80,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -233,7 +197,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 140,
+      "sortOrder": 90,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -251,7 +215,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 150,
+      "sortOrder": 100,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -269,7 +233,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 160,
+      "sortOrder": 110,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -287,7 +251,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 170,
+      "sortOrder": 120,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -305,7 +269,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 180,
+      "sortOrder": 130,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -323,7 +287,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 190,
+      "sortOrder": 140,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -341,7 +305,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 200,
+      "sortOrder": 150,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -359,7 +323,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 210,
+      "sortOrder": 160,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -377,7 +341,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 220,
+      "sortOrder": 170,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -395,7 +359,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 230,
+      "sortOrder": 180,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -413,7 +377,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 240,
+      "sortOrder": 190,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -431,7 +395,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 250,
+      "sortOrder": 200,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -449,7 +413,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 260,
+      "sortOrder": 210,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -467,7 +431,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 270,
+      "sortOrder": 220,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -485,7 +449,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 280,
+      "sortOrder": 230,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -503,7 +467,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 290,
+      "sortOrder": 240,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -521,7 +485,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 300,
+      "sortOrder": 250,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -539,7 +503,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 310,
+      "sortOrder": 260,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -557,7 +521,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 320,
+      "sortOrder": 270,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -575,7 +539,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 330,
+      "sortOrder": 280,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -593,7 +557,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 340,
+      "sortOrder": 290,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -611,7 +575,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 350,
+      "sortOrder": 300,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -629,7 +593,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 360,
+      "sortOrder": 310,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -647,7 +611,7 @@
       "isSnippet": false,
       "showSnippetTag": true,
       "links": [],
-      "sortOrder": 370,
+      "sortOrder": 320,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -665,7 +629,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 380,
+      "sortOrder": 330,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -683,7 +647,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 390,
+      "sortOrder": 340,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -701,7 +665,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 410,
+      "sortOrder": 360,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -719,7 +683,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 420,
+      "sortOrder": 370,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -737,7 +701,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 430,
+      "sortOrder": 380,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -755,7 +719,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 440,
+      "sortOrder": 390,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -773,7 +737,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 450,
+      "sortOrder": 400,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -791,7 +755,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 460,
+      "sortOrder": 410,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -809,7 +773,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 470,
+      "sortOrder": 420,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -827,7 +791,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 480,
+      "sortOrder": 430,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -845,7 +809,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 490,
+      "sortOrder": 440,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -863,7 +827,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 500,
+      "sortOrder": 450,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -881,7 +845,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 510,
+      "sortOrder": 460,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -899,7 +863,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 520,
+      "sortOrder": 470,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -917,7 +881,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 530,
+      "sortOrder": 480,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -935,7 +899,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 540,
+      "sortOrder": 490,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -953,7 +917,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 550,
+      "sortOrder": 500,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -971,7 +935,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 560,
+      "sortOrder": 510,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -989,7 +953,7 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 570,
+      "sortOrder": 520,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
@@ -1007,43 +971,97 @@
       "isSnippet": false,
       "showSnippetTag": false,
       "links": [],
-      "sortOrder": 580,
+      "sortOrder": 530,
       "onHomepage": false,
       "hiddenInAlbum": false,
       "published": true
     },
     {
+      "id": "caught-in-the-wire-full",
+      "title": "Caught in the Wire",
+      "description": "",
+      "kind": "single",
+      "albumId": null,
+      "status": "released",
+      "webKey": "web/caught-in-the-wire-full/2d70fe43.mp3",
+      "coverKey": "covers/caught-in-the-wire-full/3d10a086.webp",
+      "duration": 37.758208616780045,
+      "isSnippet": true,
+      "showSnippetTag": true,
+      "links": [],
+      "sortOrder": 535,
+      "onHomepage": true,
+      "hiddenInAlbum": false,
+      "published": true
+    },
+    {
       "id": "cherie-je-taime-trop-full",
-      "title": "Chérie je t’aime trop (full)",
+      "title": "Chérie je t’aime trop",
       "description": "",
       "kind": "single",
       "albumId": null,
       "status": "released",
       "webKey": "web/cherie-je-taime-trop-full/3b06b8ef.mp3",
-      "coverKey": null,
+      "coverKey": "covers/cherie-je-taime-trop-full/c7857e9f.webp",
       "duration": 26.519501133786846,
       "isSnippet": true,
       "showSnippetTag": true,
       "links": [],
-      "sortOrder": 590,
+      "sortOrder": 540,
       "onHomepage": true,
       "hiddenInAlbum": false,
       "published": true
     },
     {
       "id": "reasons-short",
-      "title": "Reasons (full)",
+      "title": "Reasons",
       "description": "",
       "kind": "single",
       "albumId": null,
       "status": "released",
-      "webKey": "web/reasons-short/25cb8005.mp3",
-      "coverKey": null,
-      "duration": 32.07151927437642,
+      "webKey": "web/reasons-short/3539383f.mp3",
+      "coverKey": "covers/reasons-short/2ee02936.webp",
+      "duration": 30.06705215419501,
       "isSnippet": true,
-      "showSnippetTag": false,
+      "showSnippetTag": true,
       "links": [],
-      "sortOrder": 595,
+      "sortOrder": 550,
+      "onHomepage": true,
+      "hiddenInAlbum": false,
+      "published": true
+    },
+    {
+      "id": "leave-reality-behind-full",
+      "title": "Leave Reality Behind",
+      "description": "",
+      "kind": "single",
+      "albumId": null,
+      "status": "released",
+      "webKey": "web/leave-reality-behind-full/69d44977.mp3",
+      "coverKey": "covers/leave-reality-behind-full/06b6859a.webp",
+      "duration": 33.302403628117915,
+      "isSnippet": true,
+      "showSnippetTag": true,
+      "links": [],
+      "sortOrder": 560,
+      "onHomepage": true,
+      "hiddenInAlbum": false,
+      "published": true
+    },
+    {
+      "id": "halfway-back-to-my-dreams-full",
+      "title": "Halfway Back to My Dreams",
+      "description": "",
+      "kind": "single",
+      "albumId": null,
+      "status": "released",
+      "webKey": "web/halfway-back-to-my-dreams-full/fd92705a.mp3",
+      "coverKey": "covers/halfway-back-to-my-dreams-full/886f97aa.webp",
+      "duration": 32.91401360544218,
+      "isSnippet": true,
+      "showSnippetTag": true,
+      "links": [],
+      "sortOrder": 580,
       "onHomepage": true,
       "hiddenInAlbum": false,
       "published": true
