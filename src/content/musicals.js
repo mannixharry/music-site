@@ -53,9 +53,13 @@ export const musicals = [
     heroDims: '1600×900px',
     resumeLabel: 'Synopsis',
     songsLabel: 'Songs',
-    // One paragraph in Frank's document, and left as one here.
+    // One paragraph in Frank's document, and left as one here. The note about
+    // the longer version is Frank's own addition and is a second paragraph
+    // rather than a sentence tacked onto the synopsis: it is a fact about what
+    // is available, not part of the story being told.
     resume: [
       '“Copperfield and Co.” is a quick paced two hour musical based loosely on Dickens’ “David Copperfield” and following the path of David from his early, troubled childhood through to the tribulations of adulthood, where we also chart the villainous path of Uriah Heep. In the course of this journey we encounter many classic Dickens characters. The bullying Murdstones haunt David’s early life, sending him first to the fearsome Mr Creakle’s school and then to their bottle factory, from where he lodges with the inimitable Micawber family. From them, he passes into the care of the eccentric Aunt Betsy and Mr Dick, who chase away the returning Murdstones, to the audience’s great delight. In adulthood, David then comes under the tutelage of Mr Wickfield, who employs the “greasy, oily rogue” Uriah. In the second act, we see Uriah, via much interaction with the audience, wielding more and more power, before his ultimate demise. Mr Micawber, employed by Uriah, also becomes increasingly involved in the drama and collaborates with David and Mr Wickfield to bring about Uriah’s downfall. David, in the meanwhile, suffers the loss of his wife, Dora, through illness, but in a popular denouement gains the love of Agnes Wickfield. Uriah, as the show comes to a close, repents in song for his evil ways. “Copperfield and Co.” is narrated in old age by David Copperfield and, unusually, a now benevolent Uriah Heep.',
+      'This musical is available in a longer version.',
     ],
     // A download with no `href` still renders as a placeholder, for anything not
     // supplied yet. `download: true` forces a save rather than letting the
