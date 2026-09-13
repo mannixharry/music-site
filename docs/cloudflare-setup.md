@@ -174,10 +174,9 @@ account anywhere — just an inbox he can read.
 > default; before that they started with One-time PIN. The Cloudflare IdP
 > authenticates *only members of the Cloudflare account*, so signing in as
 > anyone else fails with *"Cloudflare sign-in is restricted to members of the
-> account"*. That bites here twice over: the account is
-> `harrymannix@icloud.com` while the Access policies name
-> `mannixharry@gmail.com`, and Frank will never be a member of the account at
-> all.
+> account"*. That bites here twice over: the Cloudflare account is under one
+> address while the Access policy names a different one, and Frank will never
+> be a member of the account at all.
 
 **Zero Trust → Integrations → Identity providers → Add new identity provider →
 One-time PIN.** Not *Access controls → Access settings*, which is global
@@ -237,7 +236,7 @@ itself reads.
 Give it this policy:
 
 - Action: **Allow**
-- Include → **Emails** → `mannixharry@gmail.com`
+- Include → **Emails** → your address
 
 Adding Frank later means adding his address to this policy and to
 `ADMIN_EMAILS` — the first is a dashboard edit, the second needs a deploy.

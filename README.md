@@ -1,92 +1,30 @@
-# frankkirwan.com
+# music-site
 
-The website of songwriter Frank Kirwan: a catalogue of songs with a custom
-audio player, three musicals, and a self-hosted admin for adding to it.
+The website of Frank Kirwan — singer-songwriter, musician and composer of three
+musicals. It is live at [frankkirwan.com](https://frankkirwan.com).
 
-React and Vite on the front, a Cloudflare Worker with D1 and R2 behind. No
-CI — deploys are manual, from a laptop, with `npm run deploy`.
+Frank is a real musician, and this is his real site: a catalogue of his songs
+with a player, the three musicals with their synopses, scripts and scores, and
+a private admin page where he adds songs, uploads recordings and artwork, and
+publishes previews of longer tracks — all without a developer in the loop.
 
-The site is still staged: `index.html` carries a `noindex, nofollow` meta tag,
-and some copy is still placeholder. `docs/cloudflare-setup.md` tracks what is
-left in its "Afterwards" section.
+## How it was made
 
-## Getting started
+The code was written with AI, using Claude Code. The architecture, the product
+decisions and the review were mine: what the site is for, how it is hosted,
+what Frank needs to be able to do himself, what the admin must and must not
+allow, and which of the AI's suggestions were kept. `CLAUDE.md` is the standing
+brief the AI works from, and it records the decisions and the reasons behind
+them in more detail than a README should.
 
-```
-npm install
-cp .dev.vars.example .dev.vars     # only needed for /admin — see the file
-npm run db:migrate:local
-npm run db:seed:local
+## Running it
 
-npm run dev                        # the site, on :5173
-npm run dev:worker                 # the API, on :8787 — run both
-```
+It is a small React site on Cloudflare. `CLAUDE.md` has the commands, and
+`docs/cloudflare-setup.md` is the runbook for the hosting side. Everything
+needed to run it locally is in the repo; nothing that could grant access to
+the live site is.
 
-`npm run dev` proxies `/api` to the Worker, so the two together behave like
-production. Without the Worker the site still renders — it falls back to the
-committed snapshot, which is the designed behaviour rather than a broken state.
+## Rights
 
-## Commands
-
-| | |
-|---|---|
-| `npm run dev` | Vite dev server with HMR |
-| `npm run dev:worker` | the Worker, with local D1 and R2 |
-| `npm run build` | production build into `dist/` |
-| `npm run preview` | serve that build locally |
-| `npm run lint` | Oxlint |
-| `npm run deploy` | build, then `wrangler deploy` |
-| `npm run db:migrate` | apply `migrations/` (`:local` for the emulated one) |
-| `npm run db:seed` | load `snapshot.json` into it (`:local` likewise) |
-| `npm run db:dump` | point-in-time dump of the real database into `backup/` |
-| `node scripts/add-song.mjs --help` | add a song, and its audio, without a browser |
-| `node scripts/pull-snapshot.mjs` | refresh the snapshot from the live API |
-
-There is no test runner in this repo.
-
-## How the content works
-
-Songs are data, not code. The catalogue lives in D1 and is served by
-`/api/content`; `src/content/snapshot.json` is a committed copy of it that gets
-bundled and rendered on the first paint, before the API has answered — and is
-all a visitor sees if the API is unreachable.
-
-That snapshot is refreshed automatically as a `prebuild` step, so a deploy
-cannot ship a stale one. Set `SKIP_SNAPSHOT_PULL=1` to build without the
-network; the committed snapshot is then used as-is.
-
-Audio lives in R2 and is served from `media.frankkirwan.com`. Nothing is in
-`public/` any more.
-
-## Deploys and stale tabs
-
-Every build is stamped with an id, in the bundle (`virtual:build-id`) and in
-`/build.json` beside it. `/build.json` is served `no-store`, so it is the one
-thing a browser cannot answer from its own cache; `src/components/FreshBuild.jsx`
-compares the two and reloads the page if they differ.
-
-That exists because caching headers being right is not sufficient. A browser
-holding a copy of `index.html` it has stopped revalidating will keep serving a
-complete, coherent, months-old site through reloads, and nothing inside that
-page can tell — the old shell names the old hashed bundle, which is genuinely
-still valid. The check has to come from outside it.
-
-## The admin
-
-`/admin` is behind Cloudflare Access — an allow-list of email addresses and a
-one-time PIN. There is no password and no login code in this repo, and none
-should be added. `worker/access.js` verifies the token a second time and fails
-closed if it is not configured.
-
-`docs/cloudflare-setup.md` is the runbook for all of it, including the traps
-that cost time the first time round.
-
-## Notes on the stack
-
-- **No TypeScript.** Plain JS and JSX; `@types/react` is present only for
-  editor intellisense.
-- **No React Compiler.** Left off for dev and build performance — see
-  [the installation docs](https://react.dev/learn/react-compiler/installation)
-  to add it.
-- **Tailwind v4** via `@tailwindcss/vite`, configured in CSS. There is no
-  `tailwind.config.js` and there should not be.
+The code is here to be read. The songs, recordings, scripts, scores and
+artwork are Frank Kirwan's and are not licensed for reuse.

@@ -1,5 +1,9 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
+  // The repository is music-site; the Worker and the D1 database keep the name
+  // they were created under. Renaming this deploys a NEW Worker, which
+  // frankkirwan.com is not attached to, and leaves the real one running the old
+  // code. The database name likewise has to match what `wrangler d1 create` made.
   "name": "artist-site",
   "main": "worker/index.js",
   "compatibility_date": "2026-07-27",
