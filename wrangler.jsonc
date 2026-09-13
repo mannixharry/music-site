@@ -60,19 +60,25 @@
     // hand and bindings do not expose the bucket name they point at.
     "MEDIA_BUCKET": "frank-kirwan-media",
     "MASTERS_BUCKET": "frank-kirwan-masters",
-    // Checked after Access has already vetted the request — the Access policy
-    // is the gate, this is a second opinion that survives a mis-edited policy.
-    // Both of Harry's addresses are here because the Cloudflare account is the
-    // icloud one while the Access policy names the gmail one; whichever he
-    // signs in with has to appear in both places or the request dies here,
-    // after a login that looked like it worked.
+    // ADMIN_EMAILS is a secret, not a var — see the list at the bottom. It was
+    // a var here, and the repository is public: a comma-separated list of the
+    // addresses that can open the admin is the exact target list for phishing
+    // a one-time PIN, and two of them were personal addresses with no other
+    // connection to the site.
     //
-    // TWO PLACES, and this is only one of them. An address here that the Access
-    // policy does not name gets no token and never reaches the Worker; an
-    // address the policy names that is missing here is refused with a 403 that
-    // says so. Frank's address has to be added to the Access policy in the Zero
-    // Trust dashboard as well as here.
-    "ADMIN_EMAILS": "mannixharry@gmail.com,harrymannix@icloud.com,frank@frankkirwan.com",
+    // It is checked after Access has already vetted the request — the policy is
+    // the gate, this is a second opinion that survives a mis-edited policy. Two
+    // of the addresses are the same person, because the Cloudflare account is
+    // under one address and the Access policy names another; whichever is used
+    // to sign in has to appear in both places or the request dies here, after
+    // a login that looked like it worked.
+    //
+    // TWO PLACES. An address in the secret that the Access policy does not name
+    // gets no token and never reaches the Worker; an address the policy names
+    // that is missing from the secret is refused with a 403 that says so. And
+    // the secret being unset refuses everyone — worker/access.js fails closed
+    // on an empty list, so forgetting to set it after a fresh deploy cannot
+    // quietly turn the second lock off.
     "ACCESS_TEAM": "frankkirwan",
     // ONE Access application covers both frankkirwan.com/admin and
     // frankkirwan.com/api/admin, so there is one audience tag here.
@@ -93,4 +99,5 @@
 
   // Secrets, set with `wrangler secret put` and never written in this file:
   //   R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID
+  //   ADMIN_EMAILS — comma-separated, the addresses allowed into the admin
 }

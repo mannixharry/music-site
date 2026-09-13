@@ -95,6 +95,12 @@ export async function verifyAccess(request, env) {
 
     // The Access policy already restricts who can get a token. This repeats it
     // in code so that a mis-edited policy is not the only thing standing here.
+    //
+    // ADMIN_EMAILS is a secret rather than a var, so it is not in the repo and
+    // has to be set by hand after the Worker first exists. An empty list
+    // therefore refuses everyone rather than allowing everyone: the one time
+    // it is empty is the deploy where someone forgot, and the second lock
+    // silently switching itself off is the worse way for that to surface.
     const allowed = (env.ADMIN_EMAILS ?? '')
       .split(',')
       .map((entry) => entry.trim().toLowerCase())
@@ -104,7 +110,7 @@ export async function verifyAccess(request, env) {
     // let in. Reported as itself, with the address, because every remedy —
     // sign in as the other one, or add this one to ADMIN_EMAILS — needs to
     // know which address arrived.
-    if (allowed.length > 0 && !allowed.includes(email)) {
+    if (!allowed.includes(email)) {
       return { identity: null, reason: 'forbidden', email }
     }
 

@@ -190,11 +190,12 @@ Keep the policy's Include rule as a specific **email list**. One-time PIN with
 an unrestricted Include means anyone with any email address can request a code
 and get in.
 
-Whichever address you actually sign in with must also appear in `ADMIN_EMAILS`
-in `wrangler.jsonc`. `worker/access.js` checks it after Access has already let
-the request through, so a mismatch produces a login that appears to succeed
-followed by a refusal — with nothing on screen to say which of the two lists
-was the problem.
+Whichever address you actually sign in with must also appear in the
+`ADMIN_EMAILS` secret (`wrangler secret put ADMIN_EMAILS`, a comma-separated
+list; an unset or empty one refuses everyone). `worker/access.js` checks it
+after Access has already let the request through, so a mismatch produces a
+login that appears to succeed followed by a refusal — with nothing on screen
+to say which of the two lists was the problem.
 
 Create **one** self-hosted application — Access → Applications → *Add an
 application* → **Self-hosted** — covering **two** paths on the same hostname.
@@ -239,7 +240,8 @@ Give it this policy:
 - Include → **Emails** → your address
 
 Adding Frank later means adding his address to this policy and to
-`ADMIN_EMAILS` — the first is a dashboard edit, the second needs a deploy.
+`ADMIN_EMAILS` — the first is a dashboard edit, the second is
+`wrangler secret put ADMIN_EMAILS` with the whole list again, no deploy needed.
 
 The application's Overview shows an **Application Audience (AUD) Tag**. Copy
 it. The Worker still parses `ACCESS_AUD` as a comma-separated list, so a token
@@ -263,10 +265,11 @@ Secrets are never written in that file:
 npx wrangler secret put R2_ACCESS_KEY_ID       # from step 3
 npx wrangler secret put R2_SECRET_ACCESS_KEY   # from step 3
 npx wrangler secret put R2_ACCOUNT_ID          # from step 0
+npx wrangler secret put ADMIN_EMAILS           # "you@example.com,frank@example.com"
 ```
 
-Until `ACCESS_TEAM` and `ACCESS_AUD` are both set, every `/api/admin/*` route
-refuses everything. That is deliberate — never work around it by loosening
+Until `ACCESS_TEAM` and `ACCESS_AUD` are both set, and `ADMIN_EMAILS` names at
+least one address, every `/api/admin/*` route refuses everything. That is deliberate — never work around it by loosening
 `worker/access.js`.
 
 ---
