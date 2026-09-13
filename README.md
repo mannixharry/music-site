@@ -7,7 +7,12 @@ musicals. It is live at [frankkirwan.com](https://frankkirwan.com).
 
 The code for this project was written (mostly) by an AI tool;
 the codebase architecture, database structure, layout and functionality 
-are all mine.
+are all mine. 
+
+All songs and site data are stored in master (.wav) format in R2 and D1 
+databases provided by Cloudflare. The site exposes compressed versions of
+these masters. A password-protected admin page allows the user to update
+the site as necessary (without changes to the codebase). 
 
 ## Why it was made
 
